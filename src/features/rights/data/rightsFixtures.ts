@@ -244,3 +244,4 @@ export const EMPTY_RIGHTS_ARTICLE_FORM: RightsArticleFormState = {
   featured: false,
   tags: ['Human Rights', 'Constitution', 'Rights'],
 };
+

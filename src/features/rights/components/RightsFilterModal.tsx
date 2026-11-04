@@ -297,3 +297,4 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
 };
+

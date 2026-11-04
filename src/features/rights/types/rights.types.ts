@@ -128,3 +128,4 @@ export const formatRightsViews = (views: number): string => {
   const text = thousands >= 10 ? String(Math.round(thousands)) : thousands.toFixed(1);
   return `${text}K`;
 };
+

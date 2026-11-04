@@ -32,6 +32,9 @@ import { KnowYourRightsPage } from '../features/rights/screens/KnowYourRightsPag
 import { RightDetailsPage } from '../features/rights/screens/RightDetailsPage';
 import { CreateRightPage } from '../features/rights/screens/CreateRightPage';
 import { EditRightPage } from '../features/rights/screens/EditRightPage';
+import { ExpensesListPage } from '../features/expenses/screens/ExpensesListPage';
+import { ExpenseDetailsPage } from '../features/expenses/screens/ExpenseDetailsPage';
+import { CreateExpensePage } from '../features/expenses/screens/CreateExpensePage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -60,6 +63,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/rights" element={<Navigate to="/admin/rights" replace />} />
         <Route path="/know-your-rights" element={<Navigate to="/admin/rights" replace />} />
         <Route path="/legal-rights" element={<Navigate to="/admin/rights" replace />} />
+        <Route path="/expenses" element={<Navigate to="/admin/expenses" replace />} />
+        <Route path="/expense" element={<Navigate to="/admin/expenses" replace />} />
+        <Route path="/vouchers" element={<Navigate to="/admin/expenses" replace />} />
+        <Route path="/expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -141,17 +148,13 @@ export const AppRoutes: React.FC = () => {
           <Route path="know-your-rights" element={<Navigate to="/admin/rights" replace />} />
           <Route path="legal-rights" element={<Navigate to="/admin/rights" replace />} />
 
-          {/* Finance & Accounts */}
-          <Route
-            path="expenses"
-            element={
-              <PlaceholderPage
-                title="Expenses Management"
-                moduleGroup="Finance & Accounts"
-                description="Expense vouchers, payments to vendors, bill receipts upload and approvals."
-              />
-            }
-          />
+          {/* Finance & Accounts — Expenses Module (Exact Counterpart of Mobile APK) */}
+          <Route path="expenses" element={<ExpensesListPage />} />
+          <Route path="expenses/create" element={<CreateExpensePage />} />
+          <Route path="expenses/:id" element={<ExpenseDetailsPage />} />
+          <Route path="expense" element={<Navigate to="/admin/expenses" replace />} />
+          <Route path="expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
+          <Route path="vouchers" element={<Navigate to="/admin/expenses" replace />} />
           <Route
             path="receipts"
             element={

@@ -425,3 +425,4 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #BAE6FD',
   },
 };
+

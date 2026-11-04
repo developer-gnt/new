@@ -173,3 +173,4 @@ class RightsStore {
 }
 
 export const rightsStore = new RightsStore();
+
