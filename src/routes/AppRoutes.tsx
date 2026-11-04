@@ -20,6 +20,10 @@ import { CreateSeekerPage } from '../features/assistance/screens/CreateSeekerPag
 import { SupportTicketsListPage } from '../features/support/screens/SupportTicketsListPage';
 import { SupportTicketDetailsPage } from '../features/support/screens/SupportTicketDetailsPage';
 import { SupportTicketChatPage } from '../features/support/screens/SupportTicketChatPage';
+import { NewsListPage } from '../features/news/screens/NewsListPage';
+import { NewsDetailsPage } from '../features/news/screens/NewsDetailsPage';
+import { CreateNewsPage } from '../features/news/screens/CreateNewsPage';
+import { EditNewsPage } from '../features/news/screens/EditNewsPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -39,6 +43,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/support" element={<Navigate to="/admin/support" replace />} />
         <Route path="/complaints" element={<Navigate to="/admin/support" replace />} />
         <Route path="/tickets" element={<Navigate to="/admin/support" replace />} />
+        <Route path="/news" element={<Navigate to="/admin/news" replace />} />
+        <Route path="/press" element={<Navigate to="/admin/news" replace />} />
+        <Route path="/press-releases" element={<Navigate to="/admin/news" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -98,16 +105,13 @@ export const AppRoutes: React.FC = () => {
               />
             }
           />
-          <Route
-            path="news"
-            element={
-              <PlaceholderPage
-                title="News & Press"
-                moduleGroup="Content & Media"
-                description="Press releases, national media updates and organizational press announcements."
-              />
-            }
-          />
+          {/* News & Press Module (Exact Counterpart of Mobile APK) */}
+          <Route path="news" element={<NewsListPage />} />
+          <Route path="news/create" element={<CreateNewsPage />} />
+          <Route path="news/:id" element={<NewsDetailsPage />} />
+          <Route path="news/:id/edit" element={<EditNewsPage />} />
+          <Route path="press" element={<Navigate to="/admin/news" replace />} />
+          <Route path="press-releases" element={<Navigate to="/admin/news" replace />} />
           <Route
             path="blogs"
             element={
