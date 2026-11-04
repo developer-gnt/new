@@ -28,6 +28,10 @@ import { BlogsListPage } from '../features/blogs/screens/BlogsListPage';
 import { BlogDetailsPage } from '../features/blogs/screens/BlogDetailsPage';
 import { CreateBlogPage } from '../features/blogs/screens/CreateBlogPage';
 import { EditBlogPage } from '../features/blogs/screens/EditBlogPage';
+import { KnowYourRightsPage } from '../features/rights/screens/KnowYourRightsPage';
+import { RightDetailsPage } from '../features/rights/screens/RightDetailsPage';
+import { CreateRightPage } from '../features/rights/screens/CreateRightPage';
+import { EditRightPage } from '../features/rights/screens/EditRightPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -53,6 +57,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/blogs" element={<Navigate to="/admin/blogs" replace />} />
         <Route path="/articles" element={<Navigate to="/admin/blogs" replace />} />
         <Route path="/blog" element={<Navigate to="/admin/blogs" replace />} />
+        <Route path="/rights" element={<Navigate to="/admin/rights" replace />} />
+        <Route path="/know-your-rights" element={<Navigate to="/admin/rights" replace />} />
+        <Route path="/legal-rights" element={<Navigate to="/admin/rights" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -126,16 +133,13 @@ export const AppRoutes: React.FC = () => {
           <Route path="blogs/:id/edit" element={<EditBlogPage />} />
           <Route path="articles" element={<Navigate to="/admin/blogs" replace />} />
           <Route path="blog" element={<Navigate to="/admin/blogs" replace />} />
-          <Route
-            path="rights"
-            element={
-              <PlaceholderPage
-                title="Know Your Rights"
-                moduleGroup="Content & Media"
-                description="Statutory legal rights documentation, human rights handbook and legal guides."
-              />
-            }
-          />
+          {/* Know Your Rights Module (Exact Counterpart of Mobile APK) */}
+          <Route path="rights" element={<KnowYourRightsPage />} />
+          <Route path="rights/create" element={<CreateRightPage />} />
+          <Route path="rights/:id" element={<RightDetailsPage />} />
+          <Route path="rights/:id/edit" element={<EditRightPage />} />
+          <Route path="know-your-rights" element={<Navigate to="/admin/rights" replace />} />
+          <Route path="legal-rights" element={<Navigate to="/admin/rights" replace />} />
 
           {/* Finance & Accounts */}
           <Route

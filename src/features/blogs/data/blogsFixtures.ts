@@ -170,3 +170,4 @@ export const INITIAL_BLOGS_FIXTURES: BlogListItem[] = [
     allowComments: true,
   },
 ];
+
