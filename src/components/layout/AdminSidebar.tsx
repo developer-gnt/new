@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
 import { HrsjmLogo } from '../common/HrsjmLogo';
+import { useUnreadCount } from '../../features/notifications/store/notificationsStore';
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -17,6 +18,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   mobileOpen,
   onCloseMobile,
 }) => {
+  const unreadCount = useUnreadCount();
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -66,6 +68,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <div style={styles.groupItems}>
                 {group.items.map((item) => {
                   const Icon = item.icon;
+                  const effectiveBadge =
+                    item.id === 'notifications'
+                      ? unreadCount > 0
+                        ? String(unreadCount)
+                        : undefined
+                      : item.badge;
                   return (
                     <NavLink
                       key={item.id}
@@ -105,7 +113,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                             </span>
                           )}
 
-                          {!collapsed && item.badge && (
+                          {!collapsed && effectiveBadge && (
                             <span
                               style={{
                                 ...styles.badge,
@@ -113,7 +121,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                 color: isActive ? '#011F39' : '#FAD465',
                               }}
                             >
-                              {item.badge}
+                              {effectiveBadge}
                             </span>
                           )}
                         </>

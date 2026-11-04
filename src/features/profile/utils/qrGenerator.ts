@@ -87,3 +87,4 @@ export function generateQrMatrix(data: string, size = 25): boolean[][] {
 
   return grid;
 }
+

@@ -50,6 +50,7 @@ import { DonationDetailsPage } from '../features/donations/screens/DonationDetai
 import { DonationReceiptPage } from '../features/donations/screens/DonationReceiptPage';
 import { ProfilePage } from '../features/profile/screens/ProfilePage';
 import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
+import { NotificationsPage } from '../features/notifications/screens/NotificationsPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -103,6 +104,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/my-profile" element={<Navigate to="/admin/profile" replace />} />
         <Route path="/id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
         <Route path="/my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+        <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
+        <Route path="/alerts" element={<Navigate to="/admin/notifications" replace />} />
+        <Route path="/inbox" element={<Navigate to="/admin/notifications" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -229,16 +233,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
           <Route path="my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
           <Route path="my-profile" element={<Navigate to="/admin/profile" replace />} />
-          <Route
-            path="notifications"
-            element={
-              <PlaceholderPage
-                title="Notifications"
-                moduleGroup="Platform & System"
-                description="System alerts, pending task reminders and member registration notifications."
-              />
-            }
-          />
+          {/* Platform & System — Notifications Module (Exact Counterpart of Mobile APK & Backend) */}
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="alerts" element={<Navigate to="/admin/notifications" replace />} />
+          <Route path="inbox" element={<Navigate to="/admin/notifications" replace />} />
           <Route
             path="settings"
             element={

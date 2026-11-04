@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
 import { useProfile } from '../../features/profile/store/profileStore';
+import { useUnreadCount } from '../../features/notifications/store/notificationsStore';
 
 interface AdminHeaderProps {
   onToggleMobileSidebar: () => void;
@@ -26,6 +27,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useProfile();
+  const unreadCount = useUnreadCount();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -98,11 +100,13 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           type="button"
           onClick={() => navigate('/admin/notifications')}
           style={styles.iconBtn}
-          aria-label="Notifications (3 unread)"
+          aria-label={`Notifications (${unreadCount} unread)`}
           title="Notifications"
         >
           <Bell size={20} color="#06294D" />
-          <span style={styles.unreadDot} />
+          {unreadCount > 0 && (
+            <span style={styles.unreadDot}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+          )}
         </button>
 
         <div style={styles.divider} />
@@ -283,13 +287,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   unreadDot: {
     position: 'absolute',
-    top: '6px',
-    right: '6px',
-    width: '7.5px',
-    height: '7.5px',
+    top: '4px',
+    right: '4px',
+    minWidth: '16px',
+    height: '16px',
+    padding: '0 4px',
     backgroundColor: '#DC2626',
-    borderRadius: '50%',
+    borderRadius: '8px',
     border: '1.5px solid #FFFFFF',
+    color: '#FFFFFF',
+    fontSize: '9.5px',
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
   },
   divider: {
     width: '1px',
