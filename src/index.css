@@ -121,6 +121,10 @@ button {
   header button[aria-label="Toggle Sidebar"] {
     display: none !important;
   }
+
+  .quick-nav-header {
+    display: none !important;
+  }
 }
 
 .table-row-hover:hover {

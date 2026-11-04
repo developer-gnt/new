@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import {
   Menu,
   Bell,
@@ -8,6 +8,10 @@ import {
   LogOut,
   Settings,
   ShieldCheck,
+  UserCheck,
+  FileText,
+  HeartHandshake,
+  Users,
 } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
 
@@ -87,6 +91,51 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           </div>
           <h1 style={styles.pageHeading}>{currentTitle}</h1>
         </div>
+      </div>
+
+      {/* Center Section: Core Quick Access Navigation Hub */}
+      <div style={styles.quickNav} className="quick-nav-header">
+        <NavLink
+          to="/admin/members"
+          style={({ isActive }) => ({
+            ...styles.quickNavItem,
+            ...(isActive ? styles.quickNavItemActive : {}),
+          })}
+        >
+          <UserCheck size={14} />
+          <span>Members</span>
+        </NavLink>
+        <NavLink
+          to="/admin/membership-applications"
+          style={({ isActive }) => ({
+            ...styles.quickNavItem,
+            ...(isActive ? styles.quickNavItemActive : {}),
+          })}
+        >
+          <FileText size={14} />
+          <span>All Applications</span>
+          <span style={styles.quickNavBadge}>5</span>
+        </NavLink>
+        <NavLink
+          to="/admin/assistance"
+          style={({ isActive }) => ({
+            ...styles.quickNavItem,
+            ...(isActive ? styles.quickNavItemActive : {}),
+          })}
+        >
+          <HeartHandshake size={14} />
+          <span>Donation & Aid</span>
+        </NavLink>
+        <NavLink
+          to="/admin/users"
+          style={({ isActive }) => ({
+            ...styles.quickNavItem,
+            ...(isActive ? styles.quickNavItemActive : {}),
+          })}
+        >
+          <Users size={14} />
+          <span>Users</span>
+        </NavLink>
       </div>
 
       {/* Right Section: Notifications & Admin Profile */}
@@ -251,6 +300,40 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#0B2F52',
     margin: 0,
     lineHeight: 1.2,
+  },
+  quickNav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: '#F8FAFC',
+    padding: '4px',
+    borderRadius: '10px',
+    border: '1px solid #E2E8F0',
+  },
+  quickNavItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#475569',
+    textDecoration: 'none',
+    borderRadius: '7px',
+    transition: 'all 0.15s ease',
+  },
+  quickNavItemActive: {
+    backgroundColor: '#011F39',
+    color: '#FAD465',
+    boxShadow: '0 1px 3px rgba(1, 31, 57, 0.2)',
+  },
+  quickNavBadge: {
+    fontSize: '11px',
+    fontWeight: 700,
+    backgroundColor: '#DC2626',
+    color: '#FFFFFF',
+    padding: '1px 6px',
+    borderRadius: '10px',
   },
   rightSection: {
     display: 'flex',

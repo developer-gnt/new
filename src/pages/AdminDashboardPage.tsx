@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { Calendar, Users, FileText, MessageSquare, Info, SlidersHorizontal } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Calendar,
+  FileText,
+  MessageSquare,
+  Info,
+  SlidersHorizontal,
+  UserCheck,
+  HeartHandshake,
+  ArrowRight,
+  ShieldCheck,
+  FolderOpen,
+} from 'lucide-react';
 import { DashboardStatCard } from '../features/dashboard/components/DashboardStatCard';
 import { MembershipGrowthChart } from '../features/dashboard/components/MembershipGrowthChart';
 import { StatusDonutChart } from '../features/dashboard/components/StatusDonutChart';
@@ -110,6 +122,99 @@ export const AdminDashboardPage: React.FC = () => {
 
       {viewState === 'normal' && (
         <>
+          {/* Core Operational Modules Hub — Quick Direct Navigation */}
+          <section style={styles.hubSection}>
+            <div style={styles.hubHeader}>
+              <div style={styles.hubTitleWrap}>
+                <FolderOpen size={18} color="#06294D" />
+                <h3 style={styles.hubTitle}>Core Administrative Modules</h3>
+              </div>
+              <span style={styles.hubSubtitle}>Primary registries, approvals inbox & humanitarian relief</span>
+            </div>
+
+            <div style={styles.hubGrid}>
+              {/* Module 1: Members Directory */}
+              <Link to="/admin/members" style={styles.hubCard}>
+                <div style={styles.hubCardTop}>
+                  <div style={{ ...styles.hubIconWrap, backgroundColor: '#011F39', color: '#FAD465' }}>
+                    <UserCheck size={22} />
+                  </div>
+                  <span style={{ ...styles.hubBadge, backgroundColor: '#EAF7EE', color: '#16A34A' }}>
+                    1,248 Members
+                  </span>
+                </div>
+                <h4 style={styles.hubCardTitle}>Members Directory</h4>
+                <p style={styles.hubCardDesc}>
+                  Verified member registry, digital ID cards, renewal tracking and profile approvals.
+                </p>
+                <div style={styles.hubCardAction}>
+                  <span>Open Members Directory</span>
+                  <ArrowRight size={15} />
+                </div>
+              </Link>
+
+              {/* Module 2: All Applications */}
+              <Link to="/admin/membership-applications" style={styles.hubCard}>
+                <div style={styles.hubCardTop}>
+                  <div style={{ ...styles.hubIconWrap, backgroundColor: '#06294D', color: '#FAD465' }}>
+                    <FileText size={22} />
+                  </div>
+                  <span style={{ ...styles.hubBadge, backgroundColor: '#FEF6E7', color: '#D97706' }}>
+                    28 Pending Review
+                  </span>
+                </div>
+                <h4 style={styles.hubCardTitle}>All Applications</h4>
+                <p style={styles.hubCardDesc}>
+                  Membership registration applications, KYC document verification and review decisions.
+                </p>
+                <div style={styles.hubCardAction}>
+                  <span>Review Applications</span>
+                  <ArrowRight size={15} />
+                </div>
+              </Link>
+
+              {/* Module 3: Donation Seekers & Aid */}
+              <Link to="/admin/assistance" style={styles.hubCard}>
+                <div style={styles.hubCardTop}>
+                  <div style={{ ...styles.hubIconWrap, backgroundColor: '#123F68', color: '#FAD465' }}>
+                    <HeartHandshake size={22} />
+                  </div>
+                  <span style={{ ...styles.hubBadge, backgroundColor: '#FFF9E6', color: '#B45309' }}>
+                    12 Active Cases
+                  </span>
+                </div>
+                <h4 style={styles.hubCardTitle}>Donation Seekers & Aid</h4>
+                <p style={styles.hubCardDesc}>
+                  Humanitarian relief, legal aid & medical assistance requests, case assessments and aid distribution.
+                </p>
+                <div style={styles.hubCardAction}>
+                  <span>Open Donation & Aid</span>
+                  <ArrowRight size={15} />
+                </div>
+              </Link>
+
+              {/* Module 4: User Management */}
+              <Link to="/admin/users" style={styles.hubCard}>
+                <div style={styles.hubCardTop}>
+                  <div style={{ ...styles.hubIconWrap, backgroundColor: '#174A78', color: '#FAD465' }}>
+                    <ShieldCheck size={22} />
+                  </div>
+                  <span style={{ ...styles.hubBadge, backgroundColor: '#EDF2F7', color: '#174A78' }}>
+                    System Users
+                  </span>
+                </div>
+                <h4 style={styles.hubCardTitle}>User Management</h4>
+                <p style={styles.hubCardDesc}>
+                  User directory, administrative credentials, role-based permissions and verification audits.
+                </p>
+                <div style={styles.hubCardAction}>
+                  <span>Manage Users</span>
+                  <ArrowRight size={15} />
+                </div>
+              </Link>
+            </div>
+          </section>
+
           {/* 4 Primary KPI Summary Cards */}
           <section style={styles.statsGrid}>
             <DashboardStatCard
@@ -118,7 +223,7 @@ export const AdminDashboardPage: React.FC = () => {
               subtitle="+42 this month"
               tone="navy"
               linkTo="/admin/members"
-              icon={Users}
+              icon={UserCheck}
             />
             <DashboardStatCard
               title="Total Applications"
@@ -129,20 +234,20 @@ export const AdminDashboardPage: React.FC = () => {
               icon={FileText}
             />
             <DashboardStatCard
+              title="Donation & Aid Seekers"
+              value="12"
+              subtitle="Active welfare cases"
+              tone="gold"
+              linkTo="/admin/assistance"
+              icon={HeartHandshake}
+            />
+            <DashboardStatCard
               title="Total Complaints"
               value="34"
               subtitle="85% resolution rate"
               tone="success"
               linkTo="/admin/support"
               icon={MessageSquare}
-            />
-            <DashboardStatCard
-              title="Total Events"
-              value="18"
-              subtitle="3 upcoming this month"
-              tone="gold"
-              linkTo="/admin/events"
-              icon={Calendar}
             />
           </section>
 
@@ -287,6 +392,96 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '12.5px',
     fontWeight: 600,
     color: '#06294D',
+  },
+  hubSection: {
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #DBE5EE',
+    borderRadius: '14px',
+    padding: '20px 24px',
+    boxShadow: '0 2px 6px rgba(1, 31, 57, 0.04)',
+  },
+  hubHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginBottom: '16px',
+    paddingBottom: '12px',
+    borderBottom: '1px solid #EDF2F7',
+  },
+  hubTitleWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  hubTitle: {
+    fontSize: '16px',
+    fontWeight: 700,
+    color: '#011F39',
+    margin: 0,
+  },
+  hubSubtitle: {
+    fontSize: '13px',
+    color: '#718096',
+  },
+  hubGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: '16px',
+  },
+  hubCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: '#FAF7F0',
+    border: '1px solid #DCE4EC',
+    borderRadius: '12px',
+    padding: '16px',
+    textDecoration: 'none',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+  },
+  hubCardTop: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '12px',
+  },
+  hubIconWrap: {
+    width: '42px',
+    height: '42px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hubBadge: {
+    fontSize: '11.5px',
+    fontWeight: 700,
+    padding: '3px 8px',
+    borderRadius: '6px',
+  },
+  hubCardTitle: {
+    fontSize: '16px',
+    fontWeight: 700,
+    color: '#011F39',
+    margin: '0 0 6px 0',
+  },
+  hubCardDesc: {
+    fontSize: '12.5px',
+    color: '#475569',
+    margin: '0 0 14px 0',
+    lineHeight: 1.45,
+    flex: 1,
+  },
+  hubCardAction: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '13px',
+    fontWeight: 700,
+    color: '#174A78',
+    marginTop: 'auto',
   },
   loadingWrapper: {
     display: 'flex',

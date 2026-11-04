@@ -8,7 +8,7 @@ import type { StatusTabKey } from '../components/ApplicationsStatusTabs';
 import { ApplicationsSearchBar } from '../components/ApplicationsSearchBar';
 import { ApplicationRow } from '../components/ApplicationRow';
 import { ApplicationsFilterModal } from '../components/ApplicationsFilterModal';
-import { RefreshCw, FileX, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, FileX, ChevronLeft, ChevronRight, HeartHandshake, UserCheck, FileText } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -139,6 +139,100 @@ export const ApplicationsListPage: React.FC = () => {
             <span>Refresh</span>
           </button>
         </div>
+      </div>
+
+      {/* Cross-Module Switcher Bar — Parity with APK Applications Navigator */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          backgroundColor: '#FFFFFF',
+          padding: '6px',
+          borderRadius: '12px',
+          border: '1px solid #DBE5EE',
+          marginBottom: '20px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <button
+          type="button"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: '#011F39',
+            color: '#FAD465',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '13.5px',
+            fontWeight: 700,
+            cursor: 'default',
+          }}
+        >
+          <FileText size={16} color="#FAD465" />
+          <span>Membership Applications</span>
+          <span
+            style={{
+              backgroundColor: '#FAD465',
+              color: '#011F39',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: 800,
+            }}
+          >
+            {allApps.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/admin/assistance')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: '#FAF7F0',
+            color: '#174A78',
+            border: '1px solid #DCE4EC',
+            borderRadius: '8px',
+            fontSize: '13.5px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <HeartHandshake size={16} color="#174A78" />
+          <span>Donation Seekers & Aid Requests</span>
+          <span style={{ fontSize: '12px', color: '#718096' }}>→ Switch</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/admin/members')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: '#FAF7F0',
+            color: '#34516D',
+            border: '1px solid #DCE4EC',
+            borderRadius: '8px',
+            fontSize: '13.5px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            marginLeft: 'auto',
+          }}
+        >
+          <UserCheck size={16} color="#34516D" />
+          <span>Members Directory</span>
+          <span style={{ fontSize: '12px', color: '#718096' }}>→</span>
+        </button>
       </div>
 
       {/* Top 4 KPI Cards */}
