@@ -170,3 +170,4 @@ export const donationsStore = new DonationsStore();
 export function useDonationsStore(): DonationsStoreState {
   return useSyncExternalStore(donationsStore.subscribe, donationsStore.getSnapshot);
 }
+

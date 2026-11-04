@@ -92,3 +92,4 @@ export interface DonationStatItem {
   tone: 'navy' | 'warning' | 'success' | 'gold';
   subLabel?: string;
 }
+

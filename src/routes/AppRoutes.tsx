@@ -48,6 +48,8 @@ import { BalanceSheetPage } from '../features/reports/screens/BalanceSheetPage';
 import { DonationsListPage } from '../features/donations/screens/DonationsListPage';
 import { DonationDetailsPage } from '../features/donations/screens/DonationDetailsPage';
 import { DonationReceiptPage } from '../features/donations/screens/DonationReceiptPage';
+import { ProfilePage } from '../features/profile/screens/ProfilePage';
+import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -97,6 +99,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
         <Route path="/donations" element={<Navigate to="/admin/donations" replace />} />
         <Route path="/donation" element={<Navigate to="/admin/donations" replace />} />
+        <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
+        <Route path="/my-profile" element={<Navigate to="/admin/profile" replace />} />
+        <Route path="/id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+        <Route path="/my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -217,17 +223,12 @@ export const AppRoutes: React.FC = () => {
           <Route path="donations/:id/receipt" element={<DonationReceiptPage />} />
           <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
 
-          {/* Platform & System */}
-          <Route
-            path="profile"
-            element={
-              <PlaceholderPage
-                title="My Profile & ID Card"
-                moduleGroup="Platform & System"
-                description="Administrator profile credentials, security settings and official printable ID card generator."
-              />
-            }
-          />
+          {/* Platform & System — My Profile & ID Card Module (Exact Counterpart of Mobile APK) */}
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile/id-card" element={<MyIdCardPage />} />
+          <Route path="id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+          <Route path="my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+          <Route path="my-profile" element={<Navigate to="/admin/profile" replace />} />
           <Route
             path="notifications"
             element={

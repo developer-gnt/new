@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
+import { useProfile } from '../../features/profile/store/profileStore';
 
 interface AdminHeaderProps {
   onToggleMobileSidebar: () => void;
@@ -24,6 +25,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { profile } = useProfile();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -117,13 +119,23 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             {/* Avatar with Navy & Gold Ring */}
             <div style={styles.avatarRing}>
               <div style={styles.avatarCore}>
-                <span style={styles.avatarInitials}>AD</span>
+                {profile.avatar ? (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.fullName}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span style={styles.avatarInitials}>
+                    {(profile.fullName || 'AD').slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
             </div>
 
             <div style={styles.profileInfo}>
-              <span style={styles.profileName}>Admin Officer</span>
-              <span style={styles.profileRole}>Super Admin</span>
+              <span style={styles.profileName}>{profile.fullName || 'Admin Officer'}</span>
+              <span style={styles.profileRole}>{profile.role || 'Super Admin'}</span>
             </div>
 
             <ChevronDown size={14} color="#718096" />
@@ -133,8 +145,8 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           {profileDropdownOpen && (
             <div style={styles.dropdownMenu}>
               <div style={styles.dropdownHeader}>
-                <p style={styles.dropdownAdminName}>Admin Officer</p>
-                <p style={styles.dropdownAdminEmail}>admin@hrsjm.org</p>
+                <p style={styles.dropdownAdminName}>{profile.fullName || 'Admin Officer'}</p>
+                <p style={styles.dropdownAdminEmail}>{profile.email || 'admin@hrsjm.org'}</p>
                 <div style={styles.badgeWrap}>
                   <ShieldCheck size={12} color="#047857" />
                   <span style={styles.badgeText}>Verified Administrator</span>
