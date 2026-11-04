@@ -35,6 +35,9 @@ import { EditRightPage } from '../features/rights/screens/EditRightPage';
 import { ExpensesListPage } from '../features/expenses/screens/ExpensesListPage';
 import { ExpenseDetailsPage } from '../features/expenses/screens/ExpenseDetailsPage';
 import { CreateExpensePage } from '../features/expenses/screens/CreateExpensePage';
+import { ReceiptsListPage } from '../features/receipts/screens/ReceiptsListPage';
+import { ReceiptDetailsPage } from '../features/receipts/screens/ReceiptDetailsPage';
+import { CreateReceiptPage } from '../features/receipts/screens/CreateReceiptPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -67,6 +70,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/expense" element={<Navigate to="/admin/expenses" replace />} />
         <Route path="/vouchers" element={<Navigate to="/admin/expenses" replace />} />
         <Route path="/expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
+        <Route path="/receipts" element={<Navigate to="/admin/receipts" replace />} />
+        <Route path="/receipt" element={<Navigate to="/admin/receipts" replace />} />
+        <Route path="/income" element={<Navigate to="/admin/receipts" replace />} />
+        <Route path="/income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -155,16 +162,15 @@ export const AppRoutes: React.FC = () => {
           <Route path="expense" element={<Navigate to="/admin/expenses" replace />} />
           <Route path="expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
           <Route path="vouchers" element={<Navigate to="/admin/expenses" replace />} />
-          <Route
-            path="receipts"
-            element={
-              <PlaceholderPage
-                title="Income (Receipts)"
-                moduleGroup="Finance & Accounts"
-                description="Inward donation and membership income vouchers, bank reconciliations and receipt slips."
-              />
-            }
-          />
+          {/* Finance & Accounts — Receipts & Income Module (Exact Counterpart of Mobile APK) */}
+          <Route path="receipts" element={<ReceiptsListPage />} />
+          <Route path="receipts/create" element={<CreateReceiptPage />} />
+          <Route path="receipts/:id" element={<ReceiptDetailsPage />} />
+          <Route path="receipt" element={<Navigate to="/admin/receipts" replace />} />
+          <Route path="income" element={<Navigate to="/admin/receipts" replace />} />
+          <Route path="income/create" element={<Navigate to="/admin/receipts/create" replace />} />
+          <Route path="income/:id" element={<ReceiptDetailsPage />} />
+          <Route path="income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
           <Route
             path="accounting"
             element={
