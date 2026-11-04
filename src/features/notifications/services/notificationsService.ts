@@ -173,3 +173,4 @@ export class NotificationsService {
 }
 
 export const notificationsService = NotificationsService.getInstance();
+

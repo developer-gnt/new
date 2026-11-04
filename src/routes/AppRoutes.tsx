@@ -51,6 +51,7 @@ import { DonationReceiptPage } from '../features/donations/screens/DonationRecei
 import { ProfilePage } from '../features/profile/screens/ProfilePage';
 import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
 import { NotificationsPage } from '../features/notifications/screens/NotificationsPage';
+import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -107,6 +108,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
         <Route path="/alerts" element={<Navigate to="/admin/notifications" replace />} />
         <Route path="/inbox" element={<Navigate to="/admin/notifications" replace />} />
+        <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+        <Route path="/preferences" element={<Navigate to="/admin/settings" replace />} />
+        <Route path="/system-settings" element={<Navigate to="/admin/settings" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -237,16 +241,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="alerts" element={<Navigate to="/admin/notifications" replace />} />
           <Route path="inbox" element={<Navigate to="/admin/notifications" replace />} />
-          <Route
-            path="settings"
-            element={
-              <PlaceholderPage
-                title="Settings & Preferences"
-                moduleGroup="Platform & System"
-                description="Administrative governance settings, language options and system configurations."
-              />
-            }
-          />
+          {/* Platform & System — Settings & Preferences Module (Exact Counterpart of Mobile APK) */}
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="preferences" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="system-settings" element={<Navigate to="/admin/settings" replace />} />
           {/* Admin Catch-All (Keeps admin shell intact instead of breaking out) */}
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>

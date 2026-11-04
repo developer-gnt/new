@@ -198,3 +198,4 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.15s',
   },
 };
+

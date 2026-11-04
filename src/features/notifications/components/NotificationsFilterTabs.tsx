@@ -202,3 +202,4 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '10px',
   },
 };
+
