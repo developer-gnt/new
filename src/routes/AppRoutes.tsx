@@ -1,0 +1,192 @@
+import type React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AdminLayout } from '../components/layout/AdminLayout';
+import { AdminDashboardPage } from '../pages/AdminDashboardPage';
+import { UsersListPage } from '../features/users/screens/UsersListPage';
+import { UserDetailsPage } from '../features/users/screens/UserDetailsPage';
+import { AddUserPage } from '../features/users/screens/AddUserPage';
+import { EditUserPage } from '../features/users/screens/EditUserPage';
+import { UserVerificationPage } from '../features/users/screens/UserVerificationPage';
+import { ApplicationsListPage } from '../features/applications/screens/ApplicationsListPage';
+import { ApplicationDetailsPage } from '../features/applications/screens/ApplicationDetailsPage';
+import { MembersListPage } from '../features/members/screens/MembersListPage';
+import { MemberDetailsPage } from '../features/members/screens/MemberDetailsPage';
+import { AddMemberPage } from '../features/members/screens/AddMemberPage';
+import { EditMemberPage } from '../features/members/screens/EditMemberPage';
+import { AssistanceListPage } from '../features/assistance/screens/AssistanceListPage';
+import { AssistanceDetailsPage } from '../features/assistance/screens/AssistanceDetailsPage';
+import { CreateSeekerPage } from '../features/assistance/screens/CreateSeekerPage';
+import { PlaceholderPage } from '../pages/PlaceholderPage';
+import { NotFoundPage } from '../pages/NotFoundPage';
+
+export const AppRoutes: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Root Redirect to Admin Dashboard */}
+        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+
+        {/* Admin Shell Layout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+
+          {/* User Management Module (Exact Counterpart of Mobile App) */}
+          <Route path="users" element={<UsersListPage />} />
+          <Route path="users/add" element={<AddUserPage />} />
+          <Route path="users/:id" element={<UserDetailsPage />} />
+          <Route path="users/:id/edit" element={<EditUserPage />} />
+          <Route path="users/:id/verification" element={<UserVerificationPage />} />
+          <Route path="all-users" element={<UsersListPage />} />
+
+          {/* All Applications Module (Exact Counterpart of Mobile App) */}
+          <Route path="membership-applications" element={<ApplicationsListPage />} />
+          <Route path="membership-applications/:id" element={<ApplicationDetailsPage />} />
+          <Route path="applications" element={<Navigate to="/admin/membership-applications" replace />} />
+          <Route path="applications/:id" element={<ApplicationDetailsPage />} />
+
+          {/* Members Directory Module (Exact Counterpart of Mobile App) */}
+          <Route path="members" element={<MembersListPage />} />
+          <Route path="members/add" element={<AddMemberPage />} />
+          <Route path="members/:id" element={<MemberDetailsPage />} />
+          <Route path="members/:id/edit" element={<EditMemberPage />} />
+
+          {/* Donation Seekers & Aid Module (Exact Counterpart of Mobile App) */}
+          <Route path="assistance" element={<AssistanceListPage />} />
+          <Route path="assistance/create" element={<CreateSeekerPage />} />
+          <Route path="assistance/:id" element={<AssistanceDetailsPage />} />
+          <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
+
+          {/* Content & Media */}
+          <Route
+            path="events"
+            element={
+              <PlaceholderPage
+                title="Events Management"
+                moduleGroup="Content & Media"
+                description="Organize human rights conclaves, workshops, delegate registrations and speaker schedules."
+              />
+            }
+          />
+          <Route
+            path="news"
+            element={
+              <PlaceholderPage
+                title="News & Press"
+                moduleGroup="Content & Media"
+                description="Press releases, national media updates and organizational press announcements."
+              />
+            }
+          />
+          <Route
+            path="blogs"
+            element={
+              <PlaceholderPage
+                title="Articles & Blogs"
+                moduleGroup="Content & Media"
+                description="Editorial articles, humanitarian legal insights and author publications."
+              />
+            }
+          />
+          <Route
+            path="rights"
+            element={
+              <PlaceholderPage
+                title="Know Your Rights"
+                moduleGroup="Content & Media"
+                description="Statutory legal rights documentation, human rights handbook and legal guides."
+              />
+            }
+          />
+
+          {/* Finance & Accounts */}
+          <Route
+            path="expenses"
+            element={
+              <PlaceholderPage
+                title="Expenses Management"
+                moduleGroup="Finance & Accounts"
+                description="Expense vouchers, payments to vendors, bill receipts upload and approvals."
+              />
+            }
+          />
+          <Route
+            path="receipts"
+            element={
+              <PlaceholderPage
+                title="Income (Receipts)"
+                moduleGroup="Finance & Accounts"
+                description="Inward donation and membership income vouchers, bank reconciliations and receipt slips."
+              />
+            }
+          />
+          <Route
+            path="accounting"
+            element={
+              <PlaceholderPage
+                title="Accounting & Ledger"
+                moduleGroup="Finance & Accounts"
+                description="Double-entry chart of accounts, journal entries and running general ledger."
+              />
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <PlaceholderPage
+                title="Financial Reports"
+                moduleGroup="Finance & Accounts"
+                description="Trial balance, profit & loss statement, and audit-ready annual balance sheet."
+              />
+            }
+          />
+          <Route
+            path="donations"
+            element={
+              <PlaceholderPage
+                title="Donations Management"
+                moduleGroup="Finance & Accounts"
+                description="Manage philanthropic contributions, donor database and official 80G tax exemption certificates."
+              />
+            }
+          />
+
+          {/* Platform & System */}
+          <Route
+            path="profile"
+            element={
+              <PlaceholderPage
+                title="My Profile & ID Card"
+                moduleGroup="Platform & System"
+                description="Administrator profile credentials, security settings and official printable ID card generator."
+              />
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <PlaceholderPage
+                title="Notifications"
+                moduleGroup="Platform & System"
+                description="System alerts, pending task reminders and member registration notifications."
+              />
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <PlaceholderPage
+                title="Settings & Preferences"
+                moduleGroup="Platform & System"
+                description="Administrative governance settings, language options and system configurations."
+              />
+            }
+          />
+        </Route>
+
+        {/* 404 Not Found Catch-All */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};

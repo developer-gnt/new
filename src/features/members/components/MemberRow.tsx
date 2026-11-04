@@ -1,0 +1,408 @@
+import type React from 'react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  MoreVertical,
+  Eye,
+  IdCard,
+  Edit,
+  KeyRound,
+  ShieldAlert,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  Package,
+} from 'lucide-react';
+import type { Member } from '../types/members.types';
+import { MemberStatusBadge } from './MemberStatusBadge';
+
+interface MemberRowProps {
+  member: Member;
+  onView: (member: Member) => void;
+  onViewIdCard: (member: Member) => void;
+  onEdit: (member: Member) => void;
+  onResetPassword: (member: Member) => void;
+  onToggleStatus: (member: Member) => void;
+}
+
+// Validity calculation
+function getValidityDisplay(validTill: string) {
+  if (!validTill || validTill.includes('Lifetime')) {
+    return { text: 'Lifetime Validity', daysLeft: null, tone: 'normal' };
+  }
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(validTill);
+    target.setHours(0, 0, 0, 0);
+    const diff = target.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (days < 0) {
+      return { text: `Expired ${Math.abs(days)}d ago`, daysLeft: days, tone: 'expired' };
+    }
+    if (days <= 30) {
+      return { text: `${days} days left`, daysLeft: days, tone: 'warning' };
+    }
+    return { text: `${days} days left`, daysLeft: days, tone: 'normal' };
+  } catch {
+    return { text: validTill, daysLeft: null, tone: 'normal' };
+  }
+}
+
+export const MemberRow: React.FC<MemberRowProps> = ({
+  member,
+  onView,
+  onViewIdCard,
+  onEdit,
+  onResetPassword,
+  onToggleStatus,
+}) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
+
+  // Initials generator
+  const getInitials = (name: string): string => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return (name[0] || 'M').toUpperCase();
+  };
+
+  const validityInfo = getValidityDisplay(member.validTill);
+
+  const formattedJoinedDate = member.joinedDate
+    ? new Date(member.joinedDate).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—';
+
+  const formattedValidTill =
+    member.validTill && !member.validTill.includes('Lifetime')
+      ? new Date(member.validTill).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+      : 'Lifetime';
+
+  return (
+    <tr
+      style={{
+        borderBottom: '1px solid #E5E7EB',
+        transition: 'background-color 0.15s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = '#F9FAFB';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+      }}
+    >
+      {/* Member Identity (Avatar, Name, Membership Number) */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Avatar or Initials Circle */}
+          <div
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              backgroundColor: '#011F39',
+              color: '#FAD465',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '15px',
+              fontWeight: 700,
+              flexShrink: 0,
+              border: '2px solid #E5E7EB',
+            }}
+          >
+            {getInitials(member.name)}
+          </div>
+
+          <div>
+            <div
+              onClick={() => onView(member)}
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#011F39',
+                cursor: 'pointer',
+              }}
+            >
+              {member.name}
+            </div>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '11.5px',
+                fontFamily: 'monospace',
+                color: '#4B5563',
+                backgroundColor: '#F3F4F6',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                marginTop: '3px',
+              }}
+            >
+              <span>{member.membershipId}</span>
+            </div>
+          </div>
+        </div>
+      </td>
+
+      {/* Contact Info (Phone & Email) */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        <div style={{ fontSize: '13px', fontWeight: 500, color: '#1F2937' }}>
+          {member.phone}
+        </div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+          {member.email}
+        </div>
+      </td>
+
+      {/* Category / Designation */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: '#011F39' }}>
+          {member.categoryName || 'District Active Member'}
+        </div>
+        {member.amount && (
+          <div style={{ fontSize: '12px', color: '#00A859', fontWeight: 500 }}>
+            ₹{typeof member.amount === 'number' ? member.amount.toLocaleString('en-IN') : member.amount} Fee
+          </div>
+        )}
+      </td>
+
+      {/* Validity & Dates */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#4B5563' }}>
+          <Calendar size={13} color="#9CA3AF" />
+          <span>Joined: {formattedJoinedDate}</span>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '12px',
+            fontWeight: validityInfo.tone === 'warning' || validityInfo.tone === 'expired' ? 600 : 500,
+            color:
+              validityInfo.tone === 'warning'
+                ? '#D97706'
+                : validityInfo.tone === 'expired'
+                ? '#DC2626'
+                : '#6B7280',
+            marginTop: '3px',
+          }}
+        >
+          <Clock size={13} />
+          <span>Valid till: {formattedValidTill}</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '1px 5px',
+              borderRadius: '4px',
+              backgroundColor:
+                validityInfo.tone === 'warning'
+                  ? '#FEF3C7'
+                  : validityInfo.tone === 'expired'
+                  ? '#FEE2E2'
+                  : '#F3F4F6',
+            }}
+          >
+            {validityInfo.text}
+          </span>
+        </div>
+      </td>
+
+      {/* Kit Fulfillment Status */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        {member.kitFulfillment ? (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              fontSize: '11.5px',
+              fontWeight: 500,
+              backgroundColor:
+                member.kitFulfillment.status === 'DELIVERED'
+                  ? '#E8F8EE'
+                  : member.kitFulfillment.status === 'DISPATCHED'
+                  ? '#EFF6FF'
+                  : '#FFFBEB',
+              color:
+                member.kitFulfillment.status === 'DELIVERED'
+                  ? '#00A859'
+                  : member.kitFulfillment.status === 'DISPATCHED'
+                  ? '#2563EB'
+                  : '#B45309',
+            }}
+          >
+            <Package size={12} />
+            <span>Kit: {member.kitFulfillment.status}</span>
+          </span>
+        ) : (
+          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>—</span>
+        )}
+      </td>
+
+      {/* Status Badge */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+        <MemberStatusBadge status={member.status} />
+      </td>
+
+      {/* Row Context Actions Menu */}
+      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }} ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{
+              padding: '6px',
+              borderRadius: '6px',
+              border: '1px solid #E5E7EB',
+              backgroundColor: '#FFFFFF',
+              color: '#4B5563',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Actions"
+          >
+            <MoreVertical size={16} />
+          </button>
+
+          {menuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '100%',
+                marginTop: '4px',
+                width: '190px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '8px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #E5E7EB',
+                zIndex: 50,
+                padding: '4px 0',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onView(member);
+                }}
+                style={menuItemStyle}
+              >
+                <Eye size={15} color="#011F39" />
+                <span>View Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onViewIdCard(member);
+                }}
+                style={menuItemStyle}
+              >
+                <IdCard size={15} color="#00A859" />
+                <span>Digital ID Card</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onEdit(member);
+                }}
+                style={menuItemStyle}
+              >
+                <Edit size={15} color="#2563EB" />
+                <span>Edit Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onResetPassword(member);
+                }}
+                style={menuItemStyle}
+              >
+                <KeyRound size={15} color="#D97706" />
+                <span>Reset Password</span>
+              </button>
+
+              <div style={{ height: '1px', backgroundColor: '#E5E7EB', margin: '4px 0' }} />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onToggleStatus(member);
+                }}
+                style={{
+                  ...menuItemStyle,
+                  color: member.status === 'ACTIVE' ? '#DC2626' : '#00A859',
+                }}
+              >
+                {member.status === 'ACTIVE' ? (
+                  <>
+                    <ShieldAlert size={15} color="#DC2626" />
+                    <span>Deactivate / Suspend</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={15} color="#00A859" />
+                    <span>Activate Member</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+const menuItemStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  width: '100%',
+  padding: '8px 14px',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: '#374151',
+  background: 'none',
+  border: 'none',
+  textAlign: 'left',
+  cursor: 'pointer',
+  transition: 'background-color 0.15s ease',
+};
