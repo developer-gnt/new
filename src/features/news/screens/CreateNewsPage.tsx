@@ -55,10 +55,10 @@ export const CreateNewsPage: React.FC = () => {
       headline: trimmed,
       slug: !isSlugTouched
         ? trimmed
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '')
-            .slice(0, SLUG_MAX)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '')
+          .slice(0, SLUG_MAX)
         : prev.slug,
     }));
     if (errors.headline) {

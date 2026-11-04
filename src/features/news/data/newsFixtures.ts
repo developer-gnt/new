@@ -236,3 +236,4 @@ export const INITIAL_NEWS_FIXTURES: NewsListItem[] = [
     allowComments: true,
   },
 ];
+

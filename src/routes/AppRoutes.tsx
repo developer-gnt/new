@@ -24,6 +24,10 @@ import { NewsListPage } from '../features/news/screens/NewsListPage';
 import { NewsDetailsPage } from '../features/news/screens/NewsDetailsPage';
 import { CreateNewsPage } from '../features/news/screens/CreateNewsPage';
 import { EditNewsPage } from '../features/news/screens/EditNewsPage';
+import { BlogsListPage } from '../features/blogs/screens/BlogsListPage';
+import { BlogDetailsPage } from '../features/blogs/screens/BlogDetailsPage';
+import { CreateBlogPage } from '../features/blogs/screens/CreateBlogPage';
+import { EditBlogPage } from '../features/blogs/screens/EditBlogPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -46,6 +50,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/news" element={<Navigate to="/admin/news" replace />} />
         <Route path="/press" element={<Navigate to="/admin/news" replace />} />
         <Route path="/press-releases" element={<Navigate to="/admin/news" replace />} />
+        <Route path="/blogs" element={<Navigate to="/admin/blogs" replace />} />
+        <Route path="/articles" element={<Navigate to="/admin/blogs" replace />} />
+        <Route path="/blog" element={<Navigate to="/admin/blogs" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -112,16 +119,13 @@ export const AppRoutes: React.FC = () => {
           <Route path="news/:id/edit" element={<EditNewsPage />} />
           <Route path="press" element={<Navigate to="/admin/news" replace />} />
           <Route path="press-releases" element={<Navigate to="/admin/news" replace />} />
-          <Route
-            path="blogs"
-            element={
-              <PlaceholderPage
-                title="Articles & Blogs"
-                moduleGroup="Content & Media"
-                description="Editorial articles, humanitarian legal insights and author publications."
-              />
-            }
-          />
+          {/* Articles & Blogs Module (Exact Counterpart of Mobile APK) */}
+          <Route path="blogs" element={<BlogsListPage />} />
+          <Route path="blogs/create" element={<CreateBlogPage />} />
+          <Route path="blogs/:id" element={<BlogDetailsPage />} />
+          <Route path="blogs/:id/edit" element={<EditBlogPage />} />
+          <Route path="articles" element={<Navigate to="/admin/blogs" replace />} />
+          <Route path="blog" element={<Navigate to="/admin/blogs" replace />} />
           <Route
             path="rights"
             element={

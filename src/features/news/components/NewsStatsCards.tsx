@@ -125,3 +125,4 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#011F39',
   },
 };
+
