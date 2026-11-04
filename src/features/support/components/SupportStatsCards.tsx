@@ -145,3 +145,4 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#718096',
   },
 };
+

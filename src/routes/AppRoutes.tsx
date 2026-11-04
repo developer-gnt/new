@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage';
 import { UsersListPage } from '../features/users/screens/UsersListPage';
+import { AllUsersDirectoryPage } from '../features/users/screens/AllUsersDirectoryPage';
 import { UserDetailsPage } from '../features/users/screens/UserDetailsPage';
 import { AddUserPage } from '../features/users/screens/AddUserPage';
 import { EditUserPage } from '../features/users/screens/EditUserPage';
@@ -30,6 +31,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/all-users" element={<Navigate to="/admin/all-users" replace />} />
         <Route path="/members" element={<Navigate to="/admin/members" replace />} />
         <Route path="/membership-applications" element={<Navigate to="/admin/membership-applications" replace />} />
         <Route path="/applications" element={<Navigate to="/admin/membership-applications" replace />} />
@@ -43,13 +45,14 @@ export const AppRoutes: React.FC = () => {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
 
-          {/* User Management Module (Exact Counterpart of Mobile App) */}
+          {/* User Management & All Users Directory Modules (Exact APK Counterparts) */}
           <Route path="users" element={<UsersListPage />} />
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailsPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="users/:id/verification" element={<UserVerificationPage />} />
-          <Route path="all-users" element={<UsersListPage />} />
+          <Route path="all-users" element={<AllUsersDirectoryPage />} />
+          <Route path="all-users/:id" element={<UserDetailsPage />} />
 
           {/* All Applications Module (Exact Counterpart of Mobile App) */}
           <Route path="membership-applications" element={<ApplicationsListPage />} />
