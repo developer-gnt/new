@@ -20,6 +20,8 @@ import { CreateSeekerPage } from '../features/assistance/screens/CreateSeekerPag
 import { SupportTicketsListPage } from '../features/support/screens/SupportTicketsListPage';
 import { SupportTicketDetailsPage } from '../features/support/screens/SupportTicketDetailsPage';
 import { SupportTicketChatPage } from '../features/support/screens/SupportTicketChatPage';
+import { EventsListPage } from '../features/events/screens/EventsListPage';
+import { EventDetailsPage } from '../features/events/screens/EventDetailsPage';
 import { NewsListPage } from '../features/news/screens/NewsListPage';
 import { NewsDetailsPage } from '../features/news/screens/NewsDetailsPage';
 import { CreateNewsPage } from '../features/news/screens/CreateNewsPage';
@@ -52,7 +54,6 @@ import { ProfilePage } from '../features/profile/screens/ProfilePage';
 import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
 import { NotificationsPage } from '../features/notifications/screens/NotificationsPage';
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
-import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
@@ -71,6 +72,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="/support" element={<Navigate to="/admin/support" replace />} />
         <Route path="/complaints" element={<Navigate to="/admin/support" replace />} />
         <Route path="/tickets" element={<Navigate to="/admin/support" replace />} />
+        <Route path="/events" element={<Navigate to="/admin/events" replace />} />
+        <Route path="/event" element={<Navigate to="/admin/events" replace />} />
         <Route path="/news" element={<Navigate to="/admin/news" replace />} />
         <Route path="/press" element={<Navigate to="/admin/news" replace />} />
         <Route path="/press-releases" element={<Navigate to="/admin/news" replace />} />
@@ -160,16 +163,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="tickets/:id/chat" element={<SupportTicketChatPage />} />
 
           {/* Content & Media */}
-          <Route
-            path="events"
-            element={
-              <PlaceholderPage
-                title="Events Management"
-                moduleGroup="Content & Media"
-                description="Organize human rights conclaves, workshops, delegate registrations and speaker schedules."
-              />
-            }
-          />
+          <Route path="events" element={<EventsListPage />} />
+          <Route path="events/:id" element={<EventDetailsPage />} />
           {/* News & Press Module (Exact Counterpart of Mobile APK) */}
           <Route path="news" element={<NewsListPage />} />
           <Route path="news/create" element={<CreateNewsPage />} />
