@@ -41,6 +41,10 @@ import { CreateReceiptPage } from '../features/receipts/screens/CreateReceiptPag
 import { AccountingDashboardPage } from '../features/accounting/screens/AccountingDashboardPage';
 import { AccountLedgerPage } from '../features/accounting/screens/AccountLedgerPage';
 import { JournalEntryDetailsPage } from '../features/accounting/screens/JournalEntryDetailsPage';
+import { ReportsOverviewPage } from '../features/reports/screens/ReportsOverviewPage';
+import { TrialBalancePage } from '../features/reports/screens/TrialBalancePage';
+import { ProfitLossPage } from '../features/reports/screens/ProfitLossPage';
+import { BalanceSheetPage } from '../features/reports/screens/BalanceSheetPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -82,6 +86,12 @@ export const AppRoutes: React.FC = () => {
         <Route path="/chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
         <Route path="/journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
         <Route path="/passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
+        <Route path="/reports" element={<Navigate to="/admin/reports" replace />} />
+        <Route path="/financial-reports" element={<Navigate to="/admin/reports" replace />} />
+        <Route path="/analytics" element={<Navigate to="/admin/reports" replace />} />
+        <Route path="/trial-balance" element={<Navigate to="/admin/reports/trial-balance" replace />} />
+        <Route path="/profit-loss" element={<Navigate to="/admin/reports/profit-loss" replace />} />
+        <Route path="/balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -187,16 +197,15 @@ export const AppRoutes: React.FC = () => {
           <Route path="chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
           <Route path="journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
           <Route path="passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
-          <Route
-            path="reports"
-            element={
-              <PlaceholderPage
-                title="Financial Reports"
-                moduleGroup="Finance & Accounts"
-                description="Trial balance, profit & loss statement, and audit-ready annual balance sheet."
-              />
-            }
-          />
+          {/* Finance & Accounts — Financial Reports Module (Exact Counterpart of Mobile APK) */}
+          <Route path="reports" element={<ReportsOverviewPage />} />
+          <Route path="reports/trial-balance" element={<TrialBalancePage />} />
+          <Route path="reports/profit-loss" element={<ProfitLossPage />} />
+          <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+          <Route path="financial-reports" element={<Navigate to="/admin/reports" replace />} />
+          <Route path="trial-balance" element={<Navigate to="/admin/reports/trial-balance" replace />} />
+          <Route path="profit-loss" element={<Navigate to="/admin/reports/profit-loss" replace />} />
+          <Route path="balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
           <Route
             path="donations"
             element={
