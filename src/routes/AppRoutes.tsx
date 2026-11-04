@@ -38,6 +38,9 @@ import { CreateExpensePage } from '../features/expenses/screens/CreateExpensePag
 import { ReceiptsListPage } from '../features/receipts/screens/ReceiptsListPage';
 import { ReceiptDetailsPage } from '../features/receipts/screens/ReceiptDetailsPage';
 import { CreateReceiptPage } from '../features/receipts/screens/CreateReceiptPage';
+import { AccountingDashboardPage } from '../features/accounting/screens/AccountingDashboardPage';
+import { AccountLedgerPage } from '../features/accounting/screens/AccountLedgerPage';
+import { JournalEntryDetailsPage } from '../features/accounting/screens/JournalEntryDetailsPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -74,6 +77,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/receipt" element={<Navigate to="/admin/receipts" replace />} />
         <Route path="/income" element={<Navigate to="/admin/receipts" replace />} />
         <Route path="/income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
+        <Route path="/accounting" element={<Navigate to="/admin/accounting" replace />} />
+        <Route path="/ledger" element={<Navigate to="/admin/accounting" replace />} />
+        <Route path="/chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
+        <Route path="/journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
+        <Route path="/passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -171,16 +179,14 @@ export const AppRoutes: React.FC = () => {
           <Route path="income/create" element={<Navigate to="/admin/receipts/create" replace />} />
           <Route path="income/:id" element={<ReceiptDetailsPage />} />
           <Route path="income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
-          <Route
-            path="accounting"
-            element={
-              <PlaceholderPage
-                title="Accounting & Ledger"
-                moduleGroup="Finance & Accounts"
-                description="Double-entry chart of accounts, journal entries and running general ledger."
-              />
-            }
-          />
+          {/* Finance & Accounts — Accounting & Ledger Module (Exact Counterpart of Mobile APK) */}
+          <Route path="accounting" element={<AccountingDashboardPage />} />
+          <Route path="accounting/accounts/:id/ledger" element={<AccountLedgerPage />} />
+          <Route path="accounting/entries/:id" element={<JournalEntryDetailsPage />} />
+          <Route path="ledger" element={<Navigate to="/admin/accounting" replace />} />
+          <Route path="chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
+          <Route path="journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
+          <Route path="passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
           <Route
             path="reports"
             element={
