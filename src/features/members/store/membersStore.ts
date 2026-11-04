@@ -144,10 +144,15 @@ class MembersStore {
   private members: Member[] = [];
   private listeners: Set<() => void> = new Set();
   private version = 0;
+  private cachedSnapshot: { members: Member[]; version: number };
 
   constructor() {
     this.members = this.loadPersisted();
     this.sortInternal();
+    this.cachedSnapshot = {
+      members: this.members,
+      version: this.version,
+    };
   }
 
   private sortInternal(): void {
@@ -187,6 +192,10 @@ class MembersStore {
 
   private notify(): void {
     this.version += 1;
+    this.cachedSnapshot = {
+      members: [...this.members],
+      version: this.version,
+    };
     this.persist();
     this.listeners.forEach((l) => l());
   }
@@ -199,10 +208,7 @@ class MembersStore {
   };
 
   public getSnapshot = (): { members: Member[]; version: number } => {
-    return {
-      members: this.members,
-      version: this.version,
-    };
+    return this.cachedSnapshot;
   };
 
   public getAllMembers(): Member[] {

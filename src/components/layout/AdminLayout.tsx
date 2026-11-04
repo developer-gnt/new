@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
+import { AppErrorBoundary } from '../common/AppErrorBoundary';
 
 export const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -41,7 +42,9 @@ export const AdminLayout: React.FC = () => {
         {/* Dynamic Page Outlet with Responsive Container */}
         <main style={styles.contentArea}>
           <div style={styles.contentInner}>
-            <Outlet />
+            <AppErrorBoundary>
+              <Outlet />
+            </AppErrorBoundary>
           </div>
         </main>
       </div>

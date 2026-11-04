@@ -67,7 +67,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'receipts', title: 'Income (Receipts)', path: '/admin/receipts', icon: ArrowDownToLine },
       { id: 'accounting', title: 'Accounting & Ledger', path: '/admin/accounting', icon: Briefcase },
       { id: 'reports', title: 'Financial Reports', path: '/admin/reports', icon: BarChart3 },
-      { id: 'donations', title: 'Donations & Aid (Seekers)', path: '/admin/assistance', icon: Gift },
+      { id: 'donations', title: 'Donations Management', path: '/admin/donations', icon: Gift },
     ],
   },
   {

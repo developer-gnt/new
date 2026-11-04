@@ -27,29 +27,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-        <Route path="/all-users" element={<Navigate to="/admin/users" replace />} />
-
-        {/* Member / Members Aliases */}
         <Route path="/members" element={<Navigate to="/admin/members" replace />} />
-        <Route path="/member" element={<Navigate to="/admin/members" replace />} />
-        <Route path="/members-directory" element={<Navigate to="/admin/members" replace />} />
-        <Route path="/all-members" element={<Navigate to="/admin/members" replace />} />
-
-        {/* Applications Aliases */}
         <Route path="/membership-applications" element={<Navigate to="/admin/membership-applications" replace />} />
         <Route path="/applications" element={<Navigate to="/admin/membership-applications" replace />} />
-        <Route path="/application" element={<Navigate to="/admin/membership-applications" replace />} />
-        <Route path="/all-applications" element={<Navigate to="/admin/membership-applications" replace />} />
-        <Route path="/all-application" element={<Navigate to="/admin/membership-applications" replace />} />
-
-        {/* Donation Seekers & Aid Aliases */}
         <Route path="/assistance" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/aid" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/donations" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/donation" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/donation-and-aid" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/seekers" element={<Navigate to="/admin/assistance" replace />} />
         <Route path="/support" element={<Navigate to="/admin/support" replace />} />
 
         {/* Admin Shell Layout */}
@@ -70,9 +51,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="membership-applications/:id" element={<ApplicationDetailsPage />} />
           <Route path="applications" element={<Navigate to="/admin/membership-applications" replace />} />
           <Route path="applications/:id" element={<ApplicationDetailsPage />} />
-          <Route path="application" element={<Navigate to="/admin/membership-applications" replace />} />
-          <Route path="all-applications" element={<Navigate to="/admin/membership-applications" replace />} />
-          <Route path="all-application" element={<Navigate to="/admin/membership-applications" replace />} />
 
           {/* Members Directory Module (Exact Counterpart of Mobile App) */}
           <Route path="members" element={<MembersListPage />} />
@@ -88,13 +66,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="assistance/create" element={<CreateSeekerPage />} />
           <Route path="assistance/:id" element={<AssistanceDetailsPage />} />
           <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="donation-aid" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="donation-and-aid" element={<Navigate to="/admin/assistance" replace />} />
           <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="seekers" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="seeker" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="donations" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="donation" element={<Navigate to="/admin/assistance" replace />} />
 
           {/* Support & Complaints */}
           <Route
@@ -193,10 +165,10 @@ export const AppRoutes: React.FC = () => {
             }
           />
           <Route
-            path="donations-ledger"
+            path="donations"
             element={
               <PlaceholderPage
-                title="Donations & 80G Ledger"
+                title="Donations Management"
                 moduleGroup="Finance & Accounts"
                 description="Manage philanthropic contributions, donor database and official 80G tax exemption certificates."
               />

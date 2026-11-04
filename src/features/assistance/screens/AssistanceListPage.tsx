@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   HeartHandshake,
   RefreshCw,
@@ -9,8 +8,6 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  UserCheck,
 } from 'lucide-react';
 import type {
   AssistanceRequest,
@@ -29,7 +26,6 @@ import { RejectAssistanceModal } from '../components/RejectAssistanceModal';
 import { AssistanceFiltersModal } from '../components/AssistanceFiltersModal';
 
 export const AssistanceListPage: React.FC = () => {
-  const navigate = useNavigate();
   // Reactive store snapshot
   const storeSnapshot = useSyncExternalStore(
     assistanceStore.subscribe,
@@ -325,100 +321,6 @@ export const AssistanceListPage: React.FC = () => {
             <span>Register Seeker</span>
           </button>
         </div>
-      </div>
-
-      {/* Cross-Module Switcher Bar — Parity with APK Applications Navigator */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          backgroundColor: '#FFFFFF',
-          padding: '6px',
-          borderRadius: '12px',
-          border: '1px solid #DBE5EE',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => navigate('/admin/membership-applications')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#FAF7F0',
-            color: '#174A78',
-            border: '1px solid #DCE4EC',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <FileText size={16} color="#174A78" />
-          <span>Membership Applications</span>
-          <span style={{ fontSize: '12px', color: '#718096' }}>← Switch</span>
-        </button>
-
-        <button
-          type="button"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#011F39',
-            color: '#FAD465',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 700,
-            cursor: 'default',
-          }}
-        >
-          <HeartHandshake size={16} color="#FAD465" />
-          <span>Donation Seekers & Aid Requests</span>
-          <span
-            style={{
-              backgroundColor: '#FAD465',
-              color: '#011F39',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '11px',
-              fontWeight: 800,
-            }}
-          >
-            {requests.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/admin/members')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#FAF7F0',
-            color: '#34516D',
-            border: '1px solid #DCE4EC',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            marginLeft: 'auto',
-          }}
-        >
-          <UserCheck size={16} color="#34516D" />
-          <span>Members Directory</span>
-          <span style={{ fontSize: '12px', color: '#718096' }}>→</span>
-        </button>
       </div>
 
       {/* Top 5 KPI Statistics Cards */}

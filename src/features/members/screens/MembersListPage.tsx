@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   UserCheck,
   RefreshCw,
@@ -9,8 +8,6 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  HeartHandshake,
 } from 'lucide-react';
 import type {
   Member,
@@ -36,7 +33,6 @@ import {
 import { MemberFilterModal } from '../components/MemberFilterModal';
 
 export const MembersListPage: React.FC = () => {
-  const navigate = useNavigate();
   // Reactive state from membersStore
   const storeSnapshot = useSyncExternalStore(
     membersStore.subscribe,
@@ -135,18 +131,18 @@ export const MembersListPage: React.FC = () => {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
         (m) =>
-          m.name.toLowerCase().includes(q) ||
-          m.phone.toLowerCase().includes(q) ||
-          m.email.toLowerCase().includes(q) ||
-          m.membershipId.toLowerCase().includes(q) ||
-          m.categoryName?.toLowerCase().includes(q) ||
-          m.city?.toLowerCase().includes(q)
+          (m.name || '').toLowerCase().includes(q) ||
+          (m.phone || '').toLowerCase().includes(q) ||
+          (m.email || '').toLowerCase().includes(q) ||
+          (m.membershipId || '').toLowerCase().includes(q) ||
+          (m.categoryName || '').toLowerCase().includes(q) ||
+          (m.city || '').toLowerCase().includes(q)
       );
     }
 
     // Sort order
     if (sortOption === 'name_asc') {
-      result.sort((a, b) => a.name.localeCompare(b.name));
+      result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } else if (sortOption === 'joined_desc') {
       result.sort((a, b) => new Date(b.joinedDate || 0).getTime() - new Date(a.joinedDate || 0).getTime());
     } else if (sortOption === 'expiry_asc') {
@@ -354,99 +350,6 @@ export const MembersListPage: React.FC = () => {
             <span>Add Member</span>
           </button>
         </div>
-      </div>
-
-      {/* Cross-Module Switcher Bar — Parity with APK Navigation */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          backgroundColor: '#FFFFFF',
-          padding: '6px',
-          borderRadius: '12px',
-          border: '1px solid #DBE5EE',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-        }}
-      >
-        <button
-          type="button"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#011F39',
-            color: '#FAD465',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 700,
-            cursor: 'default',
-          }}
-        >
-          <UserCheck size={16} color="#FAD465" />
-          <span>Members Directory</span>
-          <span
-            style={{
-              backgroundColor: '#FAD465',
-              color: '#011F39',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '11px',
-              fontWeight: 800,
-            }}
-          >
-            {members.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/admin/membership-applications')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#FAF7F0',
-            color: '#174A78',
-            border: '1px solid #DCE4EC',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <FileText size={16} color="#174A78" />
-          <span>All Applications</span>
-          <span style={{ fontSize: '12px', color: '#718096' }}>→ Switch</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/admin/assistance')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: '#FAF7F0',
-            color: '#174A78',
-            border: '1px solid #DCE4EC',
-            borderRadius: '8px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <HeartHandshake size={16} color="#174A78" />
-          <span>Donation Seekers & Aid</span>
-          <span style={{ fontSize: '12px', color: '#718096' }}>→ Switch</span>
-        </button>
       </div>
 
       {/* Top 4 KPI Statistics Cards */}

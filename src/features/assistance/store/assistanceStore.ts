@@ -14,10 +14,15 @@ class AssistanceStore {
   private requests: AssistanceRequest[] = [];
   private listeners: Set<() => void> = new Set();
   private version = 0;
+  private cachedSnapshot: { requests: AssistanceRequest[]; version: number };
 
   constructor() {
     this.requests = this.loadPersisted();
     this.sortInternal();
+    this.cachedSnapshot = {
+      requests: this.requests,
+      version: this.version,
+    };
   }
 
   private sortInternal(): void {
@@ -57,6 +62,10 @@ class AssistanceStore {
 
   private notify(): void {
     this.version += 1;
+    this.cachedSnapshot = {
+      requests: [...this.requests],
+      version: this.version,
+    };
     this.persist();
     this.listeners.forEach((l) => l());
   }
@@ -69,10 +78,7 @@ class AssistanceStore {
   };
 
   public getSnapshot = (): { requests: AssistanceRequest[]; version: number } => {
-    return {
-      requests: this.requests,
-      version: this.version,
-    };
+    return this.cachedSnapshot;
   };
 
   public getAllRequests(): AssistanceRequest[] {
