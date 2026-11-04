@@ -23,8 +23,15 @@ export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root Redirect to Admin Dashboard */}
+        {/* Root Redirects & Direct Aliases */}
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/users" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/members" element={<Navigate to="/admin/members" replace />} />
+        <Route path="/membership-applications" element={<Navigate to="/admin/membership-applications" replace />} />
+        <Route path="/applications" element={<Navigate to="/admin/membership-applications" replace />} />
+        <Route path="/assistance" element={<Navigate to="/admin/assistance" replace />} />
+        <Route path="/support" element={<Navigate to="/admin/support" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -50,12 +57,29 @@ export const AppRoutes: React.FC = () => {
           <Route path="members/add" element={<AddMemberPage />} />
           <Route path="members/:id" element={<MemberDetailsPage />} />
           <Route path="members/:id/edit" element={<EditMemberPage />} />
+          <Route path="member" element={<Navigate to="/admin/members" replace />} />
+          <Route path="members-directory" element={<Navigate to="/admin/members" replace />} />
+          <Route path="all-members" element={<Navigate to="/admin/members" replace />} />
 
           {/* Donation Seekers & Aid Module (Exact Counterpart of Mobile App) */}
           <Route path="assistance" element={<AssistanceListPage />} />
           <Route path="assistance/create" element={<CreateSeekerPage />} />
           <Route path="assistance/:id" element={<AssistanceDetailsPage />} />
           <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
+          <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
+
+          {/* Support & Complaints */}
+          <Route
+            path="support"
+            element={
+              <PlaceholderPage
+                title="Support & Complaints"
+                moduleGroup="Main Navigation"
+                description="Member grievances, human rights complaints tracking, and citizen helpdesk tickets."
+              />
+            }
+          />
+          <Route path="complaints" element={<Navigate to="/admin/support" replace />} />
 
           {/* Content & Media */}
           <Route
@@ -182,6 +206,8 @@ export const AppRoutes: React.FC = () => {
               />
             }
           />
+          {/* Admin Catch-All (Keeps admin shell intact instead of breaking out) */}
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
 
         {/* 404 Not Found Catch-All */}
