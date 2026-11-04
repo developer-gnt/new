@@ -16,6 +16,9 @@ import { EditMemberPage } from '../features/members/screens/EditMemberPage';
 import { AssistanceListPage } from '../features/assistance/screens/AssistanceListPage';
 import { AssistanceDetailsPage } from '../features/assistance/screens/AssistanceDetailsPage';
 import { CreateSeekerPage } from '../features/assistance/screens/CreateSeekerPage';
+import { SupportTicketsListPage } from '../features/support/screens/SupportTicketsListPage';
+import { SupportTicketDetailsPage } from '../features/support/screens/SupportTicketDetailsPage';
+import { SupportTicketChatPage } from '../features/support/screens/SupportTicketChatPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -32,6 +35,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="/applications" element={<Navigate to="/admin/membership-applications" replace />} />
         <Route path="/assistance" element={<Navigate to="/admin/assistance" replace />} />
         <Route path="/support" element={<Navigate to="/admin/support" replace />} />
+        <Route path="/complaints" element={<Navigate to="/admin/support" replace />} />
+        <Route path="/tickets" element={<Navigate to="/admin/support" replace />} />
 
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -68,18 +73,16 @@ export const AppRoutes: React.FC = () => {
           <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
           <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
 
-          {/* Support & Complaints */}
-          <Route
-            path="support"
-            element={
-              <PlaceholderPage
-                title="Support & Complaints"
-                moduleGroup="Main Navigation"
-                description="Member grievances, human rights complaints tracking, and citizen helpdesk tickets."
-              />
-            }
-          />
+        {/* Support & Complaints Module (Exact Counterpart of Mobile App) */}
+          <Route path="support" element={<SupportTicketsListPage />} />
+          <Route path="support/:id" element={<SupportTicketDetailsPage />} />
+          <Route path="support/:id/chat" element={<SupportTicketChatPage />} />
           <Route path="complaints" element={<Navigate to="/admin/support" replace />} />
+          <Route path="complaints/:id" element={<SupportTicketDetailsPage />} />
+          <Route path="complaints/:id/chat" element={<SupportTicketChatPage />} />
+          <Route path="tickets" element={<Navigate to="/admin/support" replace />} />
+          <Route path="tickets/:id" element={<SupportTicketDetailsPage />} />
+          <Route path="tickets/:id/chat" element={<SupportTicketChatPage />} />
 
           {/* Content & Media */}
           <Route
