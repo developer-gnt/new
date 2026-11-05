@@ -768,9 +768,9 @@ export const MemberRegistrationPage: React.FC = () => {
         {/* Header */}
         <header className="bg-[#011F39] text-white border-b border-[#06294D] sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-[#FAD465] transition">
+            <Link to="/register" className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-[#FAD465] transition">
               <ArrowLeft size={16} />
-              <span>Back to Home</span>
+              <span>Change Account Type</span>
             </Link>
 
             <div className="flex items-center gap-2.5">

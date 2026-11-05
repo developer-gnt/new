@@ -57,6 +57,7 @@ import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { SignupCategoryPage } from '../pages/SignupCategoryPage';
 import { MemberRegistrationPage } from '../pages/MemberRegistrationPage';
 import { SeekerRegistrationPage } from '../pages/SeekerRegistrationPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -65,16 +66,26 @@ export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Entry Point & Authentication */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/home" element={<HomePage />} />
+        {/* Initial Entry Point: Login Page First (Exact Counterpart of Mobile APK) */}
+        <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signin" element={<Navigate to="/login" replace />} />
         <Route path="/auth/login" element={<Navigate to="/login" replace />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/signup" element={<Navigate to="/register" replace />} />
-        <Route path="/create-account" element={<RegisterPage />} />
-        <Route path="/auth/register" element={<Navigate to="/register" replace />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/public" element={<HomePage />} />
+        <Route path="/portal" element={<HomePage />} />
+
+        {/* Step 1: Signup Category / Account Type Selection */}
+        <Route path="/register" element={<SignupCategoryPage />} />
+        <Route path="/signup" element={<SignupCategoryPage />} />
+        <Route path="/create-account" element={<SignupCategoryPage />} />
+        <Route path="/auth/register" element={<SignupCategoryPage />} />
+        <Route path="/register/type" element={<SignupCategoryPage />} />
+        <Route path="/register/category" element={<SignupCategoryPage />} />
+
+        {/* General User Registration (Personal Details) */}
+        <Route path="/register/user" element={<RegisterPage />} />
+        <Route path="/register/general" element={<RegisterPage />} />
 
         {/* Member Registration Experience */}
         <Route path="/membership/apply" element={<MemberRegistrationPage />} />

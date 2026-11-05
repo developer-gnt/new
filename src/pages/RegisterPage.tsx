@@ -544,11 +544,11 @@ export const RegisterPage: React.FC = () => {
       <header className="bg-[#011F39] text-white border-b border-[#06294D] shadow-sm">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link
-            to="/login"
+            to="/register"
             className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-[#FAD465] transition"
           >
             <ArrowLeft size={16} />
-            <span className="hidden sm:inline">Back to Login</span>
+            <span className="hidden sm:inline">Change Account Type</span>
           </Link>
 
           <div className="flex items-center gap-2.5">
@@ -603,15 +603,15 @@ export const RegisterPage: React.FC = () => {
           {/* Stepper Bar: 3 Steps for General User */}
           <div className="mb-7 pb-6 border-b border-slate-100">
             <div className="flex items-center justify-between relative max-w-xs mx-auto">
-              {/* Step 1: Account Type (Done) */}
-              <div className="flex flex-col items-center z-10">
-                <div className="w-8 h-8 rounded-full bg-[#EAA224] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+              {/* Step 1: Account Type (Done - click to change) */}
+              <Link to="/register" className="flex flex-col items-center z-10 group cursor-pointer">
+                <div className="w-8 h-8 rounded-full bg-[#EAA224] group-hover:bg-[#d89318] text-white flex items-center justify-center text-xs font-bold shadow-sm transition">
                   <Check size={16} />
                 </div>
                 <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">
                   Account<br />Type
                 </span>
-              </div>
+              </Link>
 
               {/* Connecting Line 1 */}
               <div className="flex-1 h-0.5 bg-[#EAA224] mx-2 -mt-4" />

@@ -837,11 +837,11 @@ export const SeekerRegistrationPage: React.FC = () => {
               {/* Form Navigation */}
               <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
                 <Link
-                  to="/"
+                  to="/register"
                   className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-[#011F39] transition"
                 >
                   <ArrowLeft size={14} />
-                  <span>Return to Home</span>
+                  <span>Change Account Type</span>
                 </Link>
 
                 <button
