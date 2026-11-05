@@ -1,4 +1,5 @@
 import type { MembershipPostData } from '../types/membership.types';
+import type { MembershipCategoryOption } from '../types/membershipApplication.types';
 
 export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   {
@@ -69,6 +70,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   },
   {
     id: 'state-unit-post',
+    level: 'state',
     postName: 'State Unit Post',
     qualification: 'Minimum 10th Class',
     fee: '₹ 2,300',
@@ -93,6 +95,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
 export const LETTER_PAD_POSTS: MembershipPostData[] = [
   {
     id: 'lion-of-state',
+    level: 'executive',
     postName: 'Lion of State',
     qualification: 'Minimum 12th Pass',
     fee: '₹ 5,000',
@@ -116,6 +119,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
   },
   {
     id: 'counselor-of-state',
+    level: 'executive',
     postName: 'Counsellor of State',
     qualification: 'Minimum 12th Pass',
     fee: '₹ 5,000',
@@ -139,6 +143,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
   },
   {
     id: 'ambassador-of-state',
+    level: 'executive',
     postName: 'Ambassador of State',
     qualification: 'Minimum 12th Pass',
     fee: '₹ 5,000',
@@ -162,6 +167,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
   },
   {
     id: 'honble-state-director',
+    level: 'executive',
     postName: 'Hon’ble State Director',
     qualification: 'Minimum Graduate / Degree',
     fee: '₹ 10,000',
@@ -188,6 +194,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
 export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   {
     id: 'national-legal-council-cell',
+    level: 'national',
     postName: 'National Legal Council Cell',
     qualification: 'Advocate / Law Graduate (LL.B)',
     fee: '₹ 10,000',
@@ -259,6 +266,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   },
   {
     id: 'national-executive-council',
+    level: 'national',
     postName: 'National Executive Council Member',
     qualification: 'Prominent Human Rights Activist / Graduate',
     fee: '₹ 10,000',
@@ -287,6 +295,8 @@ export const ALL_MEMBERSHIP_POSTS: MembershipPostData[] = [
   ...LETTER_PAD_POSTS,
   ...NATIONAL_LEVEL_POSTS,
 ];
+
+export const MEMBERSHIP_CATEGORIES: MembershipCategoryOption[] = ALL_MEMBERSHIP_POSTS;
 
 export const INDIAN_STATES: string[] = [
   'Andhra Pradesh',
@@ -342,7 +352,3 @@ export const STATE_CITIES: Record<string, string[]> = {
   Uttarakhand: ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani', 'Rishikesh', 'Kashipur'],
   Goa: ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
 };
-
-
-import type { MembershipCategoryOption } from '../types/membershipApplication.types';
-export const MEMBERSHIP_CATEGORIES: MembershipCategoryOption[] = ALL_MEMBERSHIP_POSTS as unknown as MembershipCategoryOption[];

@@ -7,7 +7,7 @@
 export interface MembershipPostData {
   id: string;
   postName: string;
-  level?: 'district' | 'state' | 'executive' | 'national' | string;
+  level: 'district' | 'state' | 'executive' | 'national';
   qualification: string;
   fee: string;
   feeAmount: number;
