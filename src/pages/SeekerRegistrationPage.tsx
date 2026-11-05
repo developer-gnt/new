@@ -597,7 +597,7 @@ export const SeekerRegistrationPage: React.FC = () => {
                 </span>
                 <span className="text-xs text-slate-300">Donation Seeker Enrollment</span>
               </div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h1 style={{ color: '#FFFFFF' }} className="font-serif text-2xl sm:text-3xl font-bold !text-white mb-2">
                 Personal Information
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
@@ -891,7 +891,7 @@ export const SeekerRegistrationPage: React.FC = () => {
                 </span>
                 <span className="text-xs text-slate-300">Identity Verification</span>
               </div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h1 style={{ color: '#FFFFFF' }} className="font-serif text-2xl sm:text-3xl font-bold !text-white mb-2">
                 Identity & KYC Verification
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
@@ -1106,7 +1106,7 @@ export const SeekerRegistrationPage: React.FC = () => {
                 </span>
                 <span className="text-xs text-slate-300">Cause & Assistance Details</span>
               </div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h1 style={{ color: '#FFFFFF' }} className="font-serif text-2xl sm:text-3xl font-bold !text-white mb-2">
                 Humanitarian Aid Need & Consents
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
@@ -1492,7 +1492,7 @@ export const SeekerRegistrationPage: React.FC = () => {
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/30 uppercase tracking-wider inline-block mb-2">
                 Verification & Application Submitted
               </span>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h1 style={{ color: '#FFFFFF' }} className="font-serif text-2xl sm:text-3xl font-bold !text-white mb-2">
                 Application Successfully Received!
               </h1>
               <p className="text-xs sm:text-sm text-emerald-100 max-w-lg mx-auto">
@@ -1696,7 +1696,7 @@ export const SeekerRegistrationPage: React.FC = () => {
             <div className="p-5 px-6 bg-[#011F39] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <HeartHandshake size={20} className="text-[#FAD465]" />
-                <h3 className="text-base font-bold text-white">
+                <h3 style={{ color: '#FFFFFF' }} className="text-base font-bold !text-white">
                   Track Assistance Application
                 </h3>
               </div>

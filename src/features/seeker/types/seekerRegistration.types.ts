@@ -105,3 +105,4 @@ export interface SeekerValidationErrors {
   privacy?: string;
   pledge?: string;
 }
+
