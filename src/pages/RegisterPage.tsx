@@ -10,7 +10,6 @@ import {
   EyeOff,
   ArrowRight,
   ArrowLeft,
-  Scale,
   Check,
   CheckCircle2,
   AlertCircle,
@@ -23,6 +22,7 @@ import {
   formatDateToDMY,
   validateAgeEligibility,
 } from '../utils/age';
+import hrsjmLogo from '../assets/hrsjm_logo.png';
 import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
 import { ApiError } from '../services/apiClient';
 import type { RegisterFormData, RegisterValidationErrors } from '../features/auth/types/auth.types';
@@ -292,9 +292,11 @@ export const RegisterPage: React.FC = () => {
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center">
           {/* Logo & Bilingual Title */}
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-full bg-[#06294D] border-2 border-[#FAD465] flex items-center justify-center text-[#FAD465] shadow-sm">
-              <Scale size={24} />
-            </div>
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-12 h-12 object-contain shrink-0"
+            />
             <div className="text-left">
               <div className="text-base font-black text-[#011F39] font-serif leading-none tracking-wide">
                 HRSJM
@@ -552,9 +554,11 @@ export const RegisterPage: React.FC = () => {
           </Link>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#06294D] border border-[#FAD465] flex items-center justify-center text-[#FAD465]">
-              <Scale size={16} />
-            </div>
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-8 h-8 object-contain shrink-0"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-black tracking-wider text-white font-serif leading-none">
                 HRSJM

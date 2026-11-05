@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useId } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
-  Scale,
   ArrowRight,
   ArrowLeft,
   Check,
@@ -26,6 +25,7 @@ import {
   FileCheck,
   Loader2,
 } from 'lucide-react';
+import hrsjmLogo from '../assets/hrsjm_logo.png';
 import {
   ALL_MEMBERSHIP_POSTS,
   DISTRICT_STATE_POSTS,
@@ -558,9 +558,11 @@ export const MemberRegistrationPage: React.FC = () => {
       <div className="min-h-screen bg-[#FAF7F0] flex flex-col justify-center items-center px-4 py-12 font-sans">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-full bg-[#06294D] border-2 border-[#FAD465] flex items-center justify-center text-[#FAD465] shadow-sm">
-              <Scale size={24} />
-            </div>
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-12 h-12 object-contain shrink-0"
+            />
             <div className="text-left">
               <div className="text-base font-black text-[#011F39] font-serif leading-none tracking-wide">
                 HRSJM
@@ -774,9 +776,11 @@ export const MemberRegistrationPage: React.FC = () => {
             </Link>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#06294D] border border-[#FAD465] flex items-center justify-center text-[#FAD465]">
-                <Scale size={16} />
-              </div>
+              <img
+                src={hrsjmLogo}
+                alt="HRSJM Official Crest"
+                className="w-8 h-8 object-contain shrink-0"
+              />
               <div className="flex flex-col">
                 <span className="text-sm font-black tracking-wider text-white font-serif leading-none">HRSJM</span>
                 <span className="text-[9px] font-bold text-[#FAD465] tracking-widest uppercase mt-0.5">Membership Categories</span>
@@ -938,9 +942,11 @@ export const MemberRegistrationPage: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#06294D] border border-[#FAD465] flex items-center justify-center text-[#FAD465]">
-              <Scale size={16} />
-            </div>
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-8 h-8 object-contain shrink-0"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-black tracking-wider text-white font-serif leading-none">HRSJM</span>
               <span className="text-[9px] font-bold text-[#FAD465] tracking-widest uppercase mt-0.5">Apply for Membership</span>

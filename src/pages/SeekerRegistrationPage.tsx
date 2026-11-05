@@ -10,7 +10,6 @@ import {
   EyeOff,
   ArrowRight,
   ArrowLeft,
-  Scale,
   Check,
   CheckCircle2,
   AlertCircle,
@@ -27,6 +26,7 @@ import {
   X,
   Clock,
 } from 'lucide-react';
+import hrsjmLogo from '../assets/hrsjm_logo.png';
 import { seekerService } from '../features/seeker/services/seekerService';
 import {
   SEEKER_DOCUMENT_OPTIONS,
@@ -441,9 +441,11 @@ export const SeekerRegistrationPage: React.FC = () => {
       <header className="bg-[#011F39] text-white border-b border-navy-800 sticky top-0 z-40 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-[#FAD465]/15 border border-[#FAD465]/40 flex items-center justify-center text-[#FAD465] group-hover:scale-105 transition-transform">
-              <Scale size={24} />
-            </div>
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-11 h-11 object-contain shrink-0 group-hover:scale-105 transition-transform drop-shadow-sm"
+            />
             <div>
               <span className="font-serif text-lg font-bold tracking-tight text-white block leading-tight">
                 HRSJM

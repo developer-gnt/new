@@ -7,7 +7,6 @@ import {
   EyeOff,
   ArrowRight,
   ArrowLeft,
-  Scale,
   Check,
   CheckCircle2,
   Clock,
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react';
 import { authService } from '../features/auth/services/authService';
 import { ApiError } from '../services/apiClient';
+import hrsjmLogo from '../assets/hrsjm_logo.png';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -205,8 +205,12 @@ export const LoginPage: React.FC = () => {
         {/* Top Branding Section (Matching APK LoginScreen.tsx) */}
         <div className="text-center max-w-md mx-auto mb-6 sm:mb-8 text-white px-2">
           {/* Official Emblem */}
-          <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-[#06294D] border-2 border-[#FAD465] flex items-center justify-center mx-auto mb-4 shadow-xl">
-            <Scale size={36} className="text-[#FAD465]" />
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 flex items-center justify-center">
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-full h-full object-contain drop-shadow-xl"
+            />
           </div>
 
           <div className="space-y-1 mb-3">

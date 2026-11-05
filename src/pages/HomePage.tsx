@@ -17,6 +17,7 @@ import {
   ExternalLink,
   ChevronRight,
 } from 'lucide-react';
+import hrsjmLogo from '../assets/hrsjm_logo.png';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -40,10 +41,12 @@ export const HomePage: React.FC = () => {
       <header className="sticky top-0 z-40 bg-[#011F39] text-white border-b border-[#06294D] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           {/* Official Bilingual Emblem & Brand Mark */}
-          <Link to="/" className="flex items-center gap-3.5 group text-decoration-none">
-            <div className="w-11 h-11 rounded-full bg-[#06294D] border-2 border-[#FAD465] flex items-center justify-center text-[#FAD465] shadow-sm group-hover:scale-105 transition-transform">
-              <Scale size={22} />
-            </div>
+          <Link to="/" className="flex items-center gap-3 group text-decoration-none">
+            <img
+              src={hrsjmLogo}
+              alt="HRSJM Official Crest"
+              className="w-11 h-11 object-contain shrink-0 group-hover:scale-105 transition-transform drop-shadow-sm"
+            />
             <div className="flex flex-col">
               <span className="text-lg font-black tracking-wider text-white font-serif leading-none">
                 HRSJM
@@ -508,9 +511,11 @@ export const HomePage: React.FC = () => {
             {/* Brand column */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#06294D] border border-[#FAD465] flex items-center justify-center text-[#FAD465]">
-                  <Scale size={16} />
-                </div>
+                <img
+                  src={hrsjmLogo}
+                  alt="HRSJM Official Crest"
+                  className="w-9 h-9 object-contain shrink-0"
+                />
                 <div>
                   <h3 style={{ color: '#FFFFFF' }} className="font-bold font-serif text-base text-white">HRSJM</h3>
                   <p className="text-[10px] text-[#FAD465] font-semibold tracking-wider">
