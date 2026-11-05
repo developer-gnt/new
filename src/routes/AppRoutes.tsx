@@ -56,6 +56,32 @@ import { NotificationsPage } from '../features/notifications/screens/Notificatio
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
+// Member Portal Imports
+import { MemberLayout } from '../components/layout/MemberLayout';
+import {
+  MembershipCategoriesPage,
+  MembershipApplyPage,
+  MembershipSubmittedPage,
+  MembershipStatusPage,
+} from '../features/membership';
+import {
+  MemberDashboardPage,
+  MemberIdCardPage,
+  MemberCertificatePage,
+  MemberRenewalPage,
+  MemberCausesPage,
+  MemberPassbookPage,
+  MemberSupportPage,
+  MemberProfilePage,
+  MemberAboutPage,
+  MemberEventsPage,
+  MemberRightsPage,
+  MemberNewsPage,
+  MemberBlogsPage,
+  MemberNotificationsPage,
+  MemberSettingsPage,
+} from '../features/member';
+
 export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
@@ -115,6 +141,48 @@ export const AppRoutes: React.FC = () => {
         <Route path="/preferences" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/system-settings" element={<Navigate to="/admin/settings" replace />} />
 
+        {/* Public Membership Application & Tracking Routes */}
+        <Route path="/membership" element={<MembershipCategoriesPage />} />
+        <Route path="/membership/categories" element={<MembershipCategoriesPage />} />
+        <Route path="/membership/apply" element={<MembershipApplyPage />} />
+        <Route path="/membership/submitted" element={<MembershipSubmittedPage />} />
+        <Route path="/membership/status" element={<MembershipStatusPage />} />
+        <Route path="/membership/track" element={<MembershipStatusPage />} />
+
+        {/* Member Self-Service Portal Layout */}
+        <Route path="/member" element={<MemberLayout />}>
+          <Route index element={<Navigate to="/member/dashboard" replace />} />
+          <Route path="dashboard" element={<MemberDashboardPage />} />
+          <Route path="id-card" element={<MemberIdCardPage />} />
+          <Route path="card" element={<Navigate to="/member/id-card" replace />} />
+          <Route path="certificate" element={<MemberCertificatePage />} />
+          <Route path="renew" element={<MemberRenewalPage />} />
+          <Route path="renewal" element={<Navigate to="/member/renew" replace />} />
+          <Route path="causes" element={<MemberCausesPage />} />
+          <Route path="donate" element={<Navigate to="/member/causes" replace />} />
+          <Route path="passbook" element={<MemberPassbookPage />} />
+          <Route path="receipts" element={<Navigate to="/member/passbook" replace />} />
+          <Route path="support" element={<MemberSupportPage />} />
+          <Route path="complaints" element={<Navigate to="/member/support" replace />} />
+          <Route path="profile" element={<MemberProfilePage />} />
+          {/* Community & Impact Routes */}
+          <Route path="about" element={<MemberAboutPage />} />
+          <Route path="mission" element={<Navigate to="/member/about" replace />} />
+          <Route path="rights" element={<MemberRightsPage />} />
+          <Route path="know-your-rights" element={<Navigate to="/member/rights" replace />} />
+          <Route path="events" element={<MemberEventsPage />} />
+          <Route path="news" element={<MemberNewsPage />} />
+          <Route path="press" element={<Navigate to="/member/news" replace />} />
+          <Route path="blogs" element={<MemberBlogsPage />} />
+          <Route path="articles" element={<Navigate to="/member/blogs" replace />} />
+          {/* Membership & Account Routes */}
+          <Route path="notifications" element={<MemberNotificationsPage />} />
+          <Route path="alerts" element={<Navigate to="/member/notifications" replace />} />
+          <Route path="settings" element={<MemberSettingsPage />} />
+          <Route path="preferences" element={<Navigate to="/member/settings" replace />} />
+          <Route path="*" element={<Navigate to="/member/dashboard" replace />} />
+        </Route>
+
         {/* Admin Shell Layout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
@@ -151,7 +219,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
           <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
 
-        {/* Support & Complaints Module (Exact Counterpart of Mobile App) */}
+          {/* Support & Complaints Module (Exact Counterpart of Mobile App) */}
           <Route path="support" element={<SupportTicketsListPage />} />
           <Route path="support/:id" element={<SupportTicketDetailsPage />} />
           <Route path="support/:id/chat" element={<SupportTicketChatPage />} />
