@@ -54,14 +54,22 @@ import { ProfilePage } from '../features/profile/screens/ProfilePage';
 import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
 import { NotificationsPage } from '../features/notifications/screens/NotificationsPage';
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
+import { HomePage } from '../pages/HomePage';
+import { LoginPage } from '../pages/LoginPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root Redirects & Direct Aliases */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        {/* Public Entry Point & Authentication */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signin" element={<Navigate to="/login" replace />} />
+        <Route path="/auth/login" element={<Navigate to="/login" replace />} />
+
+        {/* Direct Admin Aliases */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
         <Route path="/all-users" element={<Navigate to="/admin/all-users" replace />} />
