@@ -20,6 +20,13 @@ import {
 
 export type DetailsTabKey = 'details' | 'documents' | 'activity';
 
+const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+  submitted: { bg: '#FFFBEB', text: '#D97706', dot: '#F59E0B', label: 'Submitted' },
+  under_review: { bg: '#FFFBEB', text: '#D97706', dot: '#F59E0B', label: 'Under Review' },
+  approved: { bg: '#ECFDF5', text: '#059669', dot: '#10B981', label: 'Approved' },
+  rejected: { bg: '#FEF2F2', text: '#DC2626', dot: '#EF4444', label: 'Rejected' },
+};
+
 export const ApplicationDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -136,8 +143,30 @@ export const ApplicationDetailsPage: React.FC = () => {
           <span>Back to Applications</span>
         </button>
 
-        <div style={{ fontSize: '12px', color: '#718096' }}>
-          Status: <strong>{application.status.toUpperCase()}</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '5px 12px',
+              borderRadius: '14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              backgroundColor: (STATUS_STYLES[application.status] || STATUS_STYLES.submitted).bg,
+              color: (STATUS_STYLES[application.status] || STATUS_STYLES.submitted).text,
+            }}
+          >
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: (STATUS_STYLES[application.status] || STATUS_STYLES.submitted).dot,
+              }}
+            />
+            {(STATUS_STYLES[application.status] || STATUS_STYLES.submitted).label}
+          </span>
         </div>
       </div>
 

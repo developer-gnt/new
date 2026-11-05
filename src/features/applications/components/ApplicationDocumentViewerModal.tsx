@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ApplicationDocument } from '../types/applications.types';
-import { FileText, X, ZoomIn, ZoomOut, CheckCircle } from 'lucide-react';
+import { FileText, X, ZoomIn, ZoomOut, CheckCircle, Download, ExternalLink } from 'lucide-react';
 
 interface ApplicationDocumentViewerModalProps {
   isOpen: boolean;
@@ -260,22 +260,51 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
           <div style={{ fontSize: '12px', color: '#718096' }}>
             Submitted Date: {document.uploadDate || 'Recently'}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              padding: '8px 18px',
-              fontSize: '13px',
-              fontWeight: 600,
-              backgroundColor: '#011F39',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-            }}
-          >
-            Close
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {document.uri ? (
+              <a
+                href={document.uri}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={document.fileName}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  backgroundColor: '#FFFFFF',
+                  color: '#011F39',
+                  border: '1px solid #DBE5EE',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <Download size={14} />
+                <span>Download / Open</span>
+                <ExternalLink size={12} color="#718096" />
+              </a>
+            ) : null}
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: '8px 18px',
+                fontSize: '13px',
+                fontWeight: 600,
+                backgroundColor: '#011F39',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
