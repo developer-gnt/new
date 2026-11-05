@@ -211,7 +211,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F2860] flex flex-col text-slate-800 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#011F39] flex flex-col text-slate-800 font-sans">
       {/* Top Header Bar with Navigation */}
       <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2 shrink-0 flex items-center justify-between">
         {roleParam ? (
@@ -266,7 +266,7 @@ export const LoginPage: React.FC = () => {
             style={{ color: '#FFFFFF' }}
             className="text-2xl sm:text-3xl font-extrabold font-serif tracking-tight leading-snug"
           >
-            Together for a <span style={{ color: '#F3BA47' }} className="text-[#F3BA47]">More Just</span> Society
+            Together for a <span style={{ color: '#F3BA47' }} className="text-[#FAD465]">More Just</span> Society
           </h1>
           <p className="text-xs sm:text-[13px] text-slate-200 max-w-sm mx-auto mt-2 leading-relaxed opacity-90">
             Sign in to continue and be a part of our mission for human rights, dignity, equality and peace.
@@ -306,7 +306,7 @@ export const LoginPage: React.FC = () => {
               <div
                 className={`flex items-center bg-[#FAFAFC] border rounded-xl px-3.5 h-[52px] transition shadow-xs ${
                   focusedField === 'identifier'
-                    ? 'border-[#EAA224] border-[1.6px] bg-white ring-2 ring-[#EAA224]/20'
+                    ? 'border-[#FAD465] border-[1.6px] bg-white ring-2 ring-[#FAD465]/20'
                     : fieldErrors.identifier
                     ? 'border-[#EF4444] bg-[#FFF5F5]'
                     : 'border-[#E2E8F0]'
@@ -315,7 +315,7 @@ export const LoginPage: React.FC = () => {
                 <div className="w-6 flex items-center justify-center text-[#64748B] mr-2.5">
                   <Mail
                     size={19}
-                    color={focusedField === 'identifier' ? '#0F2860' : '#64748B'}
+                    color={focusedField === 'identifier' ? '#011F39' : '#718096'}
                   />
                 </div>
                 <input
@@ -344,7 +344,7 @@ export const LoginPage: React.FC = () => {
               <div
                 className={`flex items-center bg-[#FAFAFC] border rounded-xl px-3.5 h-[52px] transition shadow-xs ${
                   focusedField === 'password'
-                    ? 'border-[#EAA224] border-[1.6px] bg-white ring-2 ring-[#EAA224]/20'
+                    ? 'border-[#FAD465] border-[1.6px] bg-white ring-2 ring-[#FAD465]/20'
                     : fieldErrors.password
                     ? 'border-[#EF4444] bg-[#FFF5F5]'
                     : 'border-[#E2E8F0]'
@@ -353,7 +353,7 @@ export const LoginPage: React.FC = () => {
                 <div className="w-6 flex items-center justify-center text-[#64748B] mr-2.5">
                   <Lock
                     size={19}
-                    color={focusedField === 'password' ? '#0F2860' : '#64748B'}
+                    color={focusedField === 'password' ? '#011F39' : '#718096'}
                   />
                 </div>
                 <input
@@ -373,10 +373,10 @@ export const LoginPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(p => !p)}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F2860] focus:outline-none cursor-pointer"
+                  className="p-1.5 text-[#64748B] hover:text-[#011F39] focus:outline-none cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <Eye size={19} color="#0F2860" /> : <EyeOff size={19} color="#94A3B8" />}
+                  {showPassword ? <Eye size={19} color="#011F39" /> : <EyeOff size={19} color="#94A3B8" />}
                 </button>
               </div>
               {fieldErrors.password && (
@@ -389,7 +389,7 @@ export const LoginPage: React.FC = () => {
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <div
                   className={`w-5 h-5 rounded-[6px] border flex items-center justify-center transition ${
-                    rememberMe ? 'bg-[#EAA224] border-[#EAA224]' : 'bg-white border-[#CBD5E1]'
+                    rememberMe ? 'bg-[#FAD465] border-[#FAD465]' : 'bg-white border-[#CBD5E1]'
                   }`}
                   onClick={() => setRememberMe(p => !p)}
                 >
@@ -406,7 +406,7 @@ export const LoginPage: React.FC = () => {
                   setForgotError(null);
                   setForgotModalOpen(true);
                 }}
-                className="text-[13.5px] font-bold text-[#0F2860] hover:underline cursor-pointer"
+                className="text-[13.5px] font-bold text-[#011F39] hover:underline cursor-pointer"
               >
                 Forgot Password?
               </button>
@@ -437,7 +437,7 @@ export const LoginPage: React.FC = () => {
             <span>Don't have an account? </span>
             <Link
               to="/register"
-              className="font-bold text-[#0F2860] hover:underline"
+              className="font-bold text-[#011F39] hover:underline"
             >
               Sign Up
             </Link>

@@ -1,31 +1,104 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #011F39;
+  --color-navy-900: #06294D;
+  --color-navy-800: #123F68;
+  --color-navy-700: #174A78;
+
+  --color-blue-100: #EDF2F7;
+  --color-blue-200: #DBE5EE;
+
+  --color-gold-500: #FAD465;
+  --color-gold-600: #E9B82E;
+  --color-gold-700: #C9971A;
+
+  --color-ivory-50: #FAF7F0;
+  --color-white: #FFFFFF;
+
+  --color-text-primary: #0B2F52;
+  --color-text-body: #34516D;
+  --color-text-muted: #718096;
+  --color-border: #DCE4EC;
+  --color-overlay: #031B31;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-quote: "Caveat", cursive;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 :root {
-  --navy-950: #011F39;
-  --navy-900: #06294D;
-  --navy-800: #123F68;
-  --navy-700: #174A78;
+  /* HRSJM Official Color Tokens (docs/design.md Section 2) */
+  --color-navy-950: #011F39;
+  --color-navy-900: #06294D;
+  --color-navy-800: #123F68;
+  --color-navy-700: #174A78;
 
-  --gold-500: #FAD465;
-  --gold-600: #E9B82E;
-  --gold-700: #C9971A;
+  --color-blue-100: #EDF2F7;
+  --color-blue-200: #DBE5EE;
+
+  --color-gold-500: #FAD465;
+  --color-gold-600: #E9B82E;
+  --color-gold-700: #C9971A;
+
+  --color-ivory-50: #FAF7F0;
+  --color-white: #FFFFFF;
+
+  --color-text-primary: #0B2F52;
+  --color-text-body: #34516D;
+  --color-text-muted: #718096;
+  --color-border: #DCE4EC;
+  --color-overlay: #031B31;
+
+  /* HRSJM Typography Tokens (docs/design.md Section 3) */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-quote: "Caveat", cursive;
+
+  /* HRSJM Spacing Tokens (docs/design.md Section 4) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+  --space-10: 96px;
+
+  /* Radii & Containers (docs/design.md Section 8 & 13) */
+  --radius-card: 12px;
+  --radius-button: 12px;
+  --container-width: 1200px;
+
+  /* Backward Compatibility Aliases */
+  --navy-950: var(--color-navy-950);
+  --navy-900: var(--color-navy-900);
+  --navy-800: var(--color-navy-800);
+  --navy-700: var(--color-navy-700);
+
+  --gold-500: var(--color-gold-500);
+  --gold-600: var(--color-gold-600);
+  --gold-700: var(--color-gold-700);
   --gold-soft: #FFF9E6;
 
-  --ivory-50: #FAF7F0;
-  --white: #FFFFFF;
-  --blue-100: #EDF2F7;
-  --blue-200: #DBE5EE;
+  --ivory-50: var(--color-ivory-50);
+  --white: var(--color-white);
+  --blue-100: var(--color-blue-100);
+  --blue-200: var(--color-blue-200);
 
-  --text-primary: #0B2F52;
-  --text-body: #34516D;
-  --text-muted: #718096;
+  --text-primary: var(--color-text-primary);
+  --text-body: var(--color-text-body);
+  --text-muted: var(--color-text-muted);
   --text-on-dark: #FFFFFF;
 
-  --border: #DCE4EC;
+  --border: var(--color-border);
   --divider: #DBE5EE;
 
   --status-success: #16A34A;
@@ -36,18 +109,14 @@
   --status-danger-light: #FDEEEF;
   --status-info: #174A78;
   --status-info-light: #EDF2F7;
-
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-quote: 'Caveat', cursive;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-sans);
-  background-color: var(--ivory-50);
-  color: var(--text-body);
+  font-family: var(--font-body);
+  background-color: var(--color-ivory-50);
+  color: var(--color-text-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -59,7 +128,7 @@ html, body {
   flex-direction: column;
 }
 
-/* Custom Scrollbar */
+/* Custom Editorial Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -76,26 +145,225 @@ html, body {
 }
 
 @layer base {
-  /* Headings inside @layer base so utility classes like .text-white always take precedence */
+  /* Default Heading typography per docs/design.md */
   h1, h2, h3, h4, h5, h6 {
-    color: var(--text-primary);
+    color: var(--color-text-primary);
     font-family: var(--font-display);
     margin-top: 0;
+    line-height: 1.15;
   }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ==========================================================================
+   HRSJM Typography Utility System (docs/design.md Section 3)
+   ========================================================================== */
+
+.font-display-hero {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 
-button {
-  font-family: var(--font-sans);
+.font-heading-xl {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.12;
 }
 
-.stat-card:hover {
+.font-heading-lg {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.15;
+}
+
+.font-heading-md {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-body);
+}
+
+.font-body-medium {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.font-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.font-button {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.font-small {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.font-quote {
+  font-family: var(--font-quote);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.15;
+  color: var(--color-navy-950);
+}
+
+/* ==========================================================================
+   HRSJM Numeric / Financial Tabular Figures (Aligned Number Fonts)
+   ========================================================================== */
+
+.font-number,
+.tabular-nums,
+[data-tabular-nums] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv05" 1, "cv11" 1;
+}
+
+/* ==========================================================================
+   HRSJM Component Styles (Buttons, Cards, Container per docs/design.md)
+   ========================================================================== */
+
+.btn-primary {
+  background-color: var(--color-gold-500);
+  color: var(--color-navy-950);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 12px 20px;
+  border-radius: var(--radius-button);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 4px rgba(1, 31, 57, 0.08);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-gold-600);
+  box-shadow: 0 4px 8px rgba(1, 31, 57, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-navy-900);
+  border: 1.5px solid var(--color-navy-900);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 19px;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-blue-100);
+}
+
+.btn-outline-white {
+  background-color: transparent;
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 19px;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-white:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: #FFFFFF;
+}
+
+/* Card Surface according to docs/design.md Section 8 */
+.card-editorial {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(1, 31, 57, 0.04);
+}
+
+.card-editorial-interactive {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(1, 31, 57, 0.04);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card-editorial-interactive:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px -2px rgba(1, 31, 57, 0.1) !important;
+  box-shadow: 0 6px 16px -2px rgba(1, 31, 57, 0.08);
+  border-color: #CBD5E1;
+}
+
+/* Centered Container per docs/design.md Section 4 (approx 1200px) */
+.editorial-container {
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Secondary Gold Navigation Strip (docs/design.md Section 5) */
+.secondary-nav-strip {
+  background-color: var(--color-gold-500);
+  color: var(--color-navy-950);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.06);
 }
 
 /* Responsive Sidebar Behavior */
@@ -143,4 +411,3 @@ button {
 .spin {
   animation: spin 1s linear infinite;
 }
-

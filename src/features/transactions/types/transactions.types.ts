@@ -85,3 +85,4 @@ export function formatOutgoingAmount(amount: number): string {
   const absAmount = Math.abs(amount || 0);
   return `- ₹${absAmount.toLocaleString('en-IN')}`;
 }
+
