@@ -58,6 +58,7 @@ import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { MemberRegistrationPage } from '../pages/MemberRegistrationPage';
+import { SeekerRegistrationPage } from '../pages/SeekerRegistrationPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
@@ -82,6 +83,15 @@ export const AppRoutes: React.FC = () => {
         <Route path="/member/register" element={<MemberRegistrationPage />} />
         <Route path="/become-a-member" element={<MemberRegistrationPage />} />
         <Route path="/apply-membership" element={<MemberRegistrationPage />} />
+
+        {/* Donation Seeker Registration & Assistance Application */}
+        <Route path="/seeker/apply" element={<SeekerRegistrationPage />} />
+        <Route path="/seeker/register" element={<SeekerRegistrationPage />} />
+        <Route path="/assistance/apply" element={<SeekerRegistrationPage />} />
+        <Route path="/assistance/track" element={<SeekerRegistrationPage />} />
+        <Route path="/apply-assistance" element={<SeekerRegistrationPage />} />
+        <Route path="/donation-seeker" element={<SeekerRegistrationPage />} />
+        <Route path="/seeker" element={<SeekerRegistrationPage />} />
 
         {/* Direct Admin Aliases */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />

@@ -66,8 +66,14 @@ export const HomePage: React.FC = () => {
               Choose Your Section
             </button>
             <button
-              onClick={() => navigate('/membership/apply')}
+              onClick={() => navigate('/assistance/apply')}
               className="hover:text-[#FAD465] transition cursor-pointer text-[#FAD465]"
+            >
+              Apply for Aid
+            </button>
+            <button
+              onClick={() => navigate('/membership/apply')}
+              className="hover:text-[#FAD465] transition cursor-pointer"
             >
               Become a Member
             </button>
@@ -200,13 +206,29 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => handleRoleSelect('seeker')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Seeker Login</span>
-              <ArrowRight size={14} />
-            </button>
+            <div className="mt-6 flex flex-col gap-2">
+              <button
+                onClick={() => navigate('/assistance/apply')}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Apply for Assistance</span>
+                <ArrowRight size={14} />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleRoleSelect('seeker')}
+                  className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
+                >
+                  <span>Seeker Login</span>
+                </button>
+                <button
+                  onClick={() => navigate('/assistance/track')}
+                  className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
+                >
+                  <span>Track Status</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Card 2: Member */}

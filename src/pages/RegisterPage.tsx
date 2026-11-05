@@ -650,6 +650,18 @@ export const RegisterPage: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">
               Fill in your details and password to register your account.
             </p>
+            <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-1.5">
+              <span>Applying for a specific role?</span>
+              <div className="flex items-center gap-2 font-semibold">
+                <Link to="/membership/apply" className="text-[#011F39] hover:text-amber-600 underline">
+                  Member Registration
+                </Link>
+                <span>•</span>
+                <Link to="/assistance/apply" className="text-amber-700 hover:text-amber-800 underline">
+                  Donation Seeker Aid
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Server Error Alert */}

@@ -337,3 +337,4 @@ export const STATE_CITIES: Record<string, string[]> = {
   Uttarakhand: ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani', 'Rishikesh', 'Kashipur'],
   Goa: ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
 };
+
