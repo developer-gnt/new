@@ -75,8 +75,8 @@ html, body {
   background: #94A3B8;
 }
 
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
+/* Headings with 0-specificity default so utility classes like .text-white take precedence */
+:where(h1, h2, h3, h4, h5, h6) {
   color: var(--text-primary);
   font-family: var(--font-display);
   margin-top: 0;

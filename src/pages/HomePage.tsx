@@ -105,8 +105,11 @@ export const HomePage: React.FC = () => {
             <span>Est. Registered Public Trust</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-serif tracking-tight text-white leading-tight">
-            Together for a <span className="text-[#FAD465]">More Just</span> Society
+          <h1
+            style={{ color: '#FFFFFF' }}
+            className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-serif tracking-tight text-white leading-tight"
+          >
+            Together for a <span style={{ color: '#FAD465' }} className="text-[#FAD465]">More Just</span> Society
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-slate-200 max-w-3xl mx-auto leading-relaxed font-normal">
@@ -467,7 +470,7 @@ export const HomePage: React.FC = () => {
                   <Scale size={16} />
                 </div>
                 <div>
-                  <h3 className="font-bold font-serif text-base text-white">HRSJM</h3>
+                  <h3 style={{ color: '#FFFFFF' }} className="font-bold font-serif text-base text-white">HRSJM</h3>
                   <p className="text-[10px] text-[#FAD465] font-semibold tracking-wider">
                     HUMAN RIGHTS & SOCIAL JUSTICE MISSION
                   </p>

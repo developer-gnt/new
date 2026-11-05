@@ -204,8 +204,11 @@ export const LoginPage: React.FC = () => {
               <RoleIcon size={28} className="text-[#FAD465]" />
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-tight text-white mb-1">
-              Together for a <span className="text-[#FAD465]">More Just</span> Society
+            <h1
+              style={{ color: '#FFFFFF' }}
+              className="text-xl sm:text-2xl font-bold font-serif tracking-tight text-white mb-1"
+            >
+              Together for a <span style={{ color: '#FAD465' }} className="text-[#FAD465]">More Just</span> Society
             </h1>
             <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
               Sign in to continue and be a part of our mission for human rights, dignity, equality and peace.
