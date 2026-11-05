@@ -10,7 +10,7 @@ export interface HeroSlideItem {
   eyebrow?: string;
 }
 
-export const OFFICIAL_HERO_SLIDES: HeroSlideItem[] = [
+const OFFICIAL_HERO_SLIDES: HeroSlideItem[] = [
   {
     id: 'mission-human-rights',
     eyebrow: 'HUMANITARIAN RELIEF MISSION',
@@ -71,7 +71,7 @@ interface SeekerHeroBannerProps {
  * - Interactive pagination dots in bottom-left
  * - showCta={false} for Donation Seeker dashboard per APK SeekerHomeScreen.tsx
  */
-export const SeekerHeroBanner: React.FC<SeekerHeroBannerProps> = ({ showCta = false }) => {
+export const SeekerHeroBanner: React.FC<SeekerHeroBannerProps> = ({ showCta: _showCta = false }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
 
   useEffect(() => {

@@ -25,7 +25,6 @@ import {
 import { SeekerHeroBanner } from '../components/SeekerHeroBanner';
 import { SeekerTimelineStepper } from '../components/SeekerTimelineStepper';
 import { useSeekerStore } from '../store/seekerStore';
-import { useAuth } from '../../auth/store/authStore';
 
 // Exact APK Data Sets
 const RIGHTS_CATEGORIES = [
@@ -97,7 +96,6 @@ const LATEST_NEWS = [
 
 export const SeekerHomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { requests } = useSeekerStore();
   const [videoModalOpen, setVideoModalOpen] = useState(false);
 

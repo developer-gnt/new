@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   FileText,
   Plus,
@@ -25,7 +25,6 @@ type FilterTab = 'ALL' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
  * - Request card with reference ID, reason title, date, AssistanceStatusBadge, amount bar, 4-step stepper, and "Ask Helpdesk" button
  */
 export const SeekerRequestsPage: React.FC = () => {
-  const navigate = useNavigate();
   const { requests, loadAll } = useSeekerStore();
 
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL');

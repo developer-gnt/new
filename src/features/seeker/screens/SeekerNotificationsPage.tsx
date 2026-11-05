@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, CheckCircle2, Clock, AlertCircle, ArrowRight, CheckCheck } from 'lucide-react';
+import { Bell, CheckCircle2, Clock, AlertCircle, ArrowRight } from 'lucide-react';
 import { useSeekerStore } from '../store/seekerStore';
 
 /**

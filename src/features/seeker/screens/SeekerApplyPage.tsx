@@ -11,10 +11,6 @@ import {
   CheckCircle2,
   Plus,
   User,
-  Phone,
-  Mail,
-  MapPin,
-  HelpCircle,
 } from 'lucide-react';
 import { useSeekerStore } from '../store/seekerStore';
 import { useAuth } from '../../auth/store/authStore';

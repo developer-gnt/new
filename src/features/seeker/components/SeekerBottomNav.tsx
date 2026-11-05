@@ -17,7 +17,7 @@ interface TabItem {
   icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number; color?: string }>;
 }
 
-export const SEEKER_BOTTOM_TABS: TabItem[] = [
+const SEEKER_BOTTOM_TABS: TabItem[] = [
   { id: 'home', name: 'SeekerHome', label: 'Home', path: '/seeker/home', icon: House },
   { id: 'requests', name: 'SeekerRequests', label: 'My Aid', path: '/seeker/requests', icon: FileText },
   { id: 'rights', name: 'SeekerRights', label: 'Rights', path: '/seeker/rights', icon: Scale },

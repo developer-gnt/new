@@ -7,9 +7,6 @@ import {
   User,
   ShieldCheck,
   Search,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
 } from 'lucide-react';
 import { useSeekerStore } from '../store/seekerStore';
 
