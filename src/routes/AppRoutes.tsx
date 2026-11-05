@@ -57,6 +57,7 @@ import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { MemberRegistrationPage } from '../pages/MemberRegistrationPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
@@ -73,6 +74,14 @@ export const AppRoutes: React.FC = () => {
         <Route path="/signup" element={<Navigate to="/register" replace />} />
         <Route path="/create-account" element={<RegisterPage />} />
         <Route path="/auth/register" element={<Navigate to="/register" replace />} />
+
+        {/* Member Registration Experience */}
+        <Route path="/membership/apply" element={<MemberRegistrationPage />} />
+        <Route path="/membership/categories" element={<MemberRegistrationPage />} />
+        <Route path="/membership" element={<MemberRegistrationPage />} />
+        <Route path="/member/register" element={<MemberRegistrationPage />} />
+        <Route path="/become-a-member" element={<MemberRegistrationPage />} />
+        <Route path="/apply-membership" element={<MemberRegistrationPage />} />
 
         {/* Direct Admin Aliases */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />

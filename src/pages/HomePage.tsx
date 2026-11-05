@@ -66,6 +66,12 @@ export const HomePage: React.FC = () => {
               Choose Your Section
             </button>
             <button
+              onClick={() => navigate('/membership/apply')}
+              className="hover:text-[#FAD465] transition cursor-pointer text-[#FAD465]"
+            >
+              Become a Member
+            </button>
+            <button
               onClick={() => scrollToSection('mission-pillars')}
               className="hover:text-[#FAD465] transition cursor-pointer"
             >
@@ -238,13 +244,21 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => handleRoleSelect('member')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#1D4ED8] hover:bg-blue-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Member Login</span>
-              <ArrowRight size={14} />
-            </button>
+            <div className="mt-6 flex flex-col gap-2">
+              <button
+                onClick={() => navigate('/membership/apply')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Become a Member</span>
+                <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => handleRoleSelect('member')}
+                className="w-full py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Existing Member Login</span>
+              </button>
+            </div>
           </div>
 
           {/* Card 3: Donor */}
