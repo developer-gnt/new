@@ -1,6 +1,6 @@
 import type React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, LogOut, ChevronRight as ChevronIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react';
 import { MEMBER_NAV_GROUPS } from './memberNavItems';
 import { HrsjmLogo } from '../common/HrsjmLogo';
 
@@ -90,7 +90,7 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                         ...styles.navLink,
                         ...(isActive ? styles.navLinkActive : {}),
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        padding: collapsed ? '10px 0' : '9px 12px',
+                        padding: collapsed ? '10px 0' : '10px 14px',
                       })}
                       title={collapsed ? item.title : undefined}
                     >
@@ -99,21 +99,12 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                           {/* Active Indicator Strip */}
                           {isActive && <div style={styles.activeStrip} />}
 
-                          {/* Icon Container with subtle background badge */}
-                          <div
-                            style={{
-                              ...styles.iconBadge,
-                              backgroundColor: isActive
-                                ? '#FAD465'
-                                : 'rgba(255, 255, 255, 0.08)',
-                            }}
-                          >
-                            <Icon
-                              size={16}
-                              color={isActive ? '#011F39' : '#DBE5EE'}
-                              strokeWidth={isActive ? 2.3 : 1.9}
-                            />
-                          </div>
+                          <Icon
+                            size={18}
+                            color={isActive ? '#FAD465' : '#DBE5EE'}
+                            strokeWidth={isActive ? 2.2 : 1.8}
+                            style={{ flexShrink: 0 }}
+                          />
 
                           {!collapsed && (
                             <span
@@ -131,20 +122,12 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                             <span
                               style={{
                                 ...styles.badge,
-                                backgroundColor: isActive ? '#FAD465' : '#EF4444',
-                                color: isActive ? '#011F39' : '#FFFFFF',
+                                backgroundColor: isActive ? '#FAD465' : 'rgba(250, 212, 101, 0.2)',
+                                color: isActive ? '#011F39' : '#FAD465',
                               }}
                             >
                               {item.badge}
                             </span>
-                          )}
-
-                          {!collapsed && (
-                            <ChevronIcon
-                              size={13}
-                              color={isActive ? '#FAD465' : 'rgba(219, 229, 238, 0.4)'}
-                              style={{ marginLeft: 'auto', flexShrink: 0 }}
-                            />
                           )}
                         </>
                       )}
@@ -155,21 +138,42 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
             </div>
           ))}
 
-          {/* Bottom Action Area: Sign Out & Version */}
-          {!collapsed && (
-            <div style={styles.bottomSignOutWrap}>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                style={styles.signOutBtn}
-                aria-label="Sign Out"
-              >
-                <LogOut size={16} color="#EF4444" />
-                <span style={styles.signOutText}>Sign Out</span>
-              </button>
-              <div style={styles.versionText}>HRSJM Member Mobile v1.0.0</div>
-            </div>
-          )}
+          {/* Bottom Action Area: Sign Out */}
+          <div style={styles.groupContainer}>
+            {collapsed && <div style={styles.collapsedDivider} />}
+            <button
+              type="button"
+              onClick={handleSignOut}
+              style={{
+                ...styles.navLink,
+                backgroundColor: 'transparent',
+                border: 'none',
+                width: '100%',
+                cursor: 'pointer',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                padding: collapsed ? '10px 0' : '10px 14px',
+              }}
+              title={collapsed ? 'Sign Out' : undefined}
+            >
+              <LogOut
+                size={18}
+                color="#EF4444"
+                strokeWidth={1.8}
+                style={{ flexShrink: 0 }}
+              />
+              {!collapsed && (
+                <span
+                  style={{
+                    ...styles.linkText,
+                    color: '#EF4444',
+                    fontWeight: 500,
+                  }}
+                >
+                  Sign Out
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Desktop Collapse Toggle Footer */}
@@ -241,24 +245,19 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     overflowY: 'auto',
     overflowX: 'hidden',
-    padding: '16px 10px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
+    padding: '12px 10px',
   },
   groupContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '3px',
+    marginBottom: '16px',
   },
   groupHeader: {
-    fontSize: '11px',
+    fontSize: '10.5px',
     fontWeight: 700,
+    color: '#E9B82E',
     letterSpacing: '0.08em',
-    color: '#FAD465',
+    padding: '6px 12px',
     textTransform: 'uppercase',
-    padding: '4px 10px 6px',
-    opacity: 0.95,
+    userSelect: 'none',
   },
   collapsedDivider: {
     height: '1px',
@@ -268,91 +267,46 @@ const styles: Record<string, React.CSSProperties> = {
   groupItems: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '3px',
   },
   navLink: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
     borderRadius: '8px',
     textDecoration: 'none',
-    fontSize: '13px',
-    transition: 'all 0.16s ease',
-    position: 'relative',
-    cursor: 'pointer',
+    transition: 'background-color 0.16s, color 0.16s',
+    userSelect: 'none',
   },
   navLinkActive: {
-    backgroundColor: '#083258',
-    boxShadow: 'inset 0 0 0 1px rgba(250, 212, 101, 0.25)',
+    backgroundColor: '#123F68',
   },
   activeStrip: {
     position: 'absolute',
-    left: '0px',
-    top: '4px',
-    bottom: '4px',
+    left: 0,
+    top: '6px',
+    bottom: '6px',
     width: '3.5px',
     backgroundColor: '#FAD465',
     borderRadius: '0 4px 4px 0',
   },
-  iconBadge: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    transition: 'background-color 0.15s ease',
-  },
   linkText: {
+    fontSize: '13.5px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     flex: 1,
-    fontSize: '13px',
   },
   badge: {
-    fontSize: '10px',
-    fontWeight: 700,
-    padding: '2px 6px',
-    borderRadius: '10px',
-    lineHeight: 1,
-    flexShrink: 0,
-  },
-  bottomSignOutWrap: {
-    marginTop: 'auto',
-    paddingTop: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  signOutBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    width: '100%',
-    padding: '10px 14px',
-    backgroundColor: '#FEF2F2',
-    border: '1px solid #FECACA',
-    borderRadius: '10px',
-    color: '#EF4444',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease, transform 0.1s ease',
-  },
-  signOutText: {
-    color: '#EF4444',
-  },
-  versionText: {
-    textAlign: 'center',
     fontSize: '11px',
-    color: '#8CA5BE',
-    paddingBottom: '4px',
+    fontWeight: 700,
+    padding: '1px 7px',
+    borderRadius: '999px',
+    lineHeight: 1.4,
   },
   footer: {
-    padding: '12px',
+    padding: '12px 14px',
     borderTop: '1px solid #123F68',
     backgroundColor: '#011F39',
   },
@@ -363,16 +317,16 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '8px',
     width: '100%',
     padding: '8px',
-    background: 'none',
+    backgroundColor: 'transparent',
     border: '1px solid #123F68',
-    borderRadius: '8px',
-    cursor: 'pointer',
+    borderRadius: '6px',
     color: '#DBE5EE',
-    transition: 'all 0.16s ease',
+    cursor: 'pointer',
+    fontSize: '12.5px',
+    fontWeight: 500,
+    transition: 'background-color 0.15s, border-color 0.15s',
   },
   collapseBtnText: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: '#DBE5EE',
+    whiteSpace: 'nowrap',
   },
 };

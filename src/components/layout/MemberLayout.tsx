@@ -17,6 +17,8 @@ export const MemberLayout: React.FC = () => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
         setCollapsed(true);
+      } else {
+        setCollapsed(false);
       }
     };
     handleResize();

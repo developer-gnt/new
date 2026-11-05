@@ -97,7 +97,7 @@ button {
 }
 
 /* Responsive Sidebar Behavior */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   aside {
     position: fixed !important;
     left: 0;

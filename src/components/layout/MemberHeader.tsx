@@ -32,7 +32,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { member, setDevMemberState } = useCurrentMember();
+  const { member } = useCurrentMember();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -98,26 +98,31 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
 
   return (
     <header style={styles.header}>
-      {/* Left Section: Single Menu Toggle, Brand Logo & Title */}
+      {/* Left Section: Menu Toggle, Brand Logo (mobile only) & Title */}
       <div style={styles.leftSection}>
+        {/* Mobile menu button */}
         <button
           type="button"
-          onClick={() => {
-            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-              onToggleMobileSidebar();
-            } else {
-              onToggleDesktopCollapse();
-            }
-          }}
-          style={styles.menuToggleBtn}
-          aria-label="Toggle Sidebar Menu"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onClick={onToggleMobileSidebar}
+          style={styles.mobileMenuBtn}
+          aria-label="Open Navigation Menu"
         >
-          <Menu size={20} color="#06294D" />
+          <Menu size={20} color="#0B2F52" />
         </button>
 
-        {/* Brand logo in header matching Image 5 */}
-        <div style={styles.headerLogo}>
+        {/* Desktop collapse toggle button */}
+        <button
+          type="button"
+          onClick={onToggleDesktopCollapse}
+          style={styles.desktopToggleBtn}
+          aria-label="Toggle Sidebar"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <Menu size={18} color="#06294D" />
+        </button>
+
+        {/* Brand logo in header for mobile when sidebar is hidden */}
+        <div style={styles.mobileLogo}>
           <HrsjmLogo size="sm" variant="dark" showWordmark={true} subtitle="" />
         </div>
 
@@ -131,46 +136,8 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Section: Dev Switcher, Donate Now, Status, Bell & Profile */}
+      {/* Right Section: Donate Now, Status, Bell & Profile */}
       <div style={styles.rightSection}>
-        {/* Interactive Dev State Switcher (Useful for testing Active/Expiring/Expired) */}
-        <div style={styles.devSwitcherWrap}>
-          <span style={styles.devLabel}>State:</span>
-          <button
-            type="button"
-            onClick={() => setDevMemberState('active')}
-            style={{
-              ...styles.devBtn,
-              ...(member.status === 'ACTIVE' ? styles.devBtnActive : {}),
-            }}
-            title="Simulate Active Member"
-          >
-            Active
-          </button>
-          <button
-            type="button"
-            onClick={() => setDevMemberState('expiring')}
-            style={{
-              ...styles.devBtn,
-              ...(member.status === 'EXPIRING_SOON' ? styles.devBtnExpiring : {}),
-            }}
-            title="Simulate Expiring Soon"
-          >
-            Expiring
-          </button>
-          <button
-            type="button"
-            onClick={() => setDevMemberState('expired')}
-            style={{
-              ...styles.devBtn,
-              ...(member.status === 'EXPIRED' ? styles.devBtnExpired : {}),
-            }}
-            title="Simulate Expired Member"
-          >
-            Expired
-          </button>
-        </div>
-
         {/* Member Status Pill */}
         <div
           style={{
@@ -181,11 +148,11 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
           }}
           title={`Valid until ${member.validUpto}`}
         >
-          <StatusIcon size={12} color={statusBadge.color} />
+          <StatusIcon size={13} color={statusBadge.color} />
           <span>{statusBadge.label}</span>
         </div>
 
-        {/* Exact "Donate Now" Button from Image 5 */}
+        {/* Donate Now Button */}
         <button
           type="button"
           style={styles.donateBtn}
@@ -196,7 +163,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
           <span>Donate Now</span>
         </button>
 
-        {/* Notifications Bell with '7' Unread Badge (as shown in Image 5) */}
+        {/* Notifications Bell with '7' Unread Badge */}
         <button
           type="button"
           style={styles.bellBtn}
@@ -354,7 +321,18 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '14px',
   },
-  menuToggleBtn: {
+  mobileMenuBtn: {
+    display: 'none',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '38px',
+    height: '38px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FAF7F0',
+    cursor: 'pointer',
+  },
+  desktopToggleBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -366,10 +344,9 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     transition: 'all 0.15s ease',
   },
-  headerLogo: {
-    display: 'flex',
+  mobileLogo: {
+    display: 'none',
     alignItems: 'center',
-    marginRight: '6px',
   },
   titleWrap: {
     display: 'flex',
@@ -408,101 +385,61 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '12px',
   },
-  devSwitcherWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '3px',
-    backgroundColor: '#F8FAFC',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    padding: '3px 6px',
-    fontSize: '11px',
-  },
-  devLabel: {
-    color: '#64748B',
-    fontWeight: 600,
-    marginRight: '2px',
-    fontSize: '10px',
-    textTransform: 'uppercase',
-  },
-  devBtn: {
-    padding: '2px 6px',
-    borderRadius: '5px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#475569',
-    fontSize: '11px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  devBtnActive: {
-    backgroundColor: '#16A34A',
-    color: '#FFFFFF',
-  },
-  devBtnExpiring: {
-    backgroundColor: '#D97706',
-    color: '#FFFFFF',
-  },
-  devBtnExpired: {
-    backgroundColor: '#DC2626',
-    color: '#FFFFFF',
-  },
   statusPill: {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: '5px',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '11px',
+    gap: '6px',
+    padding: '5px 12px',
+    borderRadius: '999px',
+    fontSize: '11.5px',
     fontWeight: 700,
-    border: '1px solid transparent',
     letterSpacing: '0.04em',
+    border: '1px solid',
     textTransform: 'uppercase',
   },
   donateBtn: {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FAD465',
     color: '#0B2F52',
-    fontWeight: 700,
-    fontSize: '12.5px',
-    padding: '7px 16px',
-    borderRadius: '20px',
     border: 'none',
+    borderRadius: '8px',
+    padding: '7px 14px',
+    fontSize: '12.5px',
+    fontWeight: 700,
     cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(245, 158, 11, 0.25)',
-    transition: 'transform 0.12s ease, background-color 0.12s ease',
+    boxShadow: '0 2px 4px rgba(250, 212, 101, 0.3)',
+    transition: 'all 0.15s ease',
   },
   bellBtn: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     width: '38px',
     height: '38px',
-    borderRadius: '9px',
+    borderRadius: '8px',
     border: '1px solid #DCE4EC',
     backgroundColor: '#FAF7F0',
     cursor: 'pointer',
-    position: 'relative',
-    transition: 'all 0.15s ease',
+    transition: 'background-color 0.15s ease',
   },
   bellBadge: {
     position: 'absolute',
     top: '-3px',
     right: '-3px',
-    minWidth: '18px',
-    height: '18px',
-    borderRadius: '9px',
     backgroundColor: '#DC2626',
     color: '#FFFFFF',
     fontSize: '10px',
     fontWeight: 700,
+    width: '18px',
+    height: '18px',
+    borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     border: '2px solid #FFFFFF',
-    padding: '0 4px',
   },
   profileWrapper: {
     position: 'relative',
@@ -511,9 +448,9 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '4px 10px 4px 6px',
+    padding: '4px 8px 4px 4px',
     borderRadius: '24px',
-    border: '1px solid #DCE4EC',
+    border: '1px solid #E2E8F0',
     backgroundColor: '#FFFFFF',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -523,7 +460,7 @@ const styles: Record<string, React.CSSProperties> = {
     height: '34px',
     borderRadius: '50%',
     padding: '1.5px',
-    backgroundColor: '#06294D',
+    backgroundColor: '#FAD465',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -532,16 +469,16 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     height: '100%',
     borderRadius: '50%',
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#06294D',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   avatarInitials: {
-    fontSize: '12px',
+    color: '#FAD465',
     fontWeight: 700,
-    color: '#06294D',
+    fontSize: '12px',
   },
   profileInfo: {
     display: 'flex',
@@ -549,23 +486,19 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'left',
   },
   profileName: {
-    fontSize: '13px',
-    fontWeight: 700,
+    fontSize: '12.5px',
+    fontWeight: 600,
     color: '#06294D',
     lineHeight: 1.2,
-    maxWidth: '130px',
+    maxWidth: '140px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   profileRole: {
-    fontSize: '11px',
+    fontSize: '10.5px',
     color: '#718096',
     lineHeight: 1.2,
-    maxWidth: '130px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
   dropdownMenu: {
     position: 'absolute',
@@ -574,35 +507,34 @@ const styles: Record<string, React.CSSProperties> = {
     width: '260px',
     backgroundColor: '#FFFFFF',
     borderRadius: '12px',
+    boxShadow: '0 12px 28px rgba(1, 31, 57, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05)',
     border: '1px solid #DCE4EC',
-    boxShadow: '0 10px 25px rgba(6, 41, 77, 0.12)',
-    padding: '8px 0',
+    padding: '8px',
     zIndex: 50,
   },
   dropdownHeader: {
-    padding: '10px 16px',
+    padding: '10px 12px 8px',
   },
   dropdownMemberName: {
     margin: 0,
-    fontSize: '13px',
+    fontSize: '13.5px',
     fontWeight: 700,
     color: '#06294D',
   },
   dropdownMemberNumber: {
-    margin: '2px 0 0',
+    margin: '2px 0 6px',
     fontSize: '11px',
-    fontFamily: 'monospace',
-    color: '#475569',
+    color: '#718096',
   },
   chapterBadge: {
-    marginTop: '6px',
-    fontSize: '10px',
-    color: '#06294D',
-    backgroundColor: '#FEF6E7',
-    border: '1px solid #FAD465',
-    padding: '2px 6px',
-    borderRadius: '4px',
     display: 'inline-block',
+    fontSize: '10px',
+    fontWeight: 600,
+    padding: '2px 8px',
+    backgroundColor: '#FAF7F0',
+    color: '#06294D',
+    borderRadius: '4px',
+    border: '1px solid #DCE4EC',
   },
   dropdownDivider: {
     height: '1px',
@@ -610,15 +542,16 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '6px 0',
   },
   dropdownItem: {
+    width: '100%',
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    width: '100%',
-    padding: '8px 16px',
-    background: 'none',
+    padding: '8px 12px',
     border: 'none',
-    fontSize: '13px',
-    color: '#2D3748',
+    backgroundColor: 'transparent',
+    borderRadius: '6px',
+    fontSize: '12.5px',
+    color: '#34516D',
     cursor: 'pointer',
     textAlign: 'left',
     transition: 'background-color 0.12s ease',
