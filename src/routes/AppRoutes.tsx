@@ -55,33 +55,64 @@ import { MyIdCardPage } from '../features/profile/screens/MyIdCardPage';
 import { NotificationsPage } from '../features/notifications/screens/NotificationsPage';
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { UserLayout } from '../features/user/layout/UserLayout';
+import { UserDashboardPage } from '../features/user/screens/UserDashboardPage';
+import { UserAboutPage } from '../features/user/screens/UserAboutPage';
+import { UserWhatWeDoPage } from '../features/user/screens/UserWhatWeDoPage';
+import { UserRightsPage } from '../features/user/screens/UserRightsPage';
+import { UserEventsPage } from '../features/user/screens/UserEventsPage';
+import { UserNewsPage } from '../features/user/screens/UserNewsPage';
+import { UserBlogsPage } from '../features/user/screens/UserBlogsPage';
+import { UserDonationsPage } from '../features/user/screens/UserDonationsPage';
+import { UserContactPage } from '../features/user/screens/UserContactPage';
+import { UserSupportPage } from '../features/user/screens/UserSupportPage';
+import { UserMembershipPage } from '../features/user/screens/UserMembershipPage';
+import { UserNotificationsPage } from '../features/user/screens/UserNotificationsPage';
+import { UserProfilePage } from '../features/user/screens/UserProfilePage';
 
 export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* Root Redirects & Direct Aliases */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        {/* User Application Routes (Cloned APK User Portal) */}
+        <Route element={<UserLayout />}>
+          <Route path="/" element={<UserDashboardPage />} />
+          <Route path="/home" element={<UserDashboardPage />} />
+          <Route path="/user" element={<UserDashboardPage />} />
+          <Route path="/user/dashboard" element={<UserDashboardPage />} />
+          <Route path="/about" element={<UserAboutPage />} />
+          <Route path="/what-we-do" element={<UserWhatWeDoPage />} />
+          <Route path="/rights" element={<UserRightsPage />} />
+          <Route path="/know-your-rights" element={<UserRightsPage />} />
+          <Route path="/events" element={<UserEventsPage />} />
+          <Route path="/event" element={<UserEventsPage />} />
+          <Route path="/news" element={<UserNewsPage />} />
+          <Route path="/press" element={<UserNewsPage />} />
+          <Route path="/blogs" element={<UserBlogsPage />} />
+          <Route path="/articles" element={<UserBlogsPage />} />
+          <Route path="/donations" element={<UserDonationsPage />} />
+          <Route path="/contact" element={<UserContactPage />} />
+          <Route path="/support" element={<UserSupportPage />} />
+          <Route path="/complaints" element={<UserSupportPage />} />
+          <Route path="/membership-applications" element={<UserMembershipPage />} />
+          <Route path="/membership" element={<UserMembershipPage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/my-profile" element={<UserProfilePage />} />
+          <Route path="/notifications" element={<UserNotificationsPage />} />
+          <Route path="/alerts" element={<UserNotificationsPage />} />
+        </Route>
+
+        {/* Admin Direct Aliases (Exclusively for Admin-only modules) */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
         <Route path="/all-users" element={<Navigate to="/admin/all-users" replace />} />
         <Route path="/members" element={<Navigate to="/admin/members" replace />} />
-        <Route path="/membership-applications" element={<Navigate to="/admin/membership-applications" replace />} />
         <Route path="/applications" element={<Navigate to="/admin/membership-applications" replace />} />
         <Route path="/assistance" element={<Navigate to="/admin/assistance" replace />} />
-        <Route path="/support" element={<Navigate to="/admin/support" replace />} />
-        <Route path="/complaints" element={<Navigate to="/admin/support" replace />} />
         <Route path="/tickets" element={<Navigate to="/admin/support" replace />} />
-        <Route path="/events" element={<Navigate to="/admin/events" replace />} />
-        <Route path="/event" element={<Navigate to="/admin/events" replace />} />
-        <Route path="/news" element={<Navigate to="/admin/news" replace />} />
-        <Route path="/press" element={<Navigate to="/admin/news" replace />} />
         <Route path="/press-releases" element={<Navigate to="/admin/news" replace />} />
-        <Route path="/blogs" element={<Navigate to="/admin/blogs" replace />} />
-        <Route path="/articles" element={<Navigate to="/admin/blogs" replace />} />
         <Route path="/blog" element={<Navigate to="/admin/blogs" replace />} />
-        <Route path="/rights" element={<Navigate to="/admin/rights" replace />} />
-        <Route path="/know-your-rights" element={<Navigate to="/admin/rights" replace />} />
         <Route path="/legal-rights" element={<Navigate to="/admin/rights" replace />} />
         <Route path="/expenses" element={<Navigate to="/admin/expenses" replace />} />
         <Route path="/expense" element={<Navigate to="/admin/expenses" replace />} />
@@ -102,14 +133,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/trial-balance" element={<Navigate to="/admin/reports/trial-balance" replace />} />
         <Route path="/profit-loss" element={<Navigate to="/admin/reports/profit-loss" replace />} />
         <Route path="/balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
-        <Route path="/donations" element={<Navigate to="/admin/donations" replace />} />
         <Route path="/donation" element={<Navigate to="/admin/donations" replace />} />
-        <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
-        <Route path="/my-profile" element={<Navigate to="/admin/profile" replace />} />
         <Route path="/id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
         <Route path="/my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
-        <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
-        <Route path="/alerts" element={<Navigate to="/admin/notifications" replace />} />
         <Route path="/inbox" element={<Navigate to="/admin/notifications" replace />} />
         <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/preferences" element={<Navigate to="/admin/settings" replace />} />

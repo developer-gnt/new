@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -76,10 +76,12 @@ html, body {
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  margin-top: 0;
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    margin-top: 0;
+  }
 }
 
 a {
