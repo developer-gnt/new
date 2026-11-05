@@ -9,11 +9,11 @@ import {
   X,
   User,
 } from 'lucide-react';
-import { blogsStore } from '../../blogs/store/blogsStore';
-import type { BlogListItem } from '../../blogs/types/blog.types';
+import { blogsStore } from '@/features/admin/blogs/store/blogsStore';
+import type { BlogListItem } from '@/features/admin/blogs/types/blog.types';
 
 export const MemberBlogsPage: React.FC = () => {
-  const snapshot = useSyncExternalStore(blogsStore.subscribe, blogsStore.getSnapshot);
+  const snapshot = useSyncExternalStore<{ blogs: BlogListItem[]; version: number }>(blogsStore.subscribe, blogsStore.getSnapshot);
   const blogs = snapshot.blogs;
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,7 +22,7 @@ export const MemberBlogsPage: React.FC = () => {
 
   const categories = ['ALL', 'Know Your Rights', 'Social Justice', 'Human Rights'];
 
-  const filteredBlogs = blogs.filter((item) => {
+  const filteredBlogs = blogs.filter((item: BlogListItem) => {
     if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
       return false;
     }
@@ -94,7 +94,7 @@ export const MemberBlogsPage: React.FC = () => {
         </div>
       ) : (
         <div style={styles.blogsGrid}>
-          {filteredBlogs.map((blog) => (
+          {filteredBlogs.map((blog: BlogListItem) => (
             <div
               key={blog.id}
               style={styles.card}
@@ -174,7 +174,7 @@ export const MemberBlogsPage: React.FC = () => {
               </div>
 
               <div style={styles.contentParagraphs}>
-                {(activeBlog.content || []).map((p, idx) => (
+                {(Array.isArray(activeBlog.content) ? activeBlog.content : [activeBlog.content || ""]).map((p: string, idx: number) => (
                   <p key={idx} style={styles.paragraph}>
                     {p}
                   </p>
@@ -182,7 +182,7 @@ export const MemberBlogsPage: React.FC = () => {
               </div>
 
               <div style={styles.tagsRow}>
-                {(activeBlog.tags || []).map((t) => (
+                {(activeBlog.tags || []).map((t: string) => (
                   <span key={t} style={styles.tag}>
                     #{t}
                   </span>

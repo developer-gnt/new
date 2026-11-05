@@ -8,11 +8,11 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react';
-import { newsStore } from '../../news/store/newsStore';
-import type { NewsListItem } from '../../news/types/news.types';
+import { newsStore } from '@/features/admin/news/store/newsStore';
+import type { NewsListItem } from '@/features/admin/news/types/news.types';
 
 export const MemberNewsPage: React.FC = () => {
-  const snapshot = useSyncExternalStore(newsStore.subscribe, newsStore.getSnapshot);
+  const snapshot = useSyncExternalStore<{ news: NewsListItem[]; version: number }>(newsStore.subscribe, newsStore.getSnapshot);
   const news = snapshot.news;
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +21,7 @@ export const MemberNewsPage: React.FC = () => {
 
   const categories = ['ALL', 'Legal', 'Events', 'National', 'Relief'];
 
-  const filteredNews = news.filter((item) => {
+  const filteredNews = news.filter((item: NewsListItem) => {
     if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
       return false;
     }
@@ -93,7 +93,7 @@ export const MemberNewsPage: React.FC = () => {
         </div>
       ) : (
         <div style={styles.newsGrid}>
-          {filteredNews.map((item) => (
+          {filteredNews.map((item: NewsListItem) => (
             <div
               key={item.id}
               style={styles.card}
@@ -181,7 +181,7 @@ export const MemberNewsPage: React.FC = () => {
 
               {/* Content */}
               <div style={styles.contentParagraphs}>
-                {(activeArticle.content || []).map((p, idx) => (
+                {(Array.isArray(activeArticle.content) ? activeArticle.content : [activeArticle.content || ""]).map((p: string, idx: number) => (
                   <p key={idx} style={styles.paragraph}>
                     {p}
                   </p>
@@ -190,7 +190,7 @@ export const MemberNewsPage: React.FC = () => {
 
               {/* Tags */}
               <div style={styles.tagsRow}>
-                {(activeArticle.tags || []).map((t) => (
+                {(activeArticle.tags || []).map((t: string) => (
                   <span key={t} style={styles.tag}>
                     #{t}
                   </span>

@@ -11,12 +11,12 @@ import {
   MapPin,
 } from 'lucide-react';
 import type { MemberProfile } from '../types/member.types';
-import { generateQrMatrix } from '../../profile/utils/qrGenerator';
+import { generateQrMatrix } from '@/features/admin/profile/utils/qrGenerator';
 import {
   downloadMemberCardPdf,
   printMemberCardHtml,
 } from '../utils/memberDocumentGenerator';
-import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 interface MemberFlipCardProps {
   member: MemberProfile;
@@ -207,8 +207,7 @@ export const MemberFlipCard: React.FC<MemberFlipCardProps> = ({
                 <div style={styles.qrContainer}>
                   <svg width="105" height="105" viewBox="0 0 25 25" style={{ display: 'block' }}>
                     <rect width="25" height="25" fill="#FFFFFF" />
-                    {qrMatrix.map((row, r) =>
-                      row.map((filled, c) =>
+                    {qrMatrix.map((row: boolean[], r: number) => row.map((filled: boolean, c: number) =>
                         filled ? <rect key={`${r}-${c}`} x={c} y={r} width="1" height="1" fill="#06294D" /> : null
                       )
                     )}

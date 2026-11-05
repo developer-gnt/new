@@ -10,13 +10,13 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
-import { eventsStore } from '../../events/store/eventsStore';
-import type { EventListItem } from '../../events/types/events.types';
+import { eventsStore } from '@/features/admin/events/store/eventsStore';
+import type { EventListItem } from '@/features/admin/events/types/events.types';
 import { useCurrentMember } from '../store/memberStore';
 
 export const MemberEventsPage: React.FC = () => {
   const { member } = useCurrentMember();
-  const snapshot = useSyncExternalStore(eventsStore.subscribe, eventsStore.getSnapshot);
+  const snapshot = useSyncExternalStore<{ events: EventListItem[]; version: number }>(eventsStore.subscribe, eventsStore.getSnapshot);
   const events = snapshot.events;
 
   const [activeTab, setActiveTab] = useState<'UPCOMING' | 'MY_REGISTRATIONS'>('UPCOMING');
@@ -28,7 +28,7 @@ export const MemberEventsPage: React.FC = () => {
 
   const categories = ['ALL', 'Seminar', 'Legal Awareness', 'Relief Activity', 'Workshop'];
 
-  const filteredEvents = events.filter((e) => {
+  const filteredEvents = events.filter((e: EventListItem) => {
     if (activeTab === 'MY_REGISTRATIONS' && !registeredIds.includes(e.id)) {
       return false;
     }
@@ -185,7 +185,7 @@ export const MemberEventsPage: React.FC = () => {
         </div>
       ) : (
         <div style={styles.eventsGrid}>
-          {filteredEvents.map((event) => {
+          {filteredEvents.map((event: EventListItem) => {
             const isRegistered = registeredIds.includes(event.id);
             return (
               <div key={event.id} style={styles.card}>

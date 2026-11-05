@@ -1,4 +1,4 @@
-import { apiClient } from '../../../services/apiClient';
+import { apiClient, ENDPOINTS, getAuthToken } from '@/api';
 
 export interface UpdateProfilePayload {
   full_name?: string;
@@ -9,26 +9,15 @@ export interface UpdateProfilePayload {
   blood_group?: string;
 }
 
-const hasToken = (): boolean => {
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return Boolean(window.localStorage.getItem('hrsjm_auth_token'));
-    }
-  } catch {
-    // Ignore
-  }
-  return false;
-};
-
 export const memberService = {
   /**
    * Fetches the current logged-in user's active membership profile
    * GET /api/v1/users/me/membership
    */
   async getOwnMembership() {
-    if (!hasToken()) return null;
+    if (!getAuthToken()) return null;
     try {
-      return await apiClient.get<any>('/users/me/membership');
+      return await apiClient.get<any>(ENDPOINTS.memberships.myMembership);
     } catch {
       return null;
     }
@@ -39,9 +28,9 @@ export const memberService = {
    * GET /api/v1/auth/me
    */
   async getOwnProfile() {
-    if (!hasToken()) return null;
+    if (!getAuthToken()) return null;
     try {
-      return await apiClient.get<any>('/auth/me');
+      return await apiClient.get<any>(ENDPOINTS.auth.me);
     } catch {
       return null;
     }
@@ -52,9 +41,9 @@ export const memberService = {
    * PATCH /api/v1/auth/me
    */
   async updateOwnProfile(payload: UpdateProfilePayload) {
-    if (!hasToken()) return null;
+    if (!getAuthToken()) return null;
     try {
-      return await apiClient.patch<any>('/auth/me', payload);
+      return await apiClient.patch<any>(ENDPOINTS.auth.me, payload);
     } catch {
       return null;
     }
@@ -66,7 +55,7 @@ export const memberService = {
    */
   async getMembershipCategories() {
     try {
-      return await apiClient.get<any>('/membership-categories');
+      return await apiClient.get<any>(ENDPOINTS.memberships.categories);
     } catch {
       return null;
     }
@@ -77,7 +66,7 @@ export const memberService = {
    * GET /api/v1/membership-payments
    */
   async getOwnMembershipPayments() {
-    if (!hasToken()) return null;
+    if (!getAuthToken()) return null;
     try {
       return await apiClient.get<any>('/membership-payments');
     } catch {
@@ -90,7 +79,7 @@ export const memberService = {
    * GET /api/v1/donation-payments
    */
   async getOwnDonations() {
-    if (!hasToken()) return null;
+    if (!getAuthToken()) return null;
     try {
       return await apiClient.get<any>('/donation-payments');
     } catch {
@@ -104,7 +93,7 @@ export const memberService = {
    */
   async getMembershipDocuments(membershipId: string) {
     try {
-      return await apiClient.get<any>(`/memberships/${membershipId}/documents`);
+      return await apiClient.get<any>(ENDPOINTS.memberships.documents(membershipId));
     } catch {
       return null;
     }
@@ -116,7 +105,7 @@ export const memberService = {
    */
   async getRenewalHistory(membershipId: string) {
     try {
-      return await apiClient.get<any>(`/memberships/${membershipId}/renewal-history`);
+      return await apiClient.get<any>(ENDPOINTS.memberships.renewalHistory(membershipId));
     } catch {
       return null;
     }

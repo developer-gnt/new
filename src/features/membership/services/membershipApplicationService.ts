@@ -1,4 +1,4 @@
-import { apiClient } from '../../../services/apiClient';
+import { apiClient, ENDPOINTS } from '@/api';
 import type { MembershipApplicationFormData } from '../types/membershipApplication.types';
 
 export const membershipApplicationService = {
@@ -33,7 +33,7 @@ export const membershipApplicationService = {
       signature_url: formData.documents.signatureFileUrl,
     };
 
-    return apiClient.post<any>('/memberships', payload);
+    return apiClient.post<any>(ENDPOINTS.memberships.apply, payload);
   },
 
   /**
@@ -41,7 +41,7 @@ export const membershipApplicationService = {
    * GET /api/v1/memberships/:id
    */
   async getApplicationStatus(applicationId: string) {
-    return apiClient.get<any>(`/memberships/${applicationId}`);
+    return apiClient.get<any>(ENDPOINTS.memberships.getById(applicationId));
   },
 
   /**
@@ -57,7 +57,6 @@ export const membershipApplicationService = {
    * PATCH /api/v1/memberships/:id
    */
   async reuploadDocument(applicationId: string, docPayload: { doc_type: string; file_url: string }) {
-    return apiClient.patch<any>(`/memberships/${applicationId}`, docPayload);
+    return apiClient.patch<any>(ENDPOINTS.memberships.update(applicationId), docPayload);
   },
 };
-

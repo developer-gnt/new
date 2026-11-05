@@ -11,12 +11,12 @@ import {
   FileText,
   ChevronRight,
 } from 'lucide-react';
-import { rightsStore } from '../../rights/store/rightsStore';
-import type { RightsArticle } from '../../rights/types/rights.types';
+import { rightsStore } from '@/features/admin/rights/store/rightsStore';
+import type { RightsArticle } from '@/features/admin/rights/types/rights.types';
 
 export const MemberRightsPage: React.FC = () => {
   const navigate = useNavigate();
-  const snapshot = useSyncExternalStore(rightsStore.subscribe, rightsStore.getSnapshot);
+  const snapshot = useSyncExternalStore<{ articles: RightsArticle[]; version: number }>(rightsStore.subscribe, rightsStore.getSnapshot);
   const articles = snapshot.articles;
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,7 +25,7 @@ export const MemberRightsPage: React.FC = () => {
 
   const categories = ['ALL', 'Constitution', "Women's Rights", 'Police', 'RTI', 'Consumer'];
 
-  const filteredArticles = articles.filter((art) => {
+  const filteredArticles = articles.filter((art: RightsArticle) => {
     if (selectedCategory !== 'ALL' && !art.category.toLowerCase().includes(selectedCategory.toLowerCase())) {
       return false;
     }
@@ -100,7 +100,7 @@ export const MemberRightsPage: React.FC = () => {
         </div>
       ) : (
         <div style={styles.articlesGrid}>
-          {filteredArticles.map((art) => (
+          {filteredArticles.map((art: RightsArticle) => (
             <div
               key={art.id}
               style={styles.articleCard}
@@ -202,7 +202,7 @@ export const MemberRightsPage: React.FC = () => {
 
               {/* Tags */}
               <div style={styles.tagsRow}>
-                {(activeArticle.tags || []).map((t) => (
+                {(activeArticle.tags || []).map((t: string) => (
                   <span key={t} style={styles.tag}>
                     #{t}
                   </span>

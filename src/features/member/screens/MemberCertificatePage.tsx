@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useCurrentMember } from '../store/memberStore';
 import { downloadMemberCertificatePdf } from '../utils/memberDocumentGenerator';
-import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 export const MemberCertificatePage: React.FC = () => {
   const navigate = useNavigate();
