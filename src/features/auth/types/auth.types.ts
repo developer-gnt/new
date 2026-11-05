@@ -59,6 +59,18 @@ export interface ForgotPasswordResult {
   reset_token?: string;
 }
 
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  confirm_password: string;
+}
+
+export interface VerifyResetTokenResult {
+  valid: boolean;
+  email?: string;
+  message?: string;
+}
+
 export interface LoginValidationErrors {
   identifier?: string;
   password?: string;

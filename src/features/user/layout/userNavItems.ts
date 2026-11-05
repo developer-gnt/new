@@ -13,6 +13,7 @@ import {
   PhoneCall,
   User,
   Bell,
+  Receipt,
 } from 'lucide-react';
 
 export interface UserNavItem {
@@ -97,6 +98,12 @@ export const USER_NAV_GROUPS: UserNavGroup[] = [
         title: 'Donations & Aid',
         path: '/donations',
         icon: Heart,
+      },
+      {
+        id: 'user-transactions',
+        title: 'Transactions & Receipts',
+        path: '/user/transactions',
+        icon: Receipt,
       },
       {
         id: 'user-membership',

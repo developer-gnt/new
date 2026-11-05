@@ -83,6 +83,8 @@ import {
 // Public Experience Pages (Parity with Mobile APK)
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { UserTransactionsPage } from '@/features/transactions';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { SignupCategoryPage } from '@/pages/SignupCategoryPage';
 import { MemberRegistrationPage } from '@/pages/MemberRegistrationPage';
@@ -144,6 +146,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/signin" element={<Navigate to="/login" replace />} />
         <Route path="/auth/login" element={<Navigate to="/login" replace />} />
 
+        {/* Account Password Recovery & Reset (Parity with Mobile ResetPasswordScreen) */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+
         {/* Public Homepage & Role Selection */}
         <Route path="/home" element={<HomePage />} />
         <Route path="/public" element={<HomePage />} />
@@ -174,6 +180,11 @@ export const AppRoutes: React.FC = () => {
           <Route path="/user/membership/status" element={<UserMembershipPage />} />
           <Route path="/membership-status" element={<UserMembershipPage />} />
           <Route path="/membership-applications" element={<UserMembershipPage />} />
+          <Route path="/user/transactions" element={<UserTransactionsPage />} />
+          <Route path="/transactions" element={<UserTransactionsPage />} />
+          <Route path="/my-transactions" element={<UserTransactionsPage />} />
+          <Route path="/payment-history" element={<UserTransactionsPage />} />
+          <Route path="/receipts-history" element={<UserTransactionsPage />} />
           <Route path="/user/profile" element={<UserProfilePage />} />
           <Route path="/profile" element={<UserProfilePage />} />
           <Route path="/user/notifications" element={<UserNotificationsPage />} />
@@ -253,6 +264,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="renew" element={<MemberRenewalPage />} />
           <Route path="causes" element={<MemberCausesPage />} />
           <Route path="passbook" element={<MemberPassbookPage />} />
+          <Route path="transactions" element={<UserTransactionsPage />} />
           <Route path="support" element={<MemberSupportPage />} />
           <Route path="profile" element={<MemberProfilePage />} />
           <Route path="about" element={<MemberAboutPage />} />
