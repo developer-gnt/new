@@ -1,3 +1,5 @@
+import type { PaymentReceiptDetails } from '../../payments/types/payment.types';
+
 export type ApplicationStatus =
   | 'APPLIED'
   | 'UNDER_REVIEW'
@@ -78,5 +80,9 @@ export interface SubmittedApplicationRecord {
     signature: { name: string; status: 'VERIFIED' | 'PENDING' | 'REJECTED'; url?: string };
   };
   generatedMemberId?: string;
+  paymentStatus?: 'PAID' | 'PENDING' | 'FAILED';
+  paymentOrderId?: string;
+  paymentTransactionId?: string;
+  paymentReceipt?: PaymentReceiptDetails;
 }
 

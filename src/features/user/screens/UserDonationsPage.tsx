@@ -13,6 +13,7 @@ import {
 import { donationsService } from '../../admin/donations/services/donationsService';
 import type { Donation } from '../../admin/donations/types/donations.types';
 import { useUserAuth } from '../store/userAuthStore';
+import { cashfreeService } from '../../payments';
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
@@ -68,37 +69,50 @@ export const UserDonationsPage: React.FC = () => {
 
   const handleMakeDonation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (effectiveAmount < 100) {
-      alert('Minimum donation amount is ₹100.');
+    if (effectiveAmount < 10) {
+      alert('Minimum donation amount is ₹10.');
       return;
     }
 
     try {
       setSubmitting(true);
-      const res = await donationsService.createDonation({
-        donor_name: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
-        donor_email: donorEmail.trim() || undefined,
-        donor_mobile: donorMobile.trim() || undefined,
+      const session = await cashfreeService.createDonationOrder({
         cause: selectedCause,
         amount: effectiveAmount,
-        is_anonymous: isAnonymous,
-        payment_method: paymentMethod,
-        remark: `Donation towards ${selectedCause}${panNumber ? ` (PAN: ${panNumber.toUpperCase()})` : ''}`,
-        source: 'Web App',
+        donorName: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
+        donorEmail: donorEmail.trim() || undefined,
+        donorMobile: donorMobile.trim() || undefined,
+        userId: user?.id,
+        panNumber: panNumber ? panNumber.toUpperCase() : undefined,
+        need80G: Boolean(panNumber),
       });
 
-      setCompletedDonation(res);
-
-      // Generate receipt
-      try {
-        await donationsService.getReceiptByDonationId(res.id);
-      } catch {
-        // fallback receipt
-      }
+      await cashfreeService.launchCashfreeCheckout(
+        session,
+        async (verifyRes) => {
+          const completed: any = {
+            id: session.order_id,
+            amount: effectiveAmount,
+            cause: selectedCause,
+            donor_name: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
+            donor_mobile: donorMobile.trim(),
+            donor_email: donorEmail.trim(),
+            transaction_id: verifyRes.transaction_id || `CF-${Date.now().toString().slice(-8)}`,
+            receipt_number: verifyRes.receipt_number || `RCP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+            is_anonymous: isAnonymous,
+            created_at: new Date().toISOString(),
+            payment_method: verifyRes.payment_method || 'CASHFREE',
+          };
+          setCompletedDonation(completed);
+          setSubmitting(false);
+        },
+        () => {
+          setSubmitting(false);
+        }
+      );
     } catch (err: any) {
-      alert(err.message || 'Payment processing failed. Please try again.');
-    } finally {
       setSubmitting(false);
+      alert(err.message || 'Payment processing failed. Please try again.');
     }
   };
 
@@ -184,7 +198,23 @@ export const UserDonationsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  window.print();
+                  cashfreeService.downloadDonationReceiptPdf({
+                    receiptNumber: (completedDonation as any).receipt_number || `RCP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+                    orderId: completedDonation.id,
+                    transactionId: (completedDonation as any).transaction_id || `CF-${Date.now().toString().slice(-8)}`,
+                    amount: completedDonation.amount,
+                    purpose: 'donation',
+                    purposeTitle: completedDonation.cause,
+                    donorName: completedDonation.donor_name,
+                    donorMobile: donorMobile,
+                    donorEmail: donorEmail,
+                    panNumber: panNumber,
+                    userId: user?.id,
+                    paymentMethod: (completedDonation as any).payment_method || 'CASHFREE',
+                    paidAt: completedDonation.created_at || new Date().toISOString(),
+                    is80GEligible: true,
+                    status: 'SUCCESS',
+                  });
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
               >
@@ -384,7 +414,7 @@ export const UserDonationsPage: React.FC = () => {
                   className="w-full py-3.5 px-4 rounded-xl bg-[#E9B82E] hover:bg-[#d8a825] text-[#011F39] font-black text-sm shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Heart size={16} className="fill-[#011F39]" />
-                  <span>{submitting ? 'Processing Contribution...' : `Proceed to Donate ₹${effectiveAmount.toLocaleString('en-IN')}`}</span>
+                  <span>{submitting ? 'Connecting to Cashfree...' : `Pay ₹${effectiveAmount.toLocaleString('en-IN')} with Cashfree Gateway`}</span>
                   <ArrowRight size={16} />
                 </button>
               </div>

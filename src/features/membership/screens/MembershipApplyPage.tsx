@@ -11,6 +11,8 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { useMembershipApply } from '../store/membershipApplyStore';
+import { useAuth } from '../../auth/store/authStore';
+import { GlobalPaymentModal } from '../../payments';
 
 export const MembershipApplyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +28,9 @@ export const MembershipApplyPage: React.FC = () => {
   } = useMembershipApply();
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const { user } = useAuth();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [previewAppId] = useState(() => `HRSJM-APP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
 
   // ════════ VALIDATION LOGIC ════════
   const validateStep1 = (): boolean => {
@@ -108,11 +113,8 @@ export const MembershipApplyPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    const res = await submitApplication();
-    if (res.success) {
-      navigate('/membership/submitted');
-    }
+  const handleSubmit = () => {
+    setIsPaymentModalOpen(true);
   };
 
   return (
@@ -645,16 +647,41 @@ export const MembershipApplyPage: React.FC = () => {
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    <span>Confirm & Submit Application ({formData.selectedPost.fee})</span>
+                    <span>Pay Fee via Cashfree & Submit ({formData.selectedPost.fee})</span>
                   </>
                 )}
               </button>
             </div>
           </div>
         )}
-      </div>
+        {/* Official Cashfree Accreditation Payment Modal */}
+      <GlobalPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        payload={{
+          purpose: 'membership',
+          amount: formData.selectedPost.feeAmount,
+          title: `Membership Application: ${formData.selectedPost.postName}`,
+          subtitle: `Tenure: ${formData.selectedPost.validity}`,
+          entityId: formData.selectedPost.id,
+          referenceId: previewAppId,
+          userId: user?.id,
+          donorName: formData.personal.fullName,
+          donorMobile: formData.personal.mobileNumber,
+          donorEmail: formData.personal.email,
+          panNumber: formData.documents.idProofType === 'pan' ? formData.documents.idProofNumber : '',
+        }}
+        onSuccess={async (receipt) => {
+          setIsPaymentModalOpen(false);
+          const res = await submitApplication(receipt);
+          if (res.success) {
+            navigate('/membership/submitted');
+          }
+        }}
+      />
     </div>
-  );
+  </div>
+);
 };
 
 const styles: Record<string, React.CSSProperties> = {

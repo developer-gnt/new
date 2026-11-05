@@ -7,6 +7,7 @@ import type {
   AddressInfoForm,
   DocumentsInfoForm,
 } from '../types/membershipApplication.types';
+import type { PaymentReceiptDetails } from '../../payments/types/payment.types';
 import { MEMBERSHIP_CATEGORIES } from '../data/membershipCategoriesData';
 import { membershipApplicationService } from '../services/membershipApplicationService';
 
@@ -242,13 +243,14 @@ class MembershipApplyStore {
   /**
    * Submits application to API (or local simulation fallback)
    */
-  public async submitApplication(): Promise<{ success: boolean; applicationId: string; message?: string }> {
+  public async submitApplication(receiptDetails?: PaymentReceiptDetails): Promise<{ success: boolean; applicationId: string; message?: string }> {
     this.isSubmitting = true;
     this.error = null;
     this.notify();
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const generatedAppId = `HRSJM-APP-${new Date().getFullYear()}-${randomSuffix}`;
+    const finalAppId = receiptDetails?.applicationId || generatedAppId;
 
     try {
       try {
@@ -258,23 +260,29 @@ class MembershipApplyStore {
       }
 
       const newRecord: SubmittedApplicationRecord = {
-        applicationId: generatedAppId,
+        applicationId: finalAppId,
         postName: this.formData.selectedPost.postName,
-        categoryFee: this.formData.selectedPost.feeAmount,
+        categoryFee: receiptDetails ? receiptDetails.amount : this.formData.selectedPost.feeAmount,
         validity: this.formData.selectedPost.validity,
-        fullName: this.formData.personal.fullName,
-        phone: this.formData.personal.mobileNumber,
-        email: this.formData.personal.email,
-        submittedAt: new Date().toISOString(),
+        fullName: receiptDetails?.donorName || this.formData.personal.fullName,
+        phone: receiptDetails?.donorMobile || this.formData.personal.mobileNumber,
+        email: receiptDetails?.donorEmail || this.formData.personal.email,
+        submittedAt: receiptDetails?.paidAt || new Date().toISOString(),
         status: 'APPLIED',
         currentStage: 1,
-        reviewerRemarks: 'Application submitted successfully. Queued for document inspection.',
+        reviewerRemarks: receiptDetails
+          ? `Application registered via verified Cashfree PG (Order: ${receiptDetails.orderId}). Queued for scrutiny.`
+          : 'Application submitted successfully. Queued for document inspection.',
         assignedChapter: this.formData.address.proposedChapter,
         documents: {
           photo: { name: this.formData.personal.photoFileName || 'photo.jpg', status: 'PENDING', url: this.formData.personal.photoUrl },
           idProof: { name: this.formData.documents.idProofFileName || 'id_proof.pdf', type: this.formData.documents.idProofType.toUpperCase(), status: 'PENDING', url: this.formData.documents.idProofFileUrl },
           signature: { name: this.formData.documents.signatureFileName || 'signature.png', status: 'PENDING', url: this.formData.documents.signatureFileUrl },
         },
+        paymentStatus: receiptDetails ? 'PAID' : 'PENDING',
+        paymentOrderId: receiptDetails?.orderId,
+        paymentTransactionId: receiptDetails?.transactionId,
+        paymentReceipt: receiptDetails,
       };
 
       this.submittedApps.unshift(newRecord);
@@ -283,7 +291,7 @@ class MembershipApplyStore {
       this.isSubmitting = false;
       this.notify();
 
-      return { success: true, applicationId: generatedAppId };
+      return { success: true, applicationId: finalAppId };
     } catch (err: any) {
       this.isSubmitting = false;
       this.error = err?.message || 'Failed to submit application';
@@ -366,7 +374,7 @@ export const useMembershipApply = () => {
     updateAddress: (f: Partial<AddressInfoForm>) => membershipApplyStore.updateAddress(f),
     updateDocuments: (f: Partial<DocumentsInfoForm>) => membershipApplyStore.updateDocuments(f),
     resetDraft: () => membershipApplyStore.resetDraft(),
-    submitApplication: () => membershipApplyStore.submitApplication(),
+    submitApplication: (receiptDetails?: PaymentReceiptDetails) => membershipApplyStore.submitApplication(receiptDetails),
     trackApplication: (q: string) => membershipApplyStore.trackApplication(q),
     setActiveTrackRecord: (r: SubmittedApplicationRecord | null) => membershipApplyStore.setActiveTrackRecord(r),
     reuploadDocument: (appId: string, docType: 'photo' | 'idProof' | 'signature', fileName: string, fileUrl?: string) =>

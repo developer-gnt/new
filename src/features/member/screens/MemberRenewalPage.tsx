@@ -18,6 +18,7 @@ import { useCurrentMember } from '../store/memberStore';
 import { MEMBER_RENEWAL_PACKAGES } from '../data/memberFixtures';
 import type { RenewalPackageOption, MemberPassbookEntry } from '../types/member.types';
 import { generateMemberCertificatePdf } from '../utils/memberDocumentGenerator';
+import { GlobalPaymentModal, cashfreeService } from '../../payments';
 
 export const MemberRenewalPage: React.FC = () => {
   const { member, processRenewal, setDevMemberState } = useCurrentMember();
@@ -25,7 +26,8 @@ export const MemberRenewalPage: React.FC = () => {
   const [selectedPackageId, setSelectedPackageId] = useState<string>('standard_1yr');
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'NET_BANKING' | 'CREDIT_CARD' | 'CASHFREE'>('UPI');
   const [copiedVpa, setCopiedVpa] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing] = useState(false);
+  const [isCashfreeModalOpen, setIsCashfreeModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [latestReceipt, setLatestReceipt] = useState<MemberPassbookEntry | null>(null);
 
@@ -56,17 +58,8 @@ export const MemberRenewalPage: React.FC = () => {
     setTimeout(() => setCopiedVpa(false), 2000);
   };
 
-  const handleExecutePayment = async () => {
-    setIsProcessing(true);
-    // Simulate gateway handoff latency
-    setTimeout(async () => {
-      const res = await processRenewal(selectedPackage.id, paymentMethod);
-      setIsProcessing(false);
-      if (res.success) {
-        setLatestReceipt(res.receipt);
-        setIsSuccessModalOpen(true);
-      }
-    }, 1500);
+  const handleExecutePayment = () => {
+    setIsCashfreeModalOpen(true);
   };
 
   return (
@@ -496,6 +489,36 @@ export const MemberRenewalPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Official Cashfree Membership Renewal Modal */}
+      <GlobalPaymentModal
+        isOpen={isCashfreeModalOpen}
+        onClose={() => setIsCashfreeModalOpen(false)}
+        payload={{
+          purpose: 'membership',
+          amount: selectedPackage.fee,
+          title: `Membership Renewal: ${selectedPackage.name}`,
+          subtitle: `Validity Extended to: ${proposedExpiryStr}`,
+          entityId: selectedPackage.id,
+          referenceId: `REN-${member.id.slice(-6)}-${selectedPackage.id}`,
+          userId: member.id,
+          donorName: member.fullName,
+          donorMobile: member.phone,
+          donorEmail: member.email,
+        }}
+        onSuccess={async (receipt) => {
+          setIsCashfreeModalOpen(false);
+          const res = await processRenewal(selectedPackage.id, 'CASHFREE');
+          if (res.success) {
+            setLatestReceipt({
+              ...res.receipt,
+              transactionId: receipt.transactionId,
+              orderId: receipt.orderId,
+            } as any);
+            setIsSuccessModalOpen(true);
+          }
+        }}
+      />
+
       {/* Success Modal */}
       {isSuccessModalOpen && latestReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -563,6 +586,33 @@ export const MemberRenewalPage: React.FC = () => {
               >
                 <Download className="w-4 h-4 text-slate-500" />
                 Download Official Certificate (PDF)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  cashfreeService.downloadMembershipApplicationPdf({
+                    orderId: (latestReceipt as any)?.orderId || `CF_ORD_${latestReceipt.receiptNumber.replace(/\//g, '_')}`,
+                    transactionId: latestReceipt.transactionId,
+                    amount: latestReceipt.amount,
+                    purpose: 'membership',
+                    purposeTitle: `Membership Renewal: ${selectedPackage.name}`,
+                    donorName: member.fullName,
+                    donorMobile: member.phone,
+                    donorEmail: member.email,
+                    paidAt: latestReceipt.date,
+                    receiptNumber: latestReceipt.receiptNumber,
+                    status: 'SUCCESS',
+                    applicationId: member.membershipNumber,
+                    userId: member.id,
+                    paymentMethod: 'Cashfree PG',
+                    is80GEligible: true,
+                  });
+                }}
+                className="w-full py-3 rounded-xl border border-[#06294D] bg-[#FAF7F0] hover:bg-amber-50 text-[#06294D] font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-[#06294D]" />
+                Download Verified Renewal Payment Slip (PDF)
               </button>
 
               <button

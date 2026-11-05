@@ -123,6 +123,15 @@ export const ENDPOINTS = {
     refund: (id: string) => `/donations/${id}/refund`,
   },
 
+  // Payment Gateway (Cashfree PG)
+  payments: {
+    cashfreeOrders: '/payments/cashfree/orders',
+    cashfreeVerify: (orderId: string) => `/payments/cashfree/orders/${encodeURIComponent(orderId)}/verify`,
+    validateUpi: '/payments/cashfree/validate-upi',
+    donationPayments: '/donation-payments',
+    membershipPayments: '/membership-payments',
+  },
+
   // 80G Receipts & Passbooks
   receipts: {
     my: '/receipts/my',

@@ -8,6 +8,8 @@ import {
   Phone,
 } from 'lucide-react';
 import { useMembershipApply } from '../store/membershipApplyStore';
+import { Download } from 'lucide-react';
+import { cashfreeService } from '../../payments';
 
 export const MembershipSubmittedPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +21,29 @@ export const MembershipSubmittedPage: React.FC = () => {
 
   const handlePrintAcknowledgement = () => {
     window.print();
+  };
+
+  const handleDownloadSlip = () => {
+    if (activeTrackRecord?.paymentReceipt) {
+      cashfreeService.downloadMembershipApplicationPdf(activeTrackRecord.paymentReceipt);
+      return;
+    }
+    cashfreeService.downloadMembershipApplicationPdf({
+      orderId: activeTrackRecord?.paymentOrderId || `CF_ORD_${appId}`,
+      transactionId: activeTrackRecord?.paymentTransactionId || `TXN_${Date.now()}`,
+      amount: activeTrackRecord?.categoryFee || formData.selectedPost.feeAmount,
+      purpose: 'membership',
+      purposeTitle: `Membership: ${postName}`,
+      donorName: applicantName,
+      donorMobile: activeTrackRecord?.phone || formData.personal.mobileNumber,
+      donorEmail: activeTrackRecord?.email || formData.personal.email,
+      paidAt: activeTrackRecord?.submittedAt || new Date().toISOString(),
+      receiptNumber: `HRSJM/MEM/${new Date().getFullYear()}/${appId.replace(/\D/g, '').slice(-4) || '1001'}`,
+      status: 'SUCCESS',
+      applicationId: appId,
+      paymentMethod: 'Cashfree PG',
+      is80GEligible: false,
+    });
   };
 
   return (
@@ -60,6 +85,20 @@ export const MembershipSubmittedPage: React.FC = () => {
             <span>{activeTrackRecord?.submittedAt ? new Date(activeTrackRecord.submittedAt).toLocaleDateString('en-IN', { dateStyle: 'long' }) : 'Official Record'}</span>
           </div>
           <div style={styles.summaryRow}>
+            <span>Payment Status:</span>
+            <span style={{ color: '#16A34A', fontWeight: 700 }}>
+              {activeTrackRecord?.paymentStatus === 'PAID' ? 'PAID & VERIFIED (Cashfree)' : 'CONFIRMED'}
+            </span>
+          </div>
+          {activeTrackRecord?.paymentTransactionId && (
+            <div style={styles.summaryRow}>
+              <span>Transaction Ref:</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#06294D' }}>
+                {activeTrackRecord.paymentTransactionId}
+              </span>
+            </div>
+          )}
+          <div style={styles.summaryRow}>
             <span>Current Status:</span>
             <span style={{ color: '#D97706', fontWeight: 700 }}>UNDER SCRUTINY (Stage 1 Completed)</span>
           </div>
@@ -94,11 +133,25 @@ export const MembershipSubmittedPage: React.FC = () => {
         <div style={styles.actionsRow}>
           <button
             type="button"
+            onClick={handleDownloadSlip}
+            style={{
+              ...styles.outlineBtn,
+              backgroundColor: '#06294D',
+              color: '#FAD465',
+              borderColor: '#06294D',
+            }}
+          >
+            <Download size={16} />
+            <span>Download Official Application Slip (PDF)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handlePrintAcknowledgement}
             style={styles.outlineBtn}
           >
             <Printer size={16} />
-            <span>Print Acknowledgement Receipt</span>
+            <span>Print Acknowledgement</span>
           </button>
 
           <button
