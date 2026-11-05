@@ -1,13 +1,16 @@
 /**
  * Authentication Module - Types
- * Exact counterpart of APK: hrsjm-application-ui/src/features/auth/types/auth.types.ts
+ * Counterpart of APK: hrsjm-application-ui/src/features/auth/types/auth.types.ts
  * and Backend: HRSJM-back-api/src/modules/auth
  */
 
 export interface UserRoleInfo {
-  id: string;
+  id?: string;
   name: string;
+  description?: string;
 }
+
+export type UserRole = UserRoleInfo;
 
 export interface UserProfile {
   id: string;
@@ -15,7 +18,8 @@ export interface UserProfile {
   mobile_number: string;
   email: string | null;
   avatar?: string | null;
-  status: string;
+  avatar_url?: string | null;
+  status?: string;
   roles: (UserRoleInfo | string)[];
   created_at?: string;
   updated_at?: string;
@@ -23,6 +27,12 @@ export interface UserProfile {
   assistance_status?: string | null;
   assistance_application_number?: string | null;
   account_type?: 'general' | 'member' | 'seeker' | 'admin';
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  date_of_birth?: string | null;
+  blood_group?: string | null;
 }
 
 export interface AuthTokens {
@@ -30,14 +40,19 @@ export interface AuthTokens {
   refresh_token: string;
 }
 
-export interface AuthSession extends AuthTokens {
+export interface AuthSession {
   user: UserProfile;
+  access_token: string;
+  refresh_token: string;
 }
 
 export interface LoginRequestPayload {
-  identifier: string;
+  identifier: string; // email or mobile
   password: string;
+  rememberMe?: boolean;
 }
+
+export type LoginPayload = LoginRequestPayload;
 
 export interface ForgotPasswordResult {
   delivered_mechanism: string;
@@ -49,10 +64,6 @@ export interface LoginValidationErrors {
   password?: string;
 }
 
-/**
- * General User Registration Request Payload
- * Matches Backend RegisterDto: HRSJM-back-api/src/modules/auth/dto/register.dto.ts
- */
 export interface RegisterRequestPayload {
   full_name: string;
   mobile_number: string;
@@ -60,14 +71,23 @@ export interface RegisterRequestPayload {
   dob?: string;
   date_of_birth?: string;
   password: string;
-  confirm_password: string;
-  role_name?: string;
+  confirm_password?: string;
+  role_name?: 'DONATION_SEEKER' | 'MEMBER' | 'USER' | string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
 }
 
-/**
- * Duplicate Check Request & Response
- * Matches Backend CheckDuplicatesDto: HRSJM-back-api/src/modules/auth/dto/check-duplicates.dto.ts
- */
+export type RegisterPayload = RegisterRequestPayload;
+
+export interface ChangePasswordPayload {
+  current_password?: string;
+  old_password?: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export interface CheckDuplicatesPayload {
   mobile_number?: string;
   email?: string;
@@ -82,9 +102,6 @@ export interface CheckDuplicatesResult {
   email_message?: string;
 }
 
-/**
- * Form state for General User Registration
- */
 export interface RegisterFormData {
   fullName: string;
   phone: string;

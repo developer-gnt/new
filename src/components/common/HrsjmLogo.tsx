@@ -6,6 +6,8 @@ export interface HrsjmLogoProps {
   variant?: 'light' | 'dark'; // 'light' on navy backgrounds, 'dark' on light backgrounds
   showWordmark?: boolean;
   showSubtitle?: boolean;
+  title?: string;
+  subtitle?: string;
   layout?: 'horizontal' | 'vertical';
   className?: string;
   imgClassName?: string;
@@ -24,6 +26,8 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
   variant = 'light',
   showWordmark = false,
   showSubtitle = true,
+  title = 'HRSJM',
+  subtitle,
   layout = 'horizontal',
   className = '',
   imgClassName = '',
@@ -58,27 +62,38 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
             }`}
             style={{ fontSize: `${Math.max(13, dim * 0.42)}px` }}
           >
-            HRSJM
+            {title}
           </span>
-          {showSubtitle && (
-            <>
-              <span
-                className={`font-bold uppercase tracking-widest mt-0.5 ${
-                  isLight ? 'text-[#FAD465]' : 'text-[#06294D]'
-                }`}
-                style={{ fontSize: `${Math.max(8.5, dim * 0.2)}px` }}
-              >
-                HUMAN RIGHTS &amp; SOCIAL JUSTICE MISSION
-              </span>
-              <span
-                className={`tracking-wide font-medium mt-0.5 ${
-                  isLight ? 'text-slate-300' : 'text-slate-500'
-                }`}
-                style={{ fontSize: `${Math.max(8, dim * 0.18)}px` }}
-              >
-                मानव अधिकार • सामाजिक न्याय
-              </span>
-            </>
+          {subtitle ? (
+            <span
+              className={`font-semibold tracking-wider mt-0.5 ${
+                isLight ? 'text-[#FAD465]' : 'text-[#174A78]'
+              }`}
+              style={{ fontSize: `${Math.max(10, dim * 0.22)}px` }}
+            >
+              {subtitle}
+            </span>
+          ) : (
+            showSubtitle && (
+              <>
+                <span
+                  className={`font-bold uppercase tracking-widest mt-0.5 ${
+                    isLight ? 'text-[#FAD465]' : 'text-[#06294D]'
+                  }`}
+                  style={{ fontSize: `${Math.max(8.5, dim * 0.2)}px` }}
+                >
+                  HUMAN RIGHTS &amp; SOCIAL JUSTICE MISSION
+                </span>
+                <span
+                  className={`tracking-wide font-medium mt-0.5 ${
+                    isLight ? 'text-slate-300' : 'text-slate-500'
+                  }`}
+                  style={{ fontSize: `${Math.max(8, dim * 0.18)}px` }}
+                >
+                  मानव अधिकार • सामाजिक न्याय
+                </span>
+              </>
+            )
           )}
         </div>
       )}
