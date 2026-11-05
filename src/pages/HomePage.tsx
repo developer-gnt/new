@@ -80,7 +80,13 @@ export const HomePage: React.FC = () => {
           </nav>
 
           {/* Direct Login CTA */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => navigate('/register')}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-200 hover:text-[#FAD465] transition cursor-pointer"
+            >
+              Register
+            </button>
             <button
               onClick={() => navigate('/login')}
               className="px-4 py-2 rounded-xl text-xs font-bold bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] shadow-sm hover:shadow transition flex items-center gap-1.5 cursor-pointer"

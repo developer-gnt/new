@@ -1,8 +1,11 @@
 import { apiClient } from '../../../services/apiClient';
 import type {
   AuthSession,
+  CheckDuplicatesPayload,
+  CheckDuplicatesResult,
   ForgotPasswordResult,
   LoginRequestPayload,
+  RegisterRequestPayload,
   UserProfile,
 } from '../types/auth.types';
 
@@ -11,6 +14,46 @@ const REFRESH_KEY = 'hrsjm_refresh_token';
 const USER_KEY = 'hrsjm_auth_user';
 
 export const authService = {
+  /**
+   * Registers a new user account via POST /auth/register and sets session tokens.
+   */
+  async register(payload: RegisterRequestPayload): Promise<AuthSession> {
+    const res = await apiClient.post<AuthSession>('/auth/register', {
+      full_name: payload.full_name.trim(),
+      mobile_number: payload.mobile_number.replace(/\D/g, '').slice(-10),
+      email: payload.email ? payload.email.trim().toLowerCase() : undefined,
+      dob: payload.dob ? payload.dob.trim() : undefined,
+      password: payload.password,
+      confirm_password: payload.confirm_password,
+      role_name: payload.role_name || 'USER',
+    });
+    if (res?.access_token) {
+      this.setSession(res, true);
+    }
+    return res;
+  },
+
+  /**
+   * Checks whether mobile number or email already exists in the backend database.
+   */
+  async checkDuplicates(payload: CheckDuplicatesPayload): Promise<CheckDuplicatesResult> {
+    try {
+      const res = await apiClient.post<CheckDuplicatesResult>('/auth/check-duplicates', {
+        mobile_number: payload.mobile_number ? payload.mobile_number.replace(/\D/g, '').slice(-10) : undefined,
+        email: payload.email ? payload.email.trim().toLowerCase() : undefined,
+        exclude_user_id: payload.exclude_user_id,
+      });
+      return res;
+    } catch {
+      // In offline / mock mode fallback, consider available
+      return {
+        available: true,
+        mobile_taken: false,
+        email_taken: false,
+      };
+    }
+  },
+
   /**
    * Validates credentials against POST /auth/login and stores session tokens.
    */
@@ -98,7 +141,7 @@ export const authService = {
       localStorage.removeItem(REFRESH_KEY);
       localStorage.removeItem(USER_KEY);
     } catch {
-      // Ignore
+      // Ignore errors
     }
   },
 };

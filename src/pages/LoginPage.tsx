@@ -388,7 +388,7 @@ export const LoginPage: React.FC = () => {
           <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs sm:text-[13px] text-slate-600">
             <span>Don't have an account? </span>
             <Link
-              to="/"
+              to="/register"
               className="font-bold text-[#0F2860] hover:underline"
             >
               Sign Up

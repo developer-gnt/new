@@ -56,6 +56,7 @@ import { NotificationsPage } from '../features/notifications/screens/Notificatio
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
@@ -68,6 +69,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signin" element={<Navigate to="/login" replace />} />
         <Route path="/auth/login" element={<Navigate to="/login" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/signup" element={<Navigate to="/register" replace />} />
+        <Route path="/create-account" element={<RegisterPage />} />
+        <Route path="/auth/register" element={<Navigate to="/register" replace />} />
 
         {/* Direct Admin Aliases */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />

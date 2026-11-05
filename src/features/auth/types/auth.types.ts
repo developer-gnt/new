@@ -48,3 +48,63 @@ export interface LoginValidationErrors {
   identifier?: string;
   password?: string;
 }
+
+/**
+ * General User Registration Request Payload
+ * Matches Backend RegisterDto: HRSJM-back-api/src/modules/auth/dto/register.dto.ts
+ */
+export interface RegisterRequestPayload {
+  full_name: string;
+  mobile_number: string;
+  email?: string;
+  dob?: string;
+  date_of_birth?: string;
+  password: string;
+  confirm_password: string;
+  role_name?: string;
+}
+
+/**
+ * Duplicate Check Request & Response
+ * Matches Backend CheckDuplicatesDto: HRSJM-back-api/src/modules/auth/dto/check-duplicates.dto.ts
+ */
+export interface CheckDuplicatesPayload {
+  mobile_number?: string;
+  email?: string;
+  exclude_user_id?: string;
+}
+
+export interface CheckDuplicatesResult {
+  available: boolean;
+  mobile_taken: boolean;
+  email_taken: boolean;
+  mobile_message?: string;
+  email_message?: string;
+}
+
+/**
+ * Form state for General User Registration
+ */
+export interface RegisterFormData {
+  fullName: string;
+  phone: string;
+  countryCode: string;
+  email: string;
+  dob: string;
+  gender: string;
+  password: string;
+  confirmPassword: string;
+  termsAccepted: boolean;
+  privacyAccepted: boolean;
+}
+
+export interface RegisterValidationErrors {
+  fullName?: string;
+  phone?: string;
+  email?: string;
+  dob?: string;
+  gender?: string;
+  password?: string;
+  confirmPassword?: string;
+  terms?: string;
+}
