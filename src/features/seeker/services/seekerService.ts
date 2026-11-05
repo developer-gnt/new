@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/apiClient';
-import { assistanceStore } from '../../assistance/store/assistanceStore';
+import { assistanceStore } from '../../admin/assistance/store/assistanceStore';
 import type {
   SeekerPersonalDetails,
   AssistanceNeedDetails,

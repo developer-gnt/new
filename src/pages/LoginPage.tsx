@@ -179,15 +179,19 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0F2860] flex flex-col justify-between text-slate-800 font-sans">
-      {/* Top Header Bar with Back Navigation */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-2 flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-200 hover:text-white transition"
-        >
-          <ArrowLeft size={16} />
-          <span>Back to Home</span>
-        </Link>
+      {/* Top Header Bar with Navigation */}
+      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1 flex items-center justify-between">
+        {roleParam ? (
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-200 hover:text-white transition"
+          >
+            <ArrowLeft size={16} />
+            <span>All Logins</span>
+          </Link>
+        ) : (
+          <div />
+        )}
 
         {roleParam && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#FAD465] text-xs font-semibold border border-white/15">
@@ -201,9 +205,9 @@ export const LoginPage: React.FC = () => {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
+      <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 py-4 sm:py-8 my-auto">
         {/* Top Branding Section (Matching APK LoginScreen.tsx) */}
-        <div className="text-center max-w-md mx-auto mb-6 sm:mb-8 text-white px-2">
+        <div className="text-center max-w-md mx-auto mb-5 sm:mb-7 text-white px-2">
           {/* Official Emblem */}
           <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 flex items-center justify-center">
             <img

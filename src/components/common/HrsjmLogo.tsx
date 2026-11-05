@@ -11,26 +11,28 @@ export interface HrsjmLogoProps {
   layout?: 'horizontal' | 'vertical';
   className?: string;
   imgClassName?: string;
+  style?: React.CSSProperties;
 }
 
 const SIZES = {
   xs: 28,
-  sm: 36,
+  sm: 34,
   md: 44,
-  lg: 64,
-  xl: 84,
+  lg: 56,
+  xl: 72,
 } as const;
 
 export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
   size = 'md',
   variant = 'light',
-  showWordmark = false,
+  showWordmark = true,
   showSubtitle = true,
   title = 'HRSJM',
   subtitle,
   layout = 'horizontal',
   className = '',
   imgClassName = '',
+  style,
 }) => {
   const dim = typeof size === 'number' ? size : SIZES[size] || 44;
   const isLight = variant === 'light';
@@ -38,6 +40,7 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
 
   return (
     <div
+      style={style}
       className={`flex ${
         isVertical ? 'flex-col text-center' : 'flex-row text-left'
       } items-center gap-2.5 ${className}`}

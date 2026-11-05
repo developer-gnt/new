@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
 import { HrsjmLogo } from '../common/HrsjmLogo';
-import { useUnreadCount } from '../../features/notifications/store/notificationsStore';
+import { useUnreadCount } from '@/features/admin/notifications/store/notificationsStore';
 
 interface AdminSidebarProps {
   collapsed: boolean;

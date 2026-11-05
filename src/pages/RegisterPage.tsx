@@ -267,8 +267,9 @@ export const RegisterPage: React.FC = () => {
       if (err instanceof ApiError) {
         if (err.statusCode === 409) {
           message = 'An account with this mobile number or email already exists. Please log in.';
-        } else if (err.data?.code === 'AGE_NOT_ELIGIBLE') {
-          setIneligibleAge(err.data?.details?.calculated_age ?? null);
+        } else if (err.code === 'AGE_NOT_ELIGIBLE' || (err as any).data?.code === 'AGE_NOT_ELIGIBLE') {
+          const details: any = err.details || (err as any).data?.details;
+          setIneligibleAge(details?.calculated_age ?? null);
           setPhase('ineligible');
           return;
         } else if (err.message) {

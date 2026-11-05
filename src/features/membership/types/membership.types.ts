@@ -7,6 +7,7 @@
 export interface MembershipPostData {
   id: string;
   postName: string;
+  level?: 'district' | 'state' | 'executive' | 'national' | string;
   qualification: string;
   fee: string;
   feeAmount: number;
@@ -14,6 +15,7 @@ export interface MembershipPostData {
   durationLabel?: string;
   checklistItems: string[];
   kitItems: string[];
+  badgeColor?: string;
   iconType:
     | 'user'
     | 'community'

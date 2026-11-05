@@ -10,8 +10,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
-import { useProfile } from '../../features/profile/store/profileStore';
-import { useUnreadCount } from '../../features/notifications/store/notificationsStore';
+import { useProfile } from '@/features/admin/profile/store/profileStore';
+import { useUnreadCount } from '@/features/admin/notifications/store/notificationsStore';
 
 interface AdminHeaderProps {
   onToggleMobileSidebar: () => void;

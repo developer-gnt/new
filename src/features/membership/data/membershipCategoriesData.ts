@@ -3,6 +3,7 @@ import type { MembershipPostData } from '../types/membership.types';
 export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   {
     id: 'district-active-member',
+    level: 'district',
     postName: 'District Active Member',
     qualification: 'Minimum 8th Class',
     fee: '₹ 800',
@@ -24,6 +25,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   },
   {
     id: 'state-active-member',
+    level: 'state',
     postName: 'State Active Member',
     qualification: 'Minimum 8th Class',
     fee: '₹ 800',
@@ -45,6 +47,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   },
   {
     id: 'district-unit-post',
+    level: 'district',
     postName: 'District Unit Post',
     qualification: 'Minimum 10th Class',
     fee: '₹ 1,300',
@@ -208,6 +211,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   },
   {
     id: 'national-minority-council-cell',
+    level: 'national',
     postName: 'National Minority Council Cell',
     qualification: 'Minimum Graduate / Social Worker',
     fee: '₹ 10,000',
@@ -231,6 +235,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   },
   {
     id: 'national-women-council-cell',
+    level: 'national',
     postName: 'National Women Council Cell',
     qualification: 'Minimum Graduate / Social Worker',
     fee: '₹ 10,000',
@@ -338,3 +343,6 @@ export const STATE_CITIES: Record<string, string[]> = {
   Goa: ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
 };
 
+
+import type { MembershipCategoryOption } from '../types/membershipApplication.types';
+export const MEMBERSHIP_CATEGORIES: MembershipCategoryOption[] = ALL_MEMBERSHIP_POSTS as unknown as MembershipCategoryOption[];
