@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/features/auth/store/authStore';
+import { authService } from '@/features/auth/services/authService';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AppErrorBoundary } from '../common/AppErrorBoundary';
 
 export const AdminLayout: React.FC = () => {
+  const { isAuthenticated, isSeeker, isAdmin } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
+  const location = useLocation();
+
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -19,6 +25,14 @@ export const AdminLayout: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!isAuthenticated && !hasToken) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
+  if (isAuthenticated && isSeeker && !isAdmin) {
+    return <Navigate to="/seeker/home" replace />;
+  }
 
   return (
     <div style={styles.layoutWrapper}>
@@ -56,26 +70,30 @@ const styles: Record<string, React.CSSProperties> = {
   layoutWrapper: {
     display: 'flex',
     minHeight: '100vh',
-    width: '100%',
     backgroundColor: '#FAF7F0',
   },
   mainContainer: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    flex: 1,
     minWidth: 0,
-    minHeight: '100vh',
-    overflowX: 'hidden',
+    backgroundColor: '#FAF7F0',
   },
   contentArea: {
     flex: 1,
-    padding: '24px',
-    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 'calc(100vh - 64px)',
   },
   contentInner: {
-    maxWidth: '1440px',
-    margin: '0 auto',
+    flex: 1,
+    maxWidth: '1600px',
     width: '100%',
+    margin: '0 auto',
+    padding: '24px 32px',
+    display: 'flex',
+    flexDirection: 'column',
   },
 };
 
+export default AdminLayout;

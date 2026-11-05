@@ -19,7 +19,9 @@ import {
 } from 'lucide-react';
 import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
 import { AppErrorBoundary } from '../../../components/common/AppErrorBoundary';
-import { useAuth } from '../../auth/store/authStore';
+import { useAuth, executeSignOut } from '../../auth/store/authStore';
+import { authService } from '../../auth/services/authService';
+import { Navigate } from 'react-router-dom';
 import { useSeekerStore } from '../store/seekerStore';
 
 interface NavItem {
@@ -45,7 +47,8 @@ const SEEKER_NAV_ITEMS: NavItem[] = [
 export const SeekerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
   const { notifications, loadAll } = useSeekerStore();
 
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -84,8 +87,7 @@ export const SeekerLayout: React.FC = () => {
   const handleSignOut = async () => {
     setProfileDropdownOpen(false);
     setMobileDrawerOpen(false);
-    await logout();
-    navigate('/login');
+    await executeSignOut(navigate);
   };
 
   const openWhatsAppHelpline = () => {
@@ -111,6 +113,10 @@ export const SeekerLayout: React.FC = () => {
     }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
+
+  if (!isAuthenticated && !hasToken) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF7F0] flex font-['Inter',sans-serif]">

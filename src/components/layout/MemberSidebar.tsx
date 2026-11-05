@@ -1,5 +1,6 @@
 import type React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import { ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react';
 import { MEMBER_NAV_GROUPS } from './memberNavItems';
 import { HrsjmLogo } from '../common/HrsjmLogo';
@@ -19,9 +20,9 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     if (mobileOpen) onCloseMobile();
-    navigate('/');
+    await executeSignOut(navigate);
   };
 
   return (

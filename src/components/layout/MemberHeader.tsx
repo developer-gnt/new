@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import {
   Menu,
   Bell,
@@ -91,9 +92,9 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
   const statusBadge = getStatusBadge();
   const StatusIcon = statusBadge.icon;
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setProfileDropdownOpen(false);
-    navigate('/');
+    await executeSignOut(navigate);
   };
 
   return (

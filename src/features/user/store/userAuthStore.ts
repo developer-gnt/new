@@ -31,10 +31,11 @@ class UserAuthStore {
   private listeners: Set<() => void> = new Set();
 
   constructor() {
+    const user = this.loadPersistedUser();
     this.state = {
-      user: this.loadPersistedUser(),
-      status: 'authenticated',
-      unreadNotificationsCount: 3,
+      user,
+      status: user ? 'authenticated' : 'unauthenticated',
+      unreadNotificationsCount: user ? 3 : 0,
     };
   }
 
@@ -49,7 +50,7 @@ class UserAuthStore {
     } catch {
       // ignore
     }
-    return DEFAULT_DEMO_USER;
+    return null;
   }
 
   private persistUser(user: UserProfile | null): void {

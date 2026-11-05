@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/features/auth/store/authStore';
+import { authService } from '@/features/auth/services/authService';
 import { MemberSidebar } from './MemberSidebar';
 import { MemberHeader } from './MemberHeader';
 import { AppErrorBoundary } from '../common/AppErrorBoundary';
@@ -7,6 +9,9 @@ import { useCurrentMember } from '../../features/member/store/memberStore';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 export const MemberLayout: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
+  const location = useLocation();
   const navigate = useNavigate();
   const { member } = useCurrentMember();
   const [collapsed, setCollapsed] = useState(false);
@@ -25,6 +30,10 @@ export const MemberLayout: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!isAuthenticated && !hasToken) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
 
   return (
     <div style={styles.layoutWrapper}>
@@ -120,6 +129,7 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 0,
     minHeight: '100vh',
     overflowX: 'hidden',
+    backgroundColor: '#FAF7F0',
   },
   contentArea: {
     flex: 1,
@@ -189,3 +199,5 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'background-color 0.15s ease',
   },
 };
+
+export default MemberLayout;

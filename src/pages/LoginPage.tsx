@@ -18,6 +18,8 @@ import {
   Gift,
 } from 'lucide-react';
 import { authService } from '../features/auth/services/authService';
+import { authStore } from '../features/auth/store/authStore';
+import { userAuthStore } from '../features/user/store/userAuthStore';
 import { ApiError } from '../services/apiClient';
 import hrsjmLogo from '../assets/hrsjm_logo.png';
 
@@ -51,7 +53,26 @@ export const LoginPage: React.FC = () => {
   useEffect(() => {
     const existingToken = authService.getAuthToken();
     if (existingToken) {
-      navigate('/admin/dashboard', { replace: true });
+      const user = authService.getCurrentUser();
+      const roleNames = (user?.roles || []).map((r: any) => {
+        if (typeof r === 'string') return r.toUpperCase();
+        return (r?.name || '').toUpperCase();
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect && redirect.startsWith('/')) {
+        navigate(redirect, { replace: true });
+        return;
+      }
+
+      if (roleNames.includes('SEEKER') || roleNames.includes('DONATION_SEEKER')) {
+        navigate('/seeker/home', { replace: true });
+      } else if (roleNames.includes('MEMBER')) {
+        navigate('/member/dashboard', { replace: true });
+      } else {
+        navigate('/admin/dashboard', { replace: true });
+      }
     }
   }, [navigate]);
 
@@ -106,6 +127,15 @@ export const LoginPage: React.FC = () => {
       });
 
       authService.setSession(session, rememberMe);
+      authStore.setUserDirectly(session.user, session.access_token);
+      userAuthStore.setUser(session.user as any);
+
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect && redirect.startsWith('/')) {
+        navigate(redirect, { replace: true });
+        return;
+      }
 
       // Role identification and post-login routing
       const user = session.user;
@@ -115,9 +145,9 @@ export const LoginPage: React.FC = () => {
       });
 
       if (roleParam === 'seeker' || roleNames.includes('SEEKER') || roleNames.includes('DONATION_SEEKER')) {
-        navigate('/admin/assistance', { replace: true });
+        navigate('/seeker/home', { replace: true });
       } else if (roleParam === 'member' || roleNames.includes('MEMBER')) {
-        navigate('/admin/profile', { replace: true });
+        navigate('/member/dashboard', { replace: true });
       } else if (roleParam === 'donor' || roleNames.includes('DONOR')) {
         navigate('/admin/donations', { replace: true });
       } else {
@@ -127,26 +157,39 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       // Offline fallback mock session if in local testing environment
       if (password.length >= 6) {
+        const idLower = identifier.toLowerCase();
+        const isSeeker = roleParam === 'seeker' || idLower.includes('seeker');
+        const isMember = roleParam === 'member' || idLower.includes('member');
+        const isUser = roleParam === 'user' || idLower.includes('user');
+        const mockRole = isSeeker ? 'DONATION_SEEKER' : isMember ? 'MEMBER' : isUser ? 'USER' : 'ADMIN';
+
         const mockUser = {
-          id: 'usr_verified_session',
-          full_name: identifier.includes('@') ? identifier.split('@')[0] : 'Administrator',
-          email: identifier.includes('@') ? identifier : 'admin@hrsjm.org',
+          id: `usr_${Date.now()}`,
+          full_name: identifier.includes('@') ? identifier.split('@')[0] : (isSeeker ? 'Test Seeker' : isMember ? 'Test Member' : 'Administrator'),
+          email: identifier.includes('@') ? identifier : `${mockRole.toLowerCase()}@hrsjm.org`,
           mobile_number: '+91 98765 43210',
           status: 'ACTIVE',
-          roles: [{ id: 'role-1', name: 'ADMIN' }],
+          roles: [{ id: 'role-1', name: mockRole }],
         };
-        authService.setSession(
-          {
-            access_token: 'mock_hrsjm_jwt_session_token',
-            refresh_token: 'mock_hrsjm_refresh_token',
-            user: mockUser,
-          },
-          rememberMe
-        );
+        const mockSession = {
+          access_token: 'mock_hrsjm_jwt_session_token_' + Date.now(),
+          refresh_token: 'mock_hrsjm_refresh_token_' + Date.now(),
+          user: mockUser,
+        };
+        authService.setSession(mockSession, rememberMe);
+        authStore.setUserDirectly(mockUser as any, mockSession.access_token);
+        userAuthStore.setUser(mockUser as any);
 
-        if (roleParam === 'seeker') navigate('/admin/assistance', { replace: true });
-        else if (roleParam === 'member') navigate('/admin/profile', { replace: true });
-        else if (roleParam === 'donor') navigate('/admin/donations', { replace: true });
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect');
+        if (redirect && redirect.startsWith('/')) {
+          navigate(redirect, { replace: true });
+          return;
+        }
+
+        if (mockRole === 'DONATION_SEEKER') navigate('/seeker/home', { replace: true });
+        else if (mockRole === 'MEMBER') navigate('/member/dashboard', { replace: true });
+        else if (mockRole === 'USER') navigate('/user/profile', { replace: true });
         else navigate('/admin/dashboard', { replace: true });
         return;
       }
@@ -252,6 +295,13 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Form Error Banner */}
+          {searchParams.get('logout') === 'success' && !formError && (
+            <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5 text-xs text-emerald-800">
+              <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>You have been signed out successfully.</span>
+            </div>
+          )}
+
           {formError && (
             <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
               <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />

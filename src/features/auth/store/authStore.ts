@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { LoginPayload, RegisterPayload, UserProfile } from '../types/auth.types';
 import { authService } from '../services/authService';
+import { userAuthStore } from '../../user/store/userAuthStore';
 
 interface AuthStoreState {
   user: UserProfile | null;
@@ -121,6 +122,38 @@ class AuthStore {
 
 export const authStore = new AuthStore();
 
+/**
+ * Global Sign Out Orchestrator:
+ * Clears tokens, resets authStore & userAuthStore, purges storage,
+ * and navigates safely to /login?logout=success.
+ */
+export async function executeSignOut(navigate?: (to: string, options?: any) => void): Promise<void> {
+  try {
+    await authStore.logout();
+  } catch (err) {
+    console.warn('Error during authStore logout:', err);
+    authService.clearSession();
+  }
+
+  try {
+    userAuthStore.signOut();
+  } catch (err) {
+    console.warn('Error during userAuthStore signOut:', err);
+  }
+
+  // Ensure storage is completely purged
+  authService.clearSession();
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('hrsjm:auth:logout'));
+    if (navigate) {
+      navigate('/login?logout=success', { replace: true });
+    } else {
+      window.location.href = '/login?logout=success';
+    }
+  }
+}
+
 export function useAuth(): AuthStoreState & {
   login: (payload: LoginPayload) => Promise<UserProfile>;
   register: (payload: RegisterPayload) => Promise<UserProfile>;
@@ -141,4 +174,3 @@ export function useAuth(): AuthStoreState & {
     setUserDirectly: (u, t) => authStore.setUserDirectly(u, t),
   };
 }
-

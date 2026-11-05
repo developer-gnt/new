@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import {
   Menu,
   Bell,
@@ -54,10 +55,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     return 'Admin Dashboard';
   }, [location.pathname]);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setProfileDropdownOpen(false);
-    // Demonstration sign out action
-    navigate('/');
+    await executeSignOut(navigate);
   };
 
   return (

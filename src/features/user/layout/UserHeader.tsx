@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../store/userAuthStore';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import { Bell, User, LogOut, ChevronDown, Heart, Menu } from 'lucide-react';
 
 interface UserHeaderProps {
@@ -19,7 +20,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
   onOpenProfile,
 }) => {
   const navigate = useNavigate();
-  const { user, unreadNotificationsCount, signOut } = useUserAuth();
+  const { user, unreadNotificationsCount } = useUserAuth();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -59,9 +60,9 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setDropdownOpen(false);
-    signOut();
+    await executeSignOut(navigate);
   };
 
   return (

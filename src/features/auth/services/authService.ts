@@ -77,8 +77,15 @@ export const authService = {
   clearSession(): void {
     try {
       localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem('auth_token');
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      localStorage.removeItem('hrsjm_last_app_no');
+      localStorage.removeItem('hrsjm_user_role');
+      sessionStorage.clear();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('hrsjm:auth:logout'));
+      }
     } catch {
       // Ignore storage errors
     }

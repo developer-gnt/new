@@ -9,12 +9,12 @@ import {
   Edit2,
   X,
 } from 'lucide-react';
-import { useAuth } from '../../auth/store/authStore';
+import { useAuth, executeSignOut } from '../../auth/store/authStore';
 import { authService } from '../../auth/services/authService';
 
 export const SeekerProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout, updateUserState } = useAuth();
+  const { user, updateUserState } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name || '');
@@ -101,8 +101,7 @@ export const SeekerProfilePage: React.FC = () => {
   };
 
   const handleSignOut = async () => {
-    await logout();
-    navigate('/login');
+    await executeSignOut(navigate);
   };
 
   return (

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { MemberLayout } from '@/components/layout/MemberLayout';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // Admin Portal Feature Exports
 import {
@@ -152,9 +153,9 @@ export const AppRoutes: React.FC = () => {
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
-          <Route path="/user/membership" element={<UserMembershipPage />} />
-          <Route path="/user/profile" element={<UserProfilePage />} />
-          <Route path="/user/notifications" element={<UserNotificationsPage />} />
+          <Route path="/user/membership" element={<ProtectedRoute><UserMembershipPage /></ProtectedRoute>} />
+          <Route path="/user/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
+          <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
         </Route>
 
         {/* Admin Direct Aliases (Exclusively for Admin-only modules) */}

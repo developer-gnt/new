@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react';
 import { USER_NAV_GROUPS } from './userNavItems';
 import { useUserAuth } from '../store/userAuthStore';
+import { executeSignOut } from '@/features/auth/store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 interface UserSidebarProps {
   collapsed: boolean;
@@ -17,7 +19,8 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
   mobileOpen,
   onCloseMobile,
 }) => {
-  const { unreadNotificationsCount, signOut } = useUserAuth();
+  const navigate = useNavigate();
+  const { unreadNotificationsCount } = useUserAuth();
 
   return (
     <>
@@ -158,9 +161,9 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
           {/* Sign Out Option */}
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (mobileOpen) onCloseMobile();
-              signOut();
+              await executeSignOut(navigate);
             }}
             className={`w-full flex items-center gap-3 rounded-xl text-rose-300 hover:bg-rose-500/15 hover:text-rose-200 transition-colors cursor-pointer ${
               collapsed && !mobileOpen ? 'justify-center p-2.5' : 'px-3 py-2 text-xs font-semibold'

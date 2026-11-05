@@ -1,20 +1,22 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/authStore';
+import { authService } from '../services/authService';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRole?: 'SEEKER' | 'ADMIN' | 'ANY';
+  allowedRole?: 'SEEKER' | 'ADMIN' | 'MEMBER' | 'ANY';
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRole = 'ANY',
 }) => {
-  const { isAuthenticated, isSeeker, isAdmin } = useAuth();
+  const { isAuthenticated, isSeeker, isAdmin, isMember } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !hasToken) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
@@ -28,6 +30,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/seeker/home" replace />;
   }
 
+  if (allowedRole === 'MEMBER' && !isMember && !isAdmin) {
+    return <Navigate to="/member/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
-
