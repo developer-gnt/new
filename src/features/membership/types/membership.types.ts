@@ -28,7 +28,7 @@ export interface MembershipPostData {
     | 'women'
     | 'political';
   iconBgColor: string;
-  buttonVariant: 'navy' | 'green';
+  buttonVariant: 'gold' | 'navy' | 'green';
 }
 
 export interface PersonalInfoForm {

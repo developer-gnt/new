@@ -846,7 +846,7 @@ export const SeekerRegistrationPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
                 >
                   <span>Continue to KYC Documents</span>
                   <ArrowRight size={16} />
@@ -1061,7 +1061,7 @@ export const SeekerRegistrationPage: React.FC = () => {
                   onClick={() => {
                     if (validateStep2()) setCurrentStep(3);
                   }}
-                  className="px-6 py-3 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
                 >
                   <span>Continue to Assistance Need</span>
                   <ArrowRight size={16} />
@@ -1438,11 +1438,11 @@ export const SeekerRegistrationPage: React.FC = () => {
                   type="button"
                   disabled={submitting}
                   onClick={handleSubmitApplication}
-                  className="px-7 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
+                  className="px-7 py-3.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] text-xs font-bold transition flex items-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin text-[#011F39]" />
                       <span>Submitting Application...</span>
                     </>
                   ) : (
@@ -1591,7 +1591,7 @@ export const SeekerRegistrationPage: React.FC = () => {
                     setTrackedRecord(submittedRecord);
                     setTrackingModalOpen(true);
                   }}
-                  className="flex-1 py-3 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                 >
                   <Search size={15} />
                   <span>Track Application Status</span>

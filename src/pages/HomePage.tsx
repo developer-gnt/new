@@ -209,7 +209,7 @@ export const HomePage: React.FC = () => {
             <div className="mt-6 flex flex-col gap-2">
               <button
                 onClick={() => navigate('/assistance/apply')}
-                className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Apply for Assistance</span>
                 <ArrowRight size={14} />
@@ -320,7 +320,7 @@ export const HomePage: React.FC = () => {
 
             <button
               onClick={() => handleRoleSelect('donor')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#059669] hover:bg-emerald-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Donor Login</span>
               <ArrowRight size={14} />
@@ -368,7 +368,7 @@ export const HomePage: React.FC = () => {
 
             <button
               onClick={() => handleRoleSelect('admin')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer"
+              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Admin Console Login</span>
               <ArrowRight size={14} />

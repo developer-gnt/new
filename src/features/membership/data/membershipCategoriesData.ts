@@ -20,7 +20,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     ],
     iconType: 'user',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'state-active-member',
@@ -41,7 +41,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     ],
     iconType: 'community',
     iconBgColor: '#EBF7EE',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'district-unit-post',
@@ -62,7 +62,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     ],
     iconType: 'hierarchy',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'state-unit-post',
@@ -83,7 +83,7 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     ],
     iconType: 'hierarchy',
     iconBgColor: '#EBF7EE',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
 ];
 
@@ -109,7 +109,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     ],
     iconType: 'crown',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'counselor-of-state',
@@ -132,7 +132,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     ],
     iconType: 'counselor',
     iconBgColor: '#EBF7EE',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'ambassador-of-state',
@@ -155,7 +155,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     ],
     iconType: 'shield',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
   {
     id: 'honble-state-director',
@@ -178,7 +178,7 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     ],
     iconType: 'director',
     iconBgColor: '#EBF7EE',
-    buttonVariant: 'green',
+    buttonVariant: 'gold',
   },
 ];
 
@@ -204,7 +204,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     ],
     iconType: 'scale',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'navy',
+    buttonVariant: 'gold',
   },
   {
     id: 'national-minority-council-cell',
@@ -227,7 +227,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     ],
     iconType: 'minority',
     iconBgColor: '#EBF7EE',
-    buttonVariant: 'navy',
+    buttonVariant: 'gold',
   },
   {
     id: 'national-women-council-cell',
@@ -250,7 +250,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     ],
     iconType: 'women',
     iconBgColor: '#FDF2F8',
-    buttonVariant: 'navy',
+    buttonVariant: 'gold',
   },
   {
     id: 'national-executive-council',
@@ -273,7 +273,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     ],
     iconType: 'crown',
     iconBgColor: '#EFF6FF',
-    buttonVariant: 'navy',
+    buttonVariant: 'gold',
   },
 ];
 

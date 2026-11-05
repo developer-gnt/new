@@ -610,7 +610,7 @@ export const MemberRegistrationPage: React.FC = () => {
               setPhase(1);
               setPersonalErrors(prev => ({ ...prev, dateOfBirth: 'Must be at least 18 years old to apply.' }));
             }}
-            className="w-full py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow transition flex items-center justify-center gap-2 cursor-pointer"
           >
             <ArrowLeft size={16} />
             <span>Back to Application</span>
@@ -732,7 +732,7 @@ export const MemberRegistrationPage: React.FC = () => {
           <div className="space-y-3">
             <button
               onClick={() => navigate('/login?role=member')}
-              className="w-full py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Login to Member Portal</span>
               <ArrowRight size={16} />
@@ -907,11 +907,7 @@ export const MemberRegistrationPage: React.FC = () => {
                       setSelectedPost(post);
                       setPhase(1); // Proceed to Step 1 Personal Details
                     }}
-                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                      post.buttonVariant === 'navy'
-                        ? 'bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] shadow-md'
-                        : 'bg-[#059669] hover:bg-[#047857] text-white shadow-md'
-                    }`}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] shadow-sm hover:shadow-md"
                   >
                     <span>Apply for this Post</span>
                     <ArrowRight size={14} />
@@ -1437,7 +1433,7 @@ export const MemberRegistrationPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Continue to Address Details</span>
                   <ArrowRight size={16} />
@@ -1614,7 +1610,7 @@ export const MemberRegistrationPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Continue to Documents</span>
                   <ArrowRight size={16} />
@@ -1848,11 +1844,11 @@ export const MemberRegistrationPage: React.FC = () => {
                   type="button"
                   disabled={submitting}
                   onClick={handleFinalSubmit}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 size={16} className="animate-spin text-[#FAD465]" />
+                      <Loader2 size={16} className="animate-spin text-[#011F39]" />
                       <span>Submitting Application...</span>
                     </>
                   ) : (
