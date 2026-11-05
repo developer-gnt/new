@@ -56,6 +56,14 @@ export const SeekerApplyPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submittedRequest, setSubmittedRequest] = useState<AssistanceRequest | null>(null);
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/seeker/home');
+    }
+  };
+
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
 
@@ -156,7 +164,7 @@ export const SeekerApplyPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0B2F52] hover:text-[#06294D] transition cursor-pointer"
         >
           <ChevronLeft size={16} />

@@ -122,7 +122,7 @@ export const SeekerHomePage: React.FC = () => {
                 {latestRequest.admin_remark || 'Assessment in progress by HRSJM field team.'}
               </span>
               <Link
-                to={`/seeker/requests`}
+                to={`/seeker/requests/${latestRequest.id}`}
                 className="text-[#06294D] font-bold hover:underline inline-flex items-center gap-1 ml-auto"
               >
                 <span>View Full Status & Documents History</span>

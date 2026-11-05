@@ -11,7 +11,84 @@ export const SeekerIdCardPage: React.FC = () => {
   const seekerId = `HRSJM-SEK-${(user?.id || '4004').slice(-4).toUpperCase()}`;
 
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>HRSJM Seeker ID Card - ${user?.full_name || 'Seeker'}</title>
+          <style>
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #FAF7F0; color: #06294D; text-align: center; }
+            .card-wrapper { max-width: 480px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; border: 2px solid #06294D; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .c-header { background: #06294D; padding: 18px; color: #FFFFFF; border-bottom: 3px solid #FAD465; text-align: left; }
+            .c-org { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #FAD465; text-transform: uppercase; }
+            .c-title { font-size: 16px; font-weight: 700; margin-top: 4px; color: #FFFFFF; }
+            .c-body { padding: 24px; text-align: left; }
+            .row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+            .avatar { width: 70px; height: 70px; border-radius: 14px; background: #06294D; color: #FAD465; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; border: 2px solid #FAD465; }
+            .name { font-size: 18px; font-weight: 800; color: #06294D; }
+            .id-code { font-family: monospace; font-size: 12px; font-weight: 700; color: #0D9488; margin-top: 2px; }
+            .meta { font-size: 12px; color: #64748B; margin-top: 2px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; padding: 14px 0; margin-bottom: 16px; font-size: 12px; }
+            .label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94A3B8; }
+            .val { font-weight: 700; color: #06294D; margin-top: 2px; }
+            .notice { font-size: 10px; color: #94A3B8; line-height: 1.5; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="card-wrapper">
+            <div class="c-header">
+              <div class="c-org">Human Rights & Social Justice Mission</div>
+              <div class="c-title">Donation Seeker Verification Card</div>
+            </div>
+            <div class="c-body">
+              <div class="row">
+                <div class="avatar">${user?.full_name?.charAt(0) || 'S'}</div>
+                <div>
+                  <div class="name">${user?.full_name || 'HRSJM Seeker'}</div>
+                  <div class="id-code">ID: ${seekerId}</div>
+                  <div class="meta">Mobile: ${user?.mobile_number || '9888880004'}</div>
+                </div>
+              </div>
+              <div class="grid">
+                <div>
+                  <div class="label">Registered State</div>
+                  <div class="val">${user?.state || 'Maharashtra'}</div>
+                </div>
+                <div>
+                  <div class="label">City / Center</div>
+                  <div class="val">${user?.city || 'Mumbai Central'}</div>
+                </div>
+                <div>
+                  <div class="label">Issue Date</div>
+                  <div class="val">01 Oct 2026</div>
+                </div>
+                <div>
+                  <div class="label">Status</div>
+                  <div class="val" style="color: #10B981;">Active & Verified</div>
+                </div>
+              </div>
+              <div class="notice">
+                Official Credential issued by Human Rights and Social Justice Mission for verified humanitarian assistance.
+              </div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   return (
