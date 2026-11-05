@@ -161,7 +161,7 @@ export const SignupCategoryPage: React.FC = () => {
             <div className="flex items-center justify-between relative max-w-sm mx-auto">
               {/* Step 1: Active */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-7 h-7 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224] flex items-center justify-center text-[11px] font-bold shadow-xs">
+                <div className="w-7 h-7 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E] flex items-center justify-center text-[11px] font-bold shadow-xs">
                   1
                 </div>
                 <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">

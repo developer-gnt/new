@@ -175,10 +175,10 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
           <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition-colors">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-700 shrink-0" />
+                <FileText className="w-4 h-4 text-[#06294D] shrink-0" />
                 <span className="text-xs font-bold text-[#06294D]">Qualification Certificate</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-[#EDF2F7] text-[#06294D] text-[10px] font-bold">
                 {selectedPost.qualification}
               </span>
             </div>

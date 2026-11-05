@@ -266,7 +266,7 @@ export const LoginPage: React.FC = () => {
             style={{ color: '#FFFFFF' }}
             className="text-2xl sm:text-3xl font-extrabold font-serif tracking-tight leading-snug"
           >
-            Together for a <span style={{ color: '#F3BA47' }} className="text-[#FAD465]">More Just</span> Society
+            Together for a <span style={{ color: '#FAD465' }} className="text-[#FAD465]">More Just</span> Society
           </h1>
           <p className="text-xs sm:text-[13px] text-slate-200 max-w-sm mx-auto mt-2 leading-relaxed opacity-90">
             Sign in to continue and be a part of our mission for human rights, dignity, equality and peace.

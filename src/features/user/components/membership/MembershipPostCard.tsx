@@ -37,7 +37,7 @@ export const MembershipPostCard: React.FC<MembershipPostCardProps> = ({ post, on
       case 'minority':
         return <Users className="w-5 h-5 text-emerald-700" />;
       case 'women':
-        return <Award className="w-5 h-5 text-purple-700" />;
+        return <Award className="w-5 h-5 text-[#C9971A]" />;
       case 'political':
         return <Shield className="w-5 h-5 text-indigo-700" />;
       default:

@@ -264,7 +264,7 @@ export const MemberCausesPage: React.FC = () => {
               <>
                 {/* Header */}
                 <div className="border-b border-slate-100 pb-3 space-y-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#06294D] bg-[#EDF2F7] px-2.5 py-0.5 rounded-full border border-[#DBE5EE]">
                     Philanthropic Mission Contribution
                   </span>
                   <h2 className="text-xl font-black text-[#06294D] pt-1">

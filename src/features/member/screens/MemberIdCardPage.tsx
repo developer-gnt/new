@@ -316,8 +316,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '16px',
   },
   cardSectionTitle: {
-    fontSize: '16px',
+    fontSize: '17px',
     fontWeight: 700,
+    fontFamily: 'var(--font-display, Playfair Display, serif)',
     color: '#0B2F52',
     margin: 0,
   },
@@ -341,6 +342,8 @@ const styles: Record<string, React.CSSProperties> = {
   specVal: {
     fontSize: '14px',
     fontWeight: 600,
+    fontVariantNumeric: 'tabular-nums',
+    fontFeatureSettings: '"tnum" 1, "cv05" 1, "cv11" 1',
     color: '#0B2F52',
   },
   qrDescText: {

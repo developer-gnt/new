@@ -133,7 +133,7 @@ export const UserTransactionsPage: React.FC = () => {
       case 'donation':
         return {
           icon: Heart,
-          className: 'bg-purple-50 text-purple-800 border-purple-200',
+          className: 'bg-[#FAF7F0] text-[#C9971A] border-[#FAD465]/60',
         };
       case 'events':
         return {
@@ -172,7 +172,7 @@ export const UserTransactionsPage: React.FC = () => {
         return {
           icon: RefreshCw,
           text: 'Refunded',
-          className: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+          className: 'bg-[#EDF2F7] text-[#06294D] border-[#DBE5EE]',
         };
       default:
         return {

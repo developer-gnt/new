@@ -385,14 +385,6 @@ html, body {
   aside button[aria-label="Close Sidebar"] {
     display: flex !important;
   }
-
-  header button[aria-label="Open Navigation Menu"] {
-    display: flex !important;
-  }
-
-  header button[aria-label="Toggle Sidebar"] {
-    display: none !important;
-  }
 }
 
 .table-row-hover:hover {

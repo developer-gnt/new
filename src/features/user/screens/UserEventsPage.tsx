@@ -145,7 +145,7 @@ export const UserEventsPage: React.FC = () => {
             <Calendar size={14} />
             <span>Community Conventions & Action</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Events & Activities</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-white">Events & Activities</h1>
           <p className="text-xs sm:text-sm text-slate-200 mt-1">
             Participate in nationwide constitutional workshops, legal assistance camps, youth conventions, and human rights rallies.
           </p>
@@ -247,7 +247,7 @@ export const UserEventsPage: React.FC = () => {
                 {/* Details */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-[#06294D] group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug mb-2">
+                    <h3 className="text-base font-bold font-serif text-[#06294D] group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug mb-2">
                       {event.title}
                     </h3>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">

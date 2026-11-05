@@ -55,7 +55,7 @@ export const MemberPassbookPage: React.FC = () => {
   const getBadgeColor = (type: TransactionType) => {
     switch (type) {
       case 'DONATION':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
+        return 'bg-[#FFF9E6] text-[#C9971A] border-[#FAD465]/60';
       case 'MEMBERSHIP_FEE':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'MEMBERSHIP_RENEWAL':

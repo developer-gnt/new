@@ -73,7 +73,7 @@ export const CategoryIconRow = <T extends RightsCategory>({
             {renderCategoryIcon(item.icon)}
           </div>
 
-          <span className="text-[10px] sm:text-[12px] font-bold text-[#0F2860] leading-tight whitespace-pre-line">
+          <span className="text-[10px] sm:text-[12px] font-bold text-[#06294D] leading-tight whitespace-pre-line">
             {REFERENCE_LABELS[item.title] ?? item.title}
           </span>
         </button>

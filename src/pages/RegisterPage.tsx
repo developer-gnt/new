@@ -303,7 +303,7 @@ export const RegisterPage: React.FC = () => {
               <div className="text-base font-black text-[#011F39] font-serif leading-none tracking-wide">
                 HRSJM
               </div>
-              <div className="text-[10px] font-bold text-[#EAA224] tracking-wider uppercase mt-0.5">
+              <div className="text-[10px] font-bold text-[#E9B82E] tracking-wider uppercase mt-0.5">
                 Human Rights &amp; Social Justice Mission
               </div>
             </div>
@@ -372,7 +372,7 @@ export const RegisterPage: React.FC = () => {
           <div className="flex items-center justify-between mb-6 px-2">
             <button
               onClick={() => navigate('/login')}
-              className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#0F2860] hover:bg-slate-50 transition cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#06294D] hover:bg-slate-50 transition cursor-pointer"
               title="Back to Login"
             >
               <ArrowLeft size={16} />
@@ -388,7 +388,7 @@ export const RegisterPage: React.FC = () => {
             <div className="flex items-center justify-between relative max-w-sm mx-auto">
               {/* Step 1 */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-8 h-8 rounded-full bg-[#EAA224] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#E9B82E] text-white flex items-center justify-center text-xs font-bold shadow-sm">
                   <Check size={16} />
                 </div>
                 <span className="text-[11px] font-bold text-[#011F39] mt-1.5 text-center leading-tight">
@@ -397,11 +397,11 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               {/* Connecting Line 1 */}
-              <div className="flex-1 h-0.5 bg-[#EAA224] mx-2 -mt-5" />
+              <div className="flex-1 h-0.5 bg-[#E9B82E] mx-2 -mt-5" />
 
               {/* Step 2 */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-8 h-8 rounded-full bg-[#EAA224] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#E9B82E] text-white flex items-center justify-center text-xs font-bold shadow-sm">
                   <Check size={16} />
                 </div>
                 <span className="text-[11px] font-bold text-[#011F39] mt-1.5 text-center leading-tight">
@@ -410,7 +410,7 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               {/* Connecting Line 2 */}
-              <div className="flex-1 h-0.5 bg-[#EAA224] mx-2 -mt-5" />
+              <div className="flex-1 h-0.5 bg-[#E9B82E] mx-2 -mt-5" />
 
               {/* Step 3 */}
               <div className="flex flex-col items-center z-10">
@@ -453,7 +453,7 @@ export const RegisterPage: React.FC = () => {
               {/* Full Name */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 text-slate-500 font-medium">
-                  <User size={16} className="text-[#0F2860]" />
+                  <User size={16} className="text-[#06294D]" />
                   <span>Full Name</span>
                 </div>
                 <span className="font-bold text-[#011F39]">{formData.fullName}</span>
@@ -464,7 +464,7 @@ export const RegisterPage: React.FC = () => {
               {/* Email Address */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 text-slate-500 font-medium">
-                  <Mail size={16} className="text-[#0F2860]" />
+                  <Mail size={16} className="text-[#06294D]" />
                   <span>Email Address</span>
                 </div>
                 <span className="font-semibold text-slate-800">{formData.email}</span>
@@ -475,7 +475,7 @@ export const RegisterPage: React.FC = () => {
               {/* Mobile Number */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 text-slate-500 font-medium">
-                  <Phone size={16} className="text-[#0F2860]" />
+                  <Phone size={16} className="text-[#06294D]" />
                   <span>Mobile Number</span>
                 </div>
                 <span className="font-semibold text-slate-800">
@@ -488,7 +488,7 @@ export const RegisterPage: React.FC = () => {
               {/* Date of Birth */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 text-slate-500 font-medium">
-                  <Calendar size={16} className="text-[#0F2860]" />
+                  <Calendar size={16} className="text-[#06294D]" />
                   <span>Date of Birth</span>
                 </div>
                 <span className="font-semibold text-slate-800">{formatDateToDMY(formData.dob)}</span>
@@ -499,7 +499,7 @@ export const RegisterPage: React.FC = () => {
               {/* Account Type */}
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2 text-slate-500 font-medium">
-                  <Users size={16} className="text-[#0F2860]" />
+                  <Users size={16} className="text-[#06294D]" />
                   <span>Account Type</span>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-bold text-xs">
@@ -611,7 +611,7 @@ export const RegisterPage: React.FC = () => {
             <div className="flex items-center justify-between relative max-w-xs mx-auto">
               {/* Step 1: Account Type (Done - click to change) */}
               <Link to="/register" className="flex flex-col items-center z-10 group cursor-pointer">
-                <div className="w-8 h-8 rounded-full bg-[#EAA224] group-hover:bg-[#d89318] text-white flex items-center justify-center text-xs font-bold shadow-sm transition">
+                <div className="w-8 h-8 rounded-full bg-[#E9B82E] group-hover:bg-[#d89318] text-white flex items-center justify-center text-xs font-bold shadow-sm transition">
                   <Check size={16} />
                 </div>
                 <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">
@@ -620,11 +620,11 @@ export const RegisterPage: React.FC = () => {
               </Link>
 
               {/* Connecting Line 1 */}
-              <div className="flex-1 h-0.5 bg-[#EAA224] mx-2 -mt-4" />
+              <div className="flex-1 h-0.5 bg-[#E9B82E] mx-2 -mt-4" />
 
               {/* Step 2: Personal Details (Active) */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-8 h-8 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224] flex items-center justify-center text-xs font-bold shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E] flex items-center justify-center text-xs font-bold shadow-sm">
                   2
                 </div>
                 <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">
@@ -765,7 +765,7 @@ export const RegisterPage: React.FC = () => {
                   className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium tracking-wide"
                 />
                 {checkingPhone ? (
-                  <Loader2 size={16} className="text-[#EAA224] animate-spin shrink-0 ml-2" />
+                  <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
                 ) : verifiedPhone && formData.phone === verifiedPhone && !fieldErrors.phone ? (
                   <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
                 ) : null}
@@ -815,7 +815,7 @@ export const RegisterPage: React.FC = () => {
                   className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                 />
                 {checkingEmail ? (
-                  <Loader2 size={16} className="text-[#EAA224] animate-spin shrink-0 ml-2" />
+                  <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
                 ) : verifiedEmail && formData.email.trim().toLowerCase() === verifiedEmail && !fieldErrors.email ? (
                   <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
                 ) : null}
@@ -1054,7 +1054,7 @@ export const RegisterPage: React.FC = () => {
             {/* Login Link */}
             <div className="pt-4 text-center text-xs text-slate-600 border-t border-slate-100">
               <span>Already have an account? </span>
-              <Link to="/login" className="font-bold text-[#0F2860] hover:underline">
+              <Link to="/login" className="font-bold text-[#06294D] hover:underline">
                 Login
               </Link>
             </div>

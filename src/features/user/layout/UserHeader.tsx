@@ -100,7 +100,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
               <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 truncate hidden min-[480px]:block">
                 HUMAN RIGHTS AND SOCIAL JUSTICE MISSION
               </span>
-              <span className="text-[8.5px] sm:text-[9.5px] font-semibold text-[#0F2860] leading-tight truncate hidden min-[480px]:block">
+              <span className="text-[8.5px] sm:text-[9.5px] font-semibold text-[#06294D] leading-tight truncate hidden min-[480px]:block">
                 मानव अधिकार • सामाजिक न्याय
               </span>
             </div>

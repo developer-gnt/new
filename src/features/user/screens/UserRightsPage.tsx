@@ -200,7 +200,7 @@ export const UserRightsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 className="text-base font-bold text-[#06294D] group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug mb-2">
+                <h3 className="text-base font-bold font-serif text-[#06294D] group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug mb-2">
                   {article.title}
                 </h3>
 
@@ -230,7 +230,7 @@ export const UserRightsPage: React.FC = () => {
                 <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800">
                   {activeArticle.category}
                 </span>
-                <h2 className="text-xl font-black text-[#06294D] mt-2 leading-tight">
+                <h2 className="text-xl font-black font-serif text-[#06294D] mt-2 leading-tight">
                   {activeArticle.title}
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">

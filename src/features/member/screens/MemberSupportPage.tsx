@@ -263,7 +263,7 @@ export const MemberSupportPage: React.FC = () => {
               <LifeBuoy className="w-3.5 h-3.5" />
               National Member Grievance & Rapid Response Desk
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold font-serif tracking-tight">
               Help & Support Desk
             </h1>
             <p className="text-xs md:text-sm text-slate-200 max-w-2xl">
@@ -286,19 +286,19 @@ export const MemberSupportPage: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Grievances</div>
-          <div className="text-2xl font-black text-[#06294D] mt-1">{tickets.length}</div>
+          <div className="text-2xl font-black text-[#06294D] mt-1 tabular-nums">{tickets.length}</div>
           <div className="text-[11px] text-slate-500 mt-0.5">Logged across all terms</div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="text-blue-700 text-xs font-semibold uppercase tracking-wider">Under Action</div>
-          <div className="text-2xl font-black text-blue-700 mt-1">
+          <div className="text-2xl font-black text-blue-700 mt-1 tabular-nums">
             {tickets.filter((t) => t.status === 'IN_PROGRESS').length}
           </div>
           <div className="text-[11px] text-slate-500 mt-0.5">Active legal cell dispatch</div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="text-emerald-700 text-xs font-semibold uppercase tracking-wider">Resolved</div>
-          <div className="text-2xl font-black text-emerald-700 mt-1">
+          <div className="text-2xl font-black text-emerald-700 mt-1 tabular-nums">
             {tickets.filter((t) => t.status === 'RESOLVED').length}
           </div>
           <div className="text-[11px] text-slate-500 mt-0.5">Closed with formal relief</div>
@@ -353,7 +353,7 @@ export const MemberSupportPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 md:p-6 space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-[#06294D]">My Registered Grievances &amp; Petitions</h2>
+            <h2 className="text-lg font-bold font-serif text-[#06294D]">My Registered Grievances &amp; Petitions</h2>
             <p className="text-xs text-slate-500">
               Track real-time legal status, assigned counsel, and official milestone records.
             </p>
@@ -454,7 +454,7 @@ export const MemberSupportPage: React.FC = () => {
 
               {/* Subject & Description */}
               <div>
-                <h3 className="text-base font-extrabold text-[#06294D]">
+                <h3 className="text-base font-extrabold font-serif text-[#06294D]">
                   {t.subject}
                 </h3>
                 <p className="text-xs text-slate-600 mt-1 line-clamp-2">
@@ -516,7 +516,7 @@ export const MemberSupportPage: React.FC = () => {
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Official Grievance Record
                   </div>
-                  <h2 className="text-lg font-black text-[#06294D]">
+                  <h2 className="text-lg font-black font-serif text-[#06294D]">
                     Case Dossier — {viewingTicket.ticketNumber}
                   </h2>
                 </div>

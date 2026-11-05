@@ -47,7 +47,7 @@ export const ImpactSection: React.FC<ImpactSectionProps> = ({
           </div>
           <h3
             style={{ color: '#FFFFFF' }}
-            className="text-xl sm:text-2xl font-extrabold tracking-tight text-white !text-white"
+            className="text-xl sm:text-2xl font-extrabold font-serif tracking-tight text-white !text-white"
           >
             Our Impact
           </h3>

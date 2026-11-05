@@ -590,7 +590,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="card-editorial p-6">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#123F68] flex items-center justify-center mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EDF2F7] text-[#123F68] flex items-center justify-center mb-3">
               <MapPin size={18} />
             </div>
             <h4 className="font-bold text-sm text-[#011F39] mb-1 font-serif">National Secretariat</h4>

@@ -111,7 +111,7 @@ export const UserDonationsPage: React.FC = () => {
             <Heart size={14} className="fill-[#FAD465]" />
             <span>80G Tax-Exempt National Contribution</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Donations & Support Desk</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-white">Donations & Support Desk</h1>
           <p className="text-xs sm:text-sm text-slate-200 mt-1">
             Every contribution directly funds legal interventions, constitutional protection, women and child welfare, and grassroots relief. All donations are 50% tax exempt under Section 80G.
           </p>
@@ -155,7 +155,7 @@ export const UserDonationsPage: React.FC = () => {
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 Payment Received Successfully
               </span>
-              <h2 className="text-2xl font-black text-[#06294D] mt-3">Thank You for Your Generosity!</h2>
+              <h2 className="text-2xl font-black font-serif text-[#06294D] mt-3">Thank You for Your Generosity!</h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 Your contribution of <strong className="text-slate-800">₹{completedDonation.amount.toLocaleString('en-IN')}</strong> will directly safeguard human dignity and constitutional rights.
               </p>

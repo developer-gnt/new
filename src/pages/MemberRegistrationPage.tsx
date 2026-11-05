@@ -567,7 +567,7 @@ export const MemberRegistrationPage: React.FC = () => {
               <div className="text-base font-black text-[#011F39] font-serif leading-none tracking-wide">
                 HRSJM
               </div>
-              <div className="text-[10px] font-bold text-[#EAA224] tracking-wider uppercase mt-0.5">
+              <div className="text-[10px] font-bold text-[#E9B82E] tracking-wider uppercase mt-0.5">
                 Human Rights &amp; Social Justice Mission
               </div>
             </div>
@@ -633,7 +633,7 @@ export const MemberRegistrationPage: React.FC = () => {
           <div className="flex items-center justify-between mb-6 px-2">
             <Link
               to="/"
-              className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#0F2860] hover:bg-slate-50 transition"
+              className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#06294D] hover:bg-slate-50 transition"
               title="Return Home"
             >
               <ArrowLeft size={16} />
@@ -985,9 +985,9 @@ export const MemberRegistrationPage: React.FC = () => {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm transition ${
                     phase > 1
-                      ? 'bg-[#EAA224] text-white'
+                      ? 'bg-[#E9B82E] text-white'
                       : phase === 1
-                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224]'
+                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E]'
                       : 'bg-slate-100 text-slate-400 border border-slate-200'
                   }`}
                 >
@@ -998,16 +998,16 @@ export const MemberRegistrationPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className={`flex-1 h-0.5 mx-2 -mt-4 transition ${phase > 1 ? 'bg-[#EAA224]' : 'bg-slate-200'}`} />
+              <div className={`flex-1 h-0.5 mx-2 -mt-4 transition ${phase > 1 ? 'bg-[#E9B82E]' : 'bg-slate-200'}`} />
 
               {/* Step 2 */}
               <div className="flex flex-col items-center z-10">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm transition ${
                     phase > 2
-                      ? 'bg-[#EAA224] text-white'
+                      ? 'bg-[#E9B82E] text-white'
                       : phase === 2
-                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224]'
+                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E]'
                       : 'bg-slate-100 text-slate-400 border border-slate-200'
                   }`}
                 >
@@ -1018,14 +1018,14 @@ export const MemberRegistrationPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className={`flex-1 h-0.5 mx-2 -mt-4 transition ${phase > 2 ? 'bg-[#EAA224]' : 'bg-slate-200'}`} />
+              <div className={`flex-1 h-0.5 mx-2 -mt-4 transition ${phase > 2 ? 'bg-[#E9B82E]' : 'bg-slate-200'}`} />
 
               {/* Step 3 */}
               <div className="flex flex-col items-center z-10">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm transition ${
                     phase === 3
-                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224]'
+                      ? 'bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E]'
                       : 'bg-slate-100 text-slate-400 border border-slate-200'
                   }`}
                 >
@@ -1261,7 +1261,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                   />
                   {checkingPhone ? (
-                    <Loader2 size={16} className="text-[#EAA224] animate-spin shrink-0 ml-2" />
+                    <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
                   ) : verifiedPhone && personal.mobileNumber === verifiedPhone && !personalErrors.mobileNumber ? (
                     <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
                   ) : null}
@@ -1300,7 +1300,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
                   />
                   {checkingEmail ? (
-                    <Loader2 size={16} className="text-[#EAA224] animate-spin shrink-0 ml-2" />
+                    <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
                   ) : verifiedEmail && personal.email.trim().toLowerCase() === verifiedEmail && !personalErrors.email ? (
                     <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
                   ) : null}

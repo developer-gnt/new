@@ -102,25 +102,21 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
     <header style={styles.header}>
       {/* Left Section: Menu Toggle, Brand Logo (mobile only) & Title */}
       <div style={styles.leftSection}>
-        {/* Mobile menu button */}
+        {/* Responsive single menu toggle button */}
         <button
           type="button"
-          onClick={onToggleMobileSidebar}
-          style={styles.mobileMenuBtn}
-          aria-label="Open Navigation Menu"
-        >
-          <Menu size={20} color="#0B2F52" />
-        </button>
-
-        {/* Desktop collapse toggle button */}
-        <button
-          type="button"
-          onClick={onToggleDesktopCollapse}
-          style={styles.desktopToggleBtn}
-          aria-label="Toggle Sidebar"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+              onToggleMobileSidebar();
+            } else {
+              onToggleDesktopCollapse();
+            }
+          }}
+          style={styles.toggleBtn}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <Menu size={18} color="#06294D" />
+          <Menu size={19} color="#06294D" />
         </button>
 
         {/* Brand logo in header for mobile when sidebar is hidden */}
@@ -325,18 +321,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '14px',
   },
-  mobileMenuBtn: {
-    display: 'none',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
-    borderRadius: '8px',
-    border: '1px solid #DCE4EC',
-    backgroundColor: '#FAF7F0',
-    cursor: 'pointer',
-  },
-  desktopToggleBtn: {
+  toggleBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

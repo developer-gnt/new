@@ -78,7 +78,7 @@ export const UserAboutPage: React.FC = () => {
             <span>National Non-Governmental Mission</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+          <h1 className="text-2xl sm:text-4xl font-extrabold font-serif tracking-tight leading-tight text-white">
             Human Rights and Social Justice Mission
           </h1>
 
@@ -115,7 +115,7 @@ export const UserAboutPage: React.FC = () => {
             <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
               <Target size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#06294D] mb-2">Our Mission</h2>
+            <h2 className="text-xl font-extrabold font-serif text-[#06294D] mb-2">Our Mission</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
               To defend civil rights, provide accessible legal counsel to the underprivileged, eradicate social discrimination, and foster an informed citizenry conscious of both constitutional rights and civic duties.
             </p>
@@ -127,7 +127,7 @@ export const UserAboutPage: React.FC = () => {
             <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#06294D] flex items-center justify-center mb-4">
               <BookOpen size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#06294D] mb-2">Our Vision</h2>
+            <h2 className="text-xl font-extrabold font-serif text-[#06294D] mb-2">Our Vision</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
               An inclusive, just, and dignified democratic society where every citizen—regardless of gender, caste, creed, or economic background—exercises their fundamental rights with confidence and dignity.
             </p>

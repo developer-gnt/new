@@ -195,7 +195,7 @@ export const MemberRenewalPage: React.FC = () => {
         {/* Left Column: Plan Options (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-[#06294D] tracking-tight">
+            <h2 className="text-lg font-bold font-serif text-[#06294D] tracking-tight">
               1. Select Renewal Term or Upgrade Package
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -263,11 +263,11 @@ export const MemberRenewalPage: React.FC = () => {
                     <span className="text-xs font-semibold text-slate-500">Total Contribution:</span>
                     <div className="flex items-baseline gap-2">
                       {pkg.originalFee && (
-                        <span className="text-xs text-slate-400 line-through">
+                        <span className="text-xs text-slate-400 line-through tabular-nums">
                           ₹{pkg.originalFee.toLocaleString('en-IN')}
                         </span>
                       )}
-                      <span className="text-lg font-black text-[#06294D]">
+                      <span className="text-lg font-black text-[#06294D] tabular-nums">
                         ₹{pkg.fee.toLocaleString('en-IN')}
                       </span>
                     </div>

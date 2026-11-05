@@ -847,7 +847,9 @@ const styles: Record<string, React.CSSProperties> = {
   statValue: {
     fontSize: '24px',
     fontWeight: 700,
-    fontFamily: 'var(--font-display, Playfair Display, serif)',
+    fontFamily: 'var(--font-body, Inter, sans-serif)',
+    fontVariantNumeric: 'tabular-nums',
+    fontFeatureSettings: '"tnum" 1, "cv05" 1, "cv11" 1',
     color: '#06294D',
     lineHeight: 1.1,
     marginBottom: '4px',
