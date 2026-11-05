@@ -152,53 +152,53 @@ export const SignupCategoryPage: React.FC = () => {
       </section>
 
       {/* Main Container Overlapping Card */}
-      <main className="flex-1 px-4 -mt-12 pb-16">
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-9 relative z-20">
+      <main className="flex-1 px-4 -mt-10 pb-14">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-7 relative z-20">
           {/* Stepper Bar (Exact APK Parity) */}
-          <div className="mb-8 pb-6 border-b border-slate-100">
-            <div className="flex items-center justify-between relative max-w-md mx-auto">
+          <div className="mb-6 pb-5 border-b border-slate-100">
+            <div className="flex items-center justify-between relative max-w-sm mx-auto">
               {/* Step 1: Active */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-9 h-9 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224] flex items-center justify-center text-xs font-bold shadow-sm">
+                <div className="w-7 h-7 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#EAA224] flex items-center justify-center text-[11px] font-bold shadow-xs">
                   1
                 </div>
-                <span className="text-[11px] font-bold text-[#011F39] mt-1.5 text-center leading-tight">
+                <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">
                   Account<br />Type
                 </span>
               </div>
 
-              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-5" />
+              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-4" />
 
               {/* Step 2 */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-xs font-bold">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-[11px] font-bold">
                   2
                 </div>
-                <span className="text-[11px] font-medium text-slate-400 mt-1.5 text-center leading-tight">
+                <span className="text-[10px] font-medium text-slate-400 mt-1 text-center leading-tight">
                   Personal<br />Details
                 </span>
               </div>
 
-              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-5" />
+              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-4" />
 
               {/* Step 3 */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-xs font-bold">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-[11px] font-bold">
                   3
                 </div>
-                <span className="text-[11px] font-medium text-slate-400 mt-1.5 text-center leading-tight">
+                <span className="text-[10px] font-medium text-slate-400 mt-1 text-center leading-tight">
                   Verification<br />/ Proofs
                 </span>
               </div>
 
-              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-5" />
+              <div className="flex-1 h-0.5 bg-slate-200 mx-2 -mt-4" />
 
               {/* Step 4 */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-xs font-bold">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center text-[11px] font-bold">
                   4
                 </div>
-                <span className="text-[11px] font-medium text-slate-400 mt-1.5 text-center leading-tight">
+                <span className="text-[10px] font-medium text-slate-400 mt-1 text-center leading-tight">
                   Complete
                 </span>
               </div>
@@ -206,17 +206,17 @@ export const SignupCategoryPage: React.FC = () => {
           </div>
 
           {/* Section Heading */}
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#011F39] font-serif">
+          <div className="mb-5">
+            <h2 className="text-lg sm:text-xl font-bold text-[#011F39] font-serif">
               Select Registration Category
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-0.5">
               Select how you would like to participate in the Human Rights & Social Justice Mission.
             </p>
           </div>
 
-          {/* 3 Interactive Cards Grid (Exact APK Representation) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* 3 Interactive Cards Grid (Refined, Compact & Professional) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-6">
             {ACCOUNT_TYPES.map((type) => {
               const isSelected = selectedType === type.id;
               const IconComp = type.icon;
@@ -225,69 +225,65 @@ export const SignupCategoryPage: React.FC = () => {
                 <div
                   key={type.id}
                   onClick={() => setSelectedType(type.id)}
-                  className={`rounded-2xl border-2 p-5 text-left cursor-pointer transition-all duration-200 flex flex-col justify-between relative ${
+                  className={`rounded-xl border p-4 text-left cursor-pointer transition-all duration-150 flex flex-col justify-between relative group ${
                     isSelected
-                      ? 'border-[#011F39] bg-[#011F39]/5 shadow-md ring-2 ring-[#011F39]/10'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                      ? 'border-[#011F39] bg-[#011F39]/[0.03] shadow-xs ring-1 ring-[#011F39]/20'
+                      : 'border-slate-200/90 bg-white hover:border-slate-300 hover:shadow-xs'
                   }`}
                 >
-                  {/* Selection Checkmark */}
-                  {isSelected && (
-                    <div className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full bg-[#011F39] text-[#FAD465] flex items-center justify-center shadow-sm">
-                      <CheckCircle2 size={16} strokeWidth={2.5} />
-                    </div>
-                  )}
-
                   <div>
-                    {/* Icon */}
-                    <div
-                      className={`w-12 h-12 rounded-2xl ${type.iconBg} ${type.iconColor} flex items-center justify-center mb-4 transition-transform group-hover:scale-105`}
-                    >
-                      <IconComp size={26} strokeWidth={2} />
+                    {/* Top Row: Icon + Radio Indicator */}
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div
+                        className={`w-9 h-9 rounded-lg ${type.iconBg} ${type.iconColor} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}
+                      >
+                        <IconComp size={18} strokeWidth={2} />
+                      </div>
+
+                      <div
+                        className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? 'border-[#011F39] bg-[#011F39]'
+                            : 'border-slate-300 bg-white group-hover:border-slate-400'
+                        }`}
+                      >
+                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#FAD465]" />}
+                      </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-base font-bold text-[#011F39] mb-1">
+                    <h3 className="text-sm font-bold text-[#011F39] mb-1">
                       {type.title}
                     </h3>
 
                     {/* Badge */}
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border mb-3 ${type.badgeColor}`}
+                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border mb-2 ${type.badgeColor}`}
                     >
                       {type.badge}
                     </span>
 
                     {/* Description */}
-                    <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                    <p className="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2 min-h-[32px]">
                       {type.description}
                     </p>
 
                     {/* Deliverables Checklist */}
-                    <div className="space-y-1.5 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100 text-[11px] text-slate-600">
                       {type.deliverables.map((item, idx) => (
                         <div key={idx} className="flex items-start gap-1.5">
-                          <CheckCircle2 size={13} className="text-emerald-600 shrink-0 mt-0.5" />
-                          <span>{item}</span>
+                          <CheckCircle2 size={12} className="text-emerald-600 shrink-0 mt-0.5" />
+                          <span className="leading-tight">{item}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Radio / Selection Indicator at bottom */}
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-500">
-                      {isSelected ? 'Selected' : 'Click to select'}
+                  {/* Bottom Selection Status Line */}
+                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-semibold">
+                    <span className={isSelected ? 'text-[#011F39]' : 'text-slate-400'}>
+                      {isSelected ? '✓ Selected' : 'Tap to select'}
                     </span>
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        isSelected
-                          ? 'border-[#011F39] bg-[#011F39]'
-                          : 'border-slate-300 bg-white'
-                      }`}
-                    >
-                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#FAD465]" />}
-                    </div>
                   </div>
                 </div>
               );
@@ -295,18 +291,18 @@ export const SignupCategoryPage: React.FC = () => {
           </div>
 
           {/* Action Button: Signature Gold Yellow */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <button
               type="button"
               onClick={handleProceed}
-              className="w-full py-3.5 px-6 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 px-5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-xs hover:shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>{selectedConfig.ctaText}</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
             </button>
 
             {/* Back to Login */}
-            <div className="text-center text-xs text-slate-600 pt-2">
+            <div className="text-center text-xs text-slate-600 pt-1">
               <span>Already have an account? </span>
               <Link to="/login" className="font-bold text-[#011F39] hover:underline">
                 Sign in to your account

@@ -170,60 +170,60 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* 4 Role Selection Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Donation Seeker */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1">
+          <div className="bg-white rounded-xl border border-slate-200/90 p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="w-13 h-13 rounded-xl bg-amber-50 text-[#B45309] border border-amber-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <HeartHandshake size={28} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-50 text-[#B45309] border border-amber-200/70 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <HeartHandshake size={20} />
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100/70 text-[#B45309]">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100/70 text-[#B45309]">
                   Aid & Welfare
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-[#011F39] mb-1.5">
+              <h3 className="text-base font-bold text-[#011F39] mb-1">
                 Donation Seeker
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
                 For underprivileged individuals and families seeking medical treatment aid, educational assistance, or emergency welfare support.
               </p>
 
-              <div className="space-y-2 py-3 border-t border-slate-100 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+              <div className="space-y-1.5 py-2.5 border-t border-slate-100 text-[11px] text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Submit welfare assistance request</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Upload medical/invoice documents</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Track application review status</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-2">
               <button
                 onClick={() => navigate('/assistance/apply')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2 px-3 rounded-lg bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Apply for Assistance</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={13} />
               </button>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => handleRoleSelect('seeker')}
-                  className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
+                  className="py-1.5 px-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
                 >
                   <span>Seeker Login</span>
                 </button>
                 <button
                   onClick={() => navigate('/assistance/track')}
-                  className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
+                  className="py-1.5 px-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center text-center cursor-pointer"
                 >
                   <span>Track Status</span>
                 </button>
@@ -232,51 +232,51 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Card 2: Member */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1">
+          <div className="bg-white rounded-xl border border-slate-200/90 p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="w-13 h-13 rounded-xl bg-blue-50 text-[#1D4ED8] border border-blue-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <UserCheck size={28} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1D4ED8] border border-blue-200/70 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <UserCheck size={20} />
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100/70 text-[#1D4ED8]">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100/70 text-[#1D4ED8]">
                   Cadre & Delegate
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-[#011F39] mb-1.5">
+              <h3 className="text-base font-bold text-[#011F39] mb-1">
                 Member
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
                 For registered human rights delegates, legal counselors, state active members, and local committee officers.
               </p>
 
-              <div className="space-y-2 py-3 border-t border-slate-100 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+              <div className="space-y-1.5 py-2.5 border-t border-slate-100 text-[11px] text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Access official Member Services</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Download verified Digital ID Card</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Participate in regional conclaves</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-2">
+            <div className="mt-4 flex flex-col gap-2">
               <button
                 onClick={() => navigate('/membership/apply')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2 px-3 rounded-lg bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Become a Member</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={13} />
               </button>
               <button
                 onClick={() => handleRoleSelect('member')}
-                className="w-full py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Existing Member Login</span>
               </button>
@@ -284,35 +284,35 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Card 3: Donor */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1">
+          <div className="bg-white rounded-xl border border-slate-200/90 p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="w-13 h-13 rounded-xl bg-emerald-50 text-[#059669] border border-emerald-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Gift size={28} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#059669] border border-emerald-200/70 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Gift size={20} />
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100/70 text-[#059669]">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100/70 text-[#059669]">
                   Philanthropy & 80G
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-[#011F39] mb-1.5">
+              <h3 className="text-base font-bold text-[#011F39] mb-1">
                 Donor
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
                 For benevolent contributors, patrons, and CSR partners making direct impacts in human welfare initiatives.
               </p>
 
-              <div className="space-y-2 py-3 border-t border-slate-100 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+              <div className="space-y-1.5 py-2.5 border-t border-slate-100 text-[11px] text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Contribute to verified campaigns</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Instant 80G tax receipt downloads</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Recurring mandate transparency</span>
                 </div>
               </div>
@@ -320,47 +320,47 @@ export const HomePage: React.FC = () => {
 
             <button
               onClick={() => handleRoleSelect('donor')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+              className="mt-4 w-full py-2 px-3 rounded-lg bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Donor Login</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </button>
           </div>
 
           {/* Card 4: Admin */}
-          <div className="bg-white rounded-2xl border-2 border-[#011F39] p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#011F39] text-[#FAD465] text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+          <div className="bg-white rounded-xl border-2 border-[#011F39] p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group relative">
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#011F39] text-[#FAD465] text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
               Operational Hub
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-5">
-                <div className="w-13 h-13 rounded-xl bg-[#011F39] text-[#FAD465] flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
-                  <ShieldCheck size={28} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-[#011F39] text-[#FAD465] flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                  <ShieldCheck size={20} />
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
                   Executive Console
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-[#011F39] mb-1.5">
+              <h3 className="text-base font-bold text-[#011F39] mb-1">
                 Admin
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
                 For designated trustees, executive officers, and administrators overseeing national operations and governance.
               </p>
 
-              <div className="space-y-2 py-3 border-t border-slate-100 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+              <div className="space-y-1.5 py-2.5 border-t border-slate-100 text-[11px] text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Application review & KYC verify</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>General ledger & accounting audit</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                   <span>Grievances, press & conclaves</span>
                 </div>
               </div>
@@ -368,10 +368,10 @@ export const HomePage: React.FC = () => {
 
             <button
               onClick={() => handleRoleSelect('admin')}
-              className="mt-6 w-full py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer"
+              className="mt-4 w-full py-2 px-3 rounded-lg bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Admin Console Login</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </button>
           </div>
         </div>

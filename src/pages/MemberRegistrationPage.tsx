@@ -790,35 +790,35 @@ export const MemberRegistrationPage: React.FC = () => {
         </header>
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#0B2F52] text-white pt-12 pb-20 px-4 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#FAD465]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="max-w-4xl mx-auto relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-bold text-[#FAD465] tracking-widest uppercase">
+        <section className="bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#0B2F52] text-white pt-9 pb-14 px-4 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-[#FAD465]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="max-w-3xl mx-auto relative z-10 space-y-2.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-bold text-[#FAD465] tracking-widest uppercase">
               <span>Constitutional Movement</span>
               <span>•</span>
               <span>Official Cadre Membership</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold font-serif tracking-tight text-white leading-tight">
+            <h1 className="text-2xl sm:text-3.5xl font-extrabold font-serif tracking-tight text-white leading-tight">
               <span style={{ color: '#FFFFFF' }}>Apply for </span>
               <span style={{ color: '#FAD465' }}>Official Membership</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-200 max-w-xl mx-auto leading-relaxed">
               Select your post to serve humanity, defend fundamental rights, and uphold constitutional justice at District, State, or National councils.
             </p>
           </div>
         </section>
 
         {/* Tier Tabs & Posts Grid */}
-        <main className="max-w-7xl mx-auto px-4 -mt-10 pb-20 w-full relative z-20">
+        <main className="max-w-7xl mx-auto px-4 -mt-7 pb-16 w-full relative z-20">
           {/* Category Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-8 bg-white/90 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-slate-100 max-w-3xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-6 bg-white p-1.5 rounded-xl shadow-xs border border-slate-200/80 max-w-2xl mx-auto">
             <button
               onClick={() => setCategoryFilter('all')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 categoryFilter === 'all'
-                  ? 'bg-[#011F39] text-[#FAD465] shadow-sm'
+                  ? 'bg-[#011F39] text-[#FAD465] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -826,9 +826,9 @@ export const MemberRegistrationPage: React.FC = () => {
             </button>
             <button
               onClick={() => setCategoryFilter('district_state')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 categoryFilter === 'district_state'
-                  ? 'bg-[#011F39] text-[#FAD465] shadow-sm'
+                  ? 'bg-[#011F39] text-[#FAD465] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -836,9 +836,9 @@ export const MemberRegistrationPage: React.FC = () => {
             </button>
             <button
               onClick={() => setCategoryFilter('letter_pad')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 categoryFilter === 'letter_pad'
-                  ? 'bg-[#011F39] text-[#FAD465] shadow-sm'
+                  ? 'bg-[#011F39] text-[#FAD465] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -846,9 +846,9 @@ export const MemberRegistrationPage: React.FC = () => {
             </button>
             <button
               onClick={() => setCategoryFilter('national')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 categoryFilter === 'national'
-                  ? 'bg-[#011F39] text-[#FAD465] shadow-sm'
+                  ? 'bg-[#011F39] text-[#FAD465] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -857,46 +857,46 @@ export const MemberRegistrationPage: React.FC = () => {
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {displayedPosts.map(post => {
               const isSelected = selectedPost.id === post.id;
               return (
                 <div
                   key={post.id}
-                  className={`bg-white rounded-3xl p-6 shadow-md hover:shadow-xl transition border flex flex-col justify-between ${
-                    isSelected ? 'border-2 border-[#EAA224] ring-2 ring-[#EAA224]/20' : 'border-slate-100'
+                  className={`bg-white rounded-xl p-4 shadow-xs hover:shadow-md transition-all duration-200 border flex flex-col justify-between group ${
+                    isSelected ? 'border-[#011F39] ring-2 ring-[#011F39]/15' : 'border-slate-200/80 hover:border-slate-300'
                   }`}
                 >
                   <div>
                     {/* Top Post Badge & Fee */}
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: post.iconBgColor }}>
-                        <Award size={24} className="text-[#011F39]" />
+                    <div className="flex items-start justify-between gap-2.5 mb-2.5">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: post.iconBgColor }}>
+                        <Award size={18} className="text-[#011F39]" />
                       </div>
                       <div className="text-right">
-                        <div className="text-xl font-extrabold text-[#011F39] font-serif">{post.fee}</div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div className="text-base font-bold text-[#011F39] font-serif leading-none">{post.fee}</div>
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mt-0.5">
                           {post.validity} Validity
                         </span>
                       </div>
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#011F39] font-serif mb-1">
+                    <h3 className="text-sm font-bold text-[#011F39] font-serif mb-1 leading-snug line-clamp-2 min-h-[38px]">
                       {post.postName}
                     </h3>
-                    <p className="text-xs text-[#059669] font-semibold mb-4">
+                    <p className="text-[11px] text-[#059669] font-medium mb-3 line-clamp-1">
                       {post.qualification}
                     </p>
 
                     {/* Deliverables / Kit Checklist */}
-                    <div className="space-y-2 mb-6 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    <div className="space-y-1.5 mb-4 pt-2.5 border-t border-slate-100 text-[11px] text-slate-600">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                         Membership Deliverables &amp; Kit:
                       </div>
                       {post.checklistItems.map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <CheckCircle2 size={14} className="text-[#059669] shrink-0 mt-0.5" />
-                          <span>{item}</span>
+                        <div key={idx} className="flex items-start gap-1.5">
+                          <CheckCircle2 size={12} className="text-[#059669] shrink-0 mt-0.5" />
+                          <span className="leading-tight">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -907,10 +907,10 @@ export const MemberRegistrationPage: React.FC = () => {
                       setSelectedPost(post);
                       setPhase(1); // Proceed to Step 1 Personal Details
                     }}
-                    className="w-full py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] shadow-sm hover:shadow-md"
+                    className="w-full py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] shadow-xs hover:shadow-sm"
                   >
                     <span>Apply for this Post</span>
-                    <ArrowRight size={14} />
+                    <ArrowRight size={13} />
                   </button>
                 </div>
               );
