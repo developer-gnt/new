@@ -56,12 +56,69 @@ import { NotificationsPage } from '../features/notifications/screens/Notificatio
 import { SettingsPage } from '../features/settings/screens/SettingsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
+// Authentication & Guards
+import { LoginPage } from '../features/auth/screens/LoginPage';
+import { RegisterPage } from '../features/auth/screens/RegisterPage';
+import { AdminGuard } from '../features/auth/components/AdminGuard';
+import { useAuth } from '../features/auth/store/authStore';
+
+// Donation Seeker User-Facing Portal
+import { SeekerLayout } from '../features/seeker/components/SeekerLayout';
+import { SeekerHomePage } from '../features/seeker/screens/SeekerHomePage';
+import { SeekerRequestsPage } from '../features/seeker/screens/SeekerRequestsPage';
+import { SeekerApplyPage } from '../features/seeker/screens/SeekerApplyPage';
+import { SeekerRequestDetailsPage } from '../features/seeker/screens/SeekerRequestDetailsPage';
+import { SeekerRightsPage } from '../features/seeker/screens/SeekerRightsPage';
+import { SeekerRightDetailsPage } from '../features/seeker/screens/SeekerRightDetailsPage';
+import { SeekerEventsPage } from '../features/seeker/screens/SeekerEventsPage';
+import { SeekerSupportPage } from '../features/seeker/screens/SeekerSupportPage';
+import { SeekerCreateTicketPage } from '../features/seeker/screens/SeekerCreateTicketPage';
+import { SeekerProfilePage } from '../features/seeker/screens/SeekerProfilePage';
+import { SeekerIdCardPage } from '../features/seeker/screens/SeekerIdCardPage';
+import { SeekerNotificationsPage } from '../features/seeker/screens/SeekerNotificationsPage';
+
+const RootIndexRoute: React.FC = () => {
+  const { isAuthenticated, isSeeker, isAdmin } = useAuth();
+  if (isAuthenticated && isSeeker && !isAdmin) {
+    return <Navigate to="/seeker/home" replace />;
+  }
+  return <Navigate to="/admin/dashboard" replace />;
+};
+
 export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Authentication Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signin" element={<Navigate to="/login" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register/seeker" element={<RegisterPage />} />
+
+        {/* Donation Seeker Portal Routes (User-Facing) */}
+        <Route path="/seeker" element={<SeekerLayout />}>
+          <Route index element={<Navigate to="/seeker/home" replace />} />
+          <Route path="home" element={<SeekerHomePage />} />
+          <Route path="requests" element={<SeekerRequestsPage />} />
+          <Route path="requests/:id" element={<SeekerRequestDetailsPage />} />
+          <Route path="aid" element={<Navigate to="/seeker/requests" replace />} />
+          <Route path="apply" element={<SeekerApplyPage />} />
+          <Route path="apply-aid" element={<Navigate to="/seeker/apply" replace />} />
+          <Route path="rights" element={<SeekerRightsPage />} />
+          <Route path="rights/:id" element={<SeekerRightDetailsPage />} />
+          <Route path="events" element={<SeekerEventsPage />} />
+          <Route path="support" element={<SeekerSupportPage />} />
+          <Route path="support/create" element={<SeekerCreateTicketPage />} />
+          <Route path="complaint" element={<SeekerCreateTicketPage />} />
+          <Route path="profile" element={<SeekerProfilePage />} />
+          <Route path="profile/id-card" element={<SeekerIdCardPage />} />
+          <Route path="id-card" element={<Navigate to="/seeker/profile/id-card" replace />} />
+          <Route path="notifications" element={<SeekerNotificationsPage />} />
+          <Route path="*" element={<Navigate to="/seeker/home" replace />} />
+        </Route>
+
         {/* Root Redirects & Direct Aliases */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/" element={<RootIndexRoute />} />
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
         <Route path="/all-users" element={<Navigate to="/admin/all-users" replace />} />
@@ -115,133 +172,125 @@ export const AppRoutes: React.FC = () => {
         <Route path="/preferences" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/system-settings" element={<Navigate to="/admin/settings" replace />} />
 
-        {/* Admin Shell Layout */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboardPage />} />
+        {/* Admin Shell Layout — Guarded against unauthorized Seeker access */}
+        <Route element={<AdminGuard />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
 
-          {/* User Management & All Users Directory Modules (Exact APK Counterparts) */}
-          <Route path="users" element={<UsersListPage />} />
-          <Route path="users/add" element={<AddUserPage />} />
-          <Route path="users/:id" element={<UserDetailsPage />} />
-          <Route path="users/:id/edit" element={<EditUserPage />} />
-          <Route path="users/:id/verification" element={<UserVerificationPage />} />
-          <Route path="all-users" element={<AllUsersDirectoryPage />} />
-          <Route path="all-users/:id" element={<UserDetailsPage />} />
+            {/* User Management & All Users Directory Modules */}
+            <Route path="users" element={<UsersListPage />} />
+            <Route path="users/add" element={<AddUserPage />} />
+            <Route path="users/:id" element={<UserDetailsPage />} />
+            <Route path="users/:id/edit" element={<EditUserPage />} />
+            <Route path="users/:id/verification" element={<UserVerificationPage />} />
+            <Route path="all-users" element={<AllUsersDirectoryPage />} />
+            <Route path="all-users/:id" element={<UserDetailsPage />} />
 
-          {/* All Applications Module (Exact Counterpart of Mobile App) */}
-          <Route path="membership-applications" element={<ApplicationsListPage />} />
-          <Route path="membership-applications/:id" element={<ApplicationDetailsPage />} />
-          <Route path="applications" element={<Navigate to="/admin/membership-applications" replace />} />
-          <Route path="applications/:id" element={<ApplicationDetailsPage />} />
+            {/* All Applications Module */}
+            <Route path="membership-applications" element={<ApplicationsListPage />} />
+            <Route path="membership-applications/:id" element={<ApplicationDetailsPage />} />
+            <Route path="applications" element={<Navigate to="/admin/membership-applications" replace />} />
+            <Route path="applications/:id" element={<ApplicationDetailsPage />} />
 
-          {/* Members Directory Module (Exact Counterpart of Mobile App) */}
-          <Route path="members" element={<MembersListPage />} />
-          <Route path="members/add" element={<AddMemberPage />} />
-          <Route path="members/:id" element={<MemberDetailsPage />} />
-          <Route path="members/:id/edit" element={<EditMemberPage />} />
-          <Route path="member" element={<Navigate to="/admin/members" replace />} />
-          <Route path="members-directory" element={<Navigate to="/admin/members" replace />} />
-          <Route path="all-members" element={<Navigate to="/admin/members" replace />} />
+            {/* Members Directory Module */}
+            <Route path="members" element={<MembersListPage />} />
+            <Route path="members/add" element={<AddMemberPage />} />
+            <Route path="members/:id" element={<MemberDetailsPage />} />
+            <Route path="members/:id/edit" element={<EditMemberPage />} />
+            <Route path="member" element={<Navigate to="/admin/members" replace />} />
+            <Route path="members-directory" element={<Navigate to="/admin/members" replace />} />
+            <Route path="all-members" element={<Navigate to="/admin/members" replace />} />
 
-          {/* Donation Seekers & Aid Module (Exact Counterpart of Mobile App) */}
-          <Route path="assistance" element={<AssistanceListPage />} />
-          <Route path="assistance/create" element={<CreateSeekerPage />} />
-          <Route path="assistance/:id" element={<AssistanceDetailsPage />} />
-          <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
-          <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
+            {/* Donation Seekers & Aid Module (Admin View) */}
+            <Route path="assistance" element={<AssistanceListPage />} />
+            <Route path="assistance/create" element={<CreateSeekerPage />} />
+            <Route path="assistance/:id" element={<AssistanceDetailsPage />} />
+            <Route path="donation-seekers" element={<Navigate to="/admin/assistance" replace />} />
+            <Route path="aid" element={<Navigate to="/admin/assistance" replace />} />
 
-        {/* Support & Complaints Module (Exact Counterpart of Mobile App) */}
-          <Route path="support" element={<SupportTicketsListPage />} />
-          <Route path="support/:id" element={<SupportTicketDetailsPage />} />
-          <Route path="support/:id/chat" element={<SupportTicketChatPage />} />
-          <Route path="complaints" element={<Navigate to="/admin/support" replace />} />
-          <Route path="complaints/:id" element={<SupportTicketDetailsPage />} />
-          <Route path="complaints/:id/chat" element={<SupportTicketChatPage />} />
-          <Route path="tickets" element={<Navigate to="/admin/support" replace />} />
-          <Route path="tickets/:id" element={<SupportTicketDetailsPage />} />
-          <Route path="tickets/:id/chat" element={<SupportTicketChatPage />} />
+            {/* Support & Complaints Module */}
+            <Route path="support" element={<SupportTicketsListPage />} />
+            <Route path="support/:id" element={<SupportTicketDetailsPage />} />
+            <Route path="support/:id/chat" element={<SupportTicketChatPage />} />
+            <Route path="complaints" element={<Navigate to="/admin/support" replace />} />
+            <Route path="complaints/:id" element={<SupportTicketDetailsPage />} />
+            <Route path="complaints/:id/chat" element={<SupportTicketChatPage />} />
+            <Route path="tickets" element={<Navigate to="/admin/support" replace />} />
+            <Route path="tickets/:id" element={<SupportTicketDetailsPage />} />
+            <Route path="tickets/:id/chat" element={<SupportTicketChatPage />} />
 
-          {/* Content & Media */}
-          <Route path="events" element={<EventsListPage />} />
-          <Route path="events/:id" element={<EventDetailsPage />} />
-          {/* News & Press Module (Exact Counterpart of Mobile APK) */}
-          <Route path="news" element={<NewsListPage />} />
-          <Route path="news/create" element={<CreateNewsPage />} />
-          <Route path="news/:id" element={<NewsDetailsPage />} />
-          <Route path="news/:id/edit" element={<EditNewsPage />} />
-          <Route path="press" element={<Navigate to="/admin/news" replace />} />
-          <Route path="press-releases" element={<Navigate to="/admin/news" replace />} />
-          {/* Articles & Blogs Module (Exact Counterpart of Mobile APK) */}
-          <Route path="blogs" element={<BlogsListPage />} />
-          <Route path="blogs/create" element={<CreateBlogPage />} />
-          <Route path="blogs/:id" element={<BlogDetailsPage />} />
-          <Route path="blogs/:id/edit" element={<EditBlogPage />} />
-          <Route path="articles" element={<Navigate to="/admin/blogs" replace />} />
-          <Route path="blog" element={<Navigate to="/admin/blogs" replace />} />
-          {/* Know Your Rights Module (Exact Counterpart of Mobile APK) */}
-          <Route path="rights" element={<KnowYourRightsPage />} />
-          <Route path="rights/create" element={<CreateRightPage />} />
-          <Route path="rights/:id" element={<RightDetailsPage />} />
-          <Route path="rights/:id/edit" element={<EditRightPage />} />
-          <Route path="know-your-rights" element={<Navigate to="/admin/rights" replace />} />
-          <Route path="legal-rights" element={<Navigate to="/admin/rights" replace />} />
+            {/* Content & Media */}
+            <Route path="events" element={<EventsListPage />} />
+            <Route path="events/:id" element={<EventDetailsPage />} />
+            <Route path="news" element={<NewsListPage />} />
+            <Route path="news/create" element={<CreateNewsPage />} />
+            <Route path="news/:id" element={<NewsDetailsPage />} />
+            <Route path="news/:id/edit" element={<EditNewsPage />} />
+            <Route path="press" element={<Navigate to="/admin/news" replace />} />
+            <Route path="press-releases" element={<Navigate to="/admin/news" replace />} />
+            <Route path="blogs" element={<BlogsListPage />} />
+            <Route path="blogs/create" element={<CreateBlogPage />} />
+            <Route path="blogs/:id" element={<BlogDetailsPage />} />
+            <Route path="blogs/:id/edit" element={<EditBlogPage />} />
+            <Route path="articles" element={<Navigate to="/admin/blogs" replace />} />
+            <Route path="blog" element={<Navigate to="/admin/blogs" replace />} />
+            <Route path="rights" element={<KnowYourRightsPage />} />
+            <Route path="rights/create" element={<CreateRightPage />} />
+            <Route path="rights/:id" element={<RightDetailsPage />} />
+            <Route path="rights/:id/edit" element={<EditRightPage />} />
+            <Route path="know-your-rights" element={<Navigate to="/admin/rights" replace />} />
+            <Route path="legal-rights" element={<Navigate to="/admin/rights" replace />} />
 
-          {/* Finance & Accounts — Expenses Module (Exact Counterpart of Mobile APK) */}
-          <Route path="expenses" element={<ExpensesListPage />} />
-          <Route path="expenses/create" element={<CreateExpensePage />} />
-          <Route path="expenses/:id" element={<ExpenseDetailsPage />} />
-          <Route path="expense" element={<Navigate to="/admin/expenses" replace />} />
-          <Route path="expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
-          <Route path="vouchers" element={<Navigate to="/admin/expenses" replace />} />
-          {/* Finance & Accounts — Receipts & Income Module (Exact Counterpart of Mobile APK) */}
-          <Route path="receipts" element={<ReceiptsListPage />} />
-          <Route path="receipts/create" element={<CreateReceiptPage />} />
-          <Route path="receipts/:id" element={<ReceiptDetailsPage />} />
-          <Route path="receipt" element={<Navigate to="/admin/receipts" replace />} />
-          <Route path="income" element={<Navigate to="/admin/receipts" replace />} />
-          <Route path="income/create" element={<Navigate to="/admin/receipts/create" replace />} />
-          <Route path="income/:id" element={<ReceiptDetailsPage />} />
-          <Route path="income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
-          {/* Finance & Accounts — Accounting & Ledger Module (Exact Counterpart of Mobile APK) */}
-          <Route path="accounting" element={<AccountingDashboardPage />} />
-          <Route path="accounting/accounts/:id/ledger" element={<AccountLedgerPage />} />
-          <Route path="accounting/entries/:id" element={<JournalEntryDetailsPage />} />
-          <Route path="ledger" element={<Navigate to="/admin/accounting" replace />} />
-          <Route path="chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
-          <Route path="journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
-          <Route path="passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
-          {/* Finance & Accounts — Financial Reports Module (Exact Counterpart of Mobile APK) */}
-          <Route path="reports" element={<ReportsOverviewPage />} />
-          <Route path="reports/trial-balance" element={<TrialBalancePage />} />
-          <Route path="reports/profit-loss" element={<ProfitLossPage />} />
-          <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
-          <Route path="financial-reports" element={<Navigate to="/admin/reports" replace />} />
-          <Route path="trial-balance" element={<Navigate to="/admin/reports/trial-balance" replace />} />
-          <Route path="profit-loss" element={<Navigate to="/admin/reports/profit-loss" replace />} />
-          <Route path="balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
-          {/* Finance & Accounts — Donations Management Module (Exact Counterpart of Mobile APK) */}
-          <Route path="donations" element={<DonationsListPage />} />
-          <Route path="donations/:id" element={<DonationDetailsPage />} />
-          <Route path="donations/:id/receipt" element={<DonationReceiptPage />} />
-          <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
+            {/* Finance & Accounts */}
+            <Route path="expenses" element={<ExpensesListPage />} />
+            <Route path="expenses/create" element={<CreateExpensePage />} />
+            <Route path="expenses/:id" element={<ExpenseDetailsPage />} />
+            <Route path="expense" element={<Navigate to="/admin/expenses" replace />} />
+            <Route path="expense-vouchers" element={<Navigate to="/admin/expenses" replace />} />
+            <Route path="vouchers" element={<Navigate to="/admin/expenses" replace />} />
+            <Route path="receipts" element={<ReceiptsListPage />} />
+            <Route path="receipts/create" element={<CreateReceiptPage />} />
+            <Route path="receipts/:id" element={<ReceiptDetailsPage />} />
+            <Route path="receipt" element={<Navigate to="/admin/receipts" replace />} />
+            <Route path="income" element={<Navigate to="/admin/receipts" replace />} />
+            <Route path="income/create" element={<Navigate to="/admin/receipts/create" replace />} />
+            <Route path="income/:id" element={<ReceiptDetailsPage />} />
+            <Route path="income-vouchers" element={<Navigate to="/admin/receipts" replace />} />
+            <Route path="accounting" element={<AccountingDashboardPage />} />
+            <Route path="accounting/accounts/:id/ledger" element={<AccountLedgerPage />} />
+            <Route path="accounting/entries/:id" element={<JournalEntryDetailsPage />} />
+            <Route path="ledger" element={<Navigate to="/admin/accounting" replace />} />
+            <Route path="chart-of-accounts" element={<Navigate to="/admin/accounting?tab=accounts" replace />} />
+            <Route path="journal-entries" element={<Navigate to="/admin/accounting?tab=journals" replace />} />
+            <Route path="passbook" element={<Navigate to="/admin/accounting?tab=passbook" replace />} />
+            <Route path="reports" element={<ReportsOverviewPage />} />
+            <Route path="reports/trial-balance" element={<TrialBalancePage />} />
+            <Route path="reports/profit-loss" element={<ProfitLossPage />} />
+            <Route path="reports/balance-sheet" element={<BalanceSheetPage />} />
+            <Route path="financial-reports" element={<Navigate to="/admin/reports" replace />} />
+            <Route path="trial-balance" element={<Navigate to="/admin/reports/trial-balance" replace />} />
+            <Route path="profit-loss" element={<Navigate to="/admin/reports/profit-loss" replace />} />
+            <Route path="balance-sheet" element={<Navigate to="/admin/reports/balance-sheet" replace />} />
+            <Route path="donations" element={<DonationsListPage />} />
+            <Route path="donations/:id" element={<DonationDetailsPage />} />
+            <Route path="donations/:id/receipt" element={<DonationReceiptPage />} />
+            <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
 
-          {/* Platform & System — My Profile & ID Card Module (Exact Counterpart of Mobile APK) */}
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="profile/id-card" element={<MyIdCardPage />} />
-          <Route path="id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
-          <Route path="my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
-          <Route path="my-profile" element={<Navigate to="/admin/profile" replace />} />
-          {/* Platform & System — Notifications Module (Exact Counterpart of Mobile APK & Backend) */}
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="alerts" element={<Navigate to="/admin/notifications" replace />} />
-          <Route path="inbox" element={<Navigate to="/admin/notifications" replace />} />
-          {/* Platform & System — Settings & Preferences Module (Exact Counterpart of Mobile APK) */}
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="preferences" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="system-settings" element={<Navigate to="/admin/settings" replace />} />
-          {/* Admin Catch-All (Keeps admin shell intact instead of breaking out) */}
-          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+            {/* Platform & System */}
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/id-card" element={<MyIdCardPage />} />
+            <Route path="id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+            <Route path="my-id-card" element={<Navigate to="/admin/profile/id-card" replace />} />
+            <Route path="my-profile" element={<Navigate to="/admin/profile" replace />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="alerts" element={<Navigate to="/admin/notifications" replace />} />
+            <Route path="inbox" element={<Navigate to="/admin/notifications" replace />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="preferences" element={<Navigate to="/admin/settings" replace />} />
+            <Route path="system-settings" element={<Navigate to="/admin/settings" replace />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
         </Route>
 
         {/* 404 Not Found Catch-All */}

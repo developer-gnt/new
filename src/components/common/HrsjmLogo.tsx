@@ -4,12 +4,16 @@ interface HrsjmLogoProps {
   size?: 'sm' | 'md' | 'lg';
   variant?: 'light' | 'dark'; // 'light' on navy backgrounds, 'dark' on light backgrounds
   showWordmark?: boolean;
+  title?: string;
+  subtitle?: string;
 }
 
 export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
   size = 'md',
   variant = 'light',
   showWordmark = true,
+  title = 'HRSJM',
+  subtitle = 'Digital Platform Admin',
 }) => {
   const iconSizes = {
     sm: 32,
@@ -105,7 +109,7 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
               fontSize: size === 'sm' ? '15px' : size === 'md' ? '18px' : '22px',
             }}
           >
-            HRSJM
+            {title}
           </div>
           <div
             style={{
@@ -114,7 +118,7 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
               fontSize: size === 'sm' ? '10px' : '11px',
             }}
           >
-            Digital Platform Admin
+            {subtitle}
           </div>
         </div>
       )}
