@@ -124,7 +124,7 @@ export const UserDashboardPage: React.FC = () => {
         break;
       case 'membership':
       case 'join':
-        navigate('/membership');
+        navigate('/user/membership');
         break;
       case 'rights':
         navigate('/rights');
@@ -139,7 +139,7 @@ export const UserDashboardPage: React.FC = () => {
         navigate('/support');
         break;
       default:
-        navigate('/membership');
+        navigate('/user/membership');
         break;
     }
   };
@@ -149,7 +149,7 @@ export const UserDashboardPage: React.FC = () => {
       case 'join':
       case 'renew':
       case 'membership':
-        navigate('/membership');
+        navigate('/user/membership');
         break;
       case 'complaint':
         navigate('/support');
@@ -173,7 +173,7 @@ export const UserDashboardPage: React.FC = () => {
       {/* 1. Pending Membership Application Alert Banner */}
       {hasPendingMemberApp && (
         <div
-          onClick={() => navigate('/membership-applications')}
+          onClick={() => navigate('/user/membership?tab=status')}
           className="flex items-start gap-3.5 p-4 rounded-2xl bg-[#FFFDF5] border-[1.5px] border-[#F59E0B] shadow-xs hover:shadow-md transition-all cursor-pointer"
           role="alert"
         >
@@ -394,7 +394,7 @@ export const UserDashboardPage: React.FC = () => {
         onReapply={handleReapplySeeker}
         onApplyMembership={() => {
           setSeekerModalOpen(false);
-          navigate('/membership');
+          navigate('/user/membership');
         }}
       />
     </div>

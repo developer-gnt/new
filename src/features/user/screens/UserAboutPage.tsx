@@ -205,7 +205,7 @@ export const UserAboutPage: React.FC = () => {
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
-            onClick={() => navigate('/membership-applications')}
+            onClick={() => navigate('/user/membership')}
             className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold text-[#011F39] bg-[#E9B82E] hover:bg-[#d8a825] transition-all shadow-md active:scale-95 cursor-pointer"
           >
             Become a Member

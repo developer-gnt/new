@@ -1,135 +1,159 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, HeartHandshake, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
-interface Slide {
+export interface HeroSlideItem {
   id: string;
-  badge: string;
-  title1: string;
-  goldTitle: string;
-  title2: string;
-  desc: string;
-  ctaText?: string;
-  ctaLink?: string;
+  headlineLines: string[];
+  goldLine: string;
+  supporting: string;
+  image: string;
+  scriptLines: string[];
+  eyebrow?: string;
 }
 
-const SLIDES: Slide[] = [
+export const OFFICIAL_HERO_SLIDES: HeroSlideItem[] = [
   {
-    id: 'slide-1',
-    badge: 'HUMANITARIAN RELIEF MISSION',
-    title1: 'For Human Rights, Dignity and a',
-    goldTitle: 'More Just',
-    title2: 'Society.',
-    desc: 'HRSJM provides direct financial, medical, education, and welfare assistance for approved emergency causes across India.',
-    ctaText: '+ Apply for Assistance',
-    ctaLink: '/seeker/apply',
+    id: 'mission-human-rights',
+    eyebrow: 'HUMANITARIAN RELIEF MISSION',
+    headlineLines: ['For Human Rights,', 'Dignity and a'],
+    goldLine: 'More Just Society.',
+    supporting: 'HRSJM provides direct financial, medical, education, and welfare assistance for approved causes across India.',
+    image: '/assets/images/hero-home.webp',
+    scriptLines: ['People.', 'Rights.', 'Justice.', 'Change.'],
   },
   {
-    id: 'slide-2',
-    badge: 'EMERGENCY MEDICAL & WELFARE AID',
-    title1: 'Real Impact.',
-    goldTitle: 'Immediate Relief.',
-    title2: 'Full Transparency.',
-    desc: 'Rapid document assessment and compassionate support for hospital bills, critical treatments, and child education expenses.',
-    ctaText: 'Track Your Application',
-    ctaLink: '/seeker/requests',
+    id: 'stand-for-dignity',
+    eyebrow: 'EMERGENCY MEDICAL & WELFARE AID',
+    headlineLines: ['Stand for Rights.', 'Stand for'],
+    goldLine: 'Human Dignity.',
+    supporting: 'Rapid document verification and compassionate support for hospital bills, critical treatments, and emergency relief.',
+    image: '/assets/images/member-hero-rally.jpg',
+    scriptLines: ['Empower.', 'Unite.', 'Protect.', 'Lead.'],
   },
   {
-    id: 'slide-3',
-    badge: 'LEGAL EMPOWERMENT & CITIZEN AID',
-    title1: 'Know Your Rights & Claim Your',
-    goldTitle: 'Fundamental Freedoms',
-    title2: '',
-    desc: 'Free legal consultations, domestic violence safeguards, and constitutional aid clinics backed by panel advocates.',
-    ctaText: 'Explore Legal Rights',
-    ctaLink: '/seeker/rights',
+    id: 'grassroots-aid',
+    eyebrow: 'DIRECT SOCIAL IMPACT',
+    headlineLines: ['Awareness.', 'Action.'],
+    goldLine: 'Real Impact.',
+    supporting: 'Protecting fundamental human rights and delivering immediate relief to individuals and families in distress.',
+    image: '/assets/images/contact-cta-hands.jpg',
+    scriptLines: ['Hope.', 'Action.', 'Relief.', 'Care.'],
+  },
+  {
+    id: 'legal-awareness',
+    eyebrow: 'LEGAL EMPOWERMENT & CITIZEN AID',
+    headlineLines: ['Know Your Law.', 'Claim Your'],
+    goldLine: 'Fundamental Rights.',
+    supporting: 'Free legal consultations, domestic violence safeguards, and constitutional aid clinics backed by panel advocates.',
+    image: '/assets/images/event-legal-awareness.jpg',
+    scriptLines: ['Justice.', 'Equality.', 'Truth.', 'Voice.'],
+  },
+  {
+    id: 'community-workshops',
+    eyebrow: 'NATIONWIDE WELFARE REACH',
+    headlineLines: ['United for Peace.', 'Driven by'],
+    goldLine: 'Social Justice.',
+    supporting: 'Join nationwide relief camps, free health clinics, human rights conventions, and community outreach drives.',
+    image: '/assets/images/about-hero-community.png',
+    scriptLines: ['Engage.', 'Inspire.', 'Transform.', 'Serve.'],
   },
 ];
 
-export const SeekerHeroBanner: React.FC = () => {
+interface SeekerHeroBannerProps {
+  showCta?: boolean;
+}
+
+/**
+ * Exact replication of HeroBanner.tsx from the HRSJM React Native APK:
+ * - Real photographic backgrounds
+ * - Dark overlay: rgba(3, 27, 49, 0.58)
+ * - Playfair Display headline with golden emphasis
+ * - Right-side decorative cursive quote in Caveat
+ * - Interactive pagination dots in bottom-left
+ * - showCta={false} for Donation Seeker dashboard per APK SeekerHomeScreen.tsx
+ */
+export const SeekerHeroBanner: React.FC<SeekerHeroBannerProps> = ({ showCta = false }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % SLIDES.length);
-    }, 6000);
+      setCurrentIdx((prev) => (prev + 1) % OFFICIAL_HERO_SLIDES.length);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
-  const nextSlide = () => setCurrentIdx((prev) => (prev + 1) % SLIDES.length);
-  const prevSlide = () => setCurrentIdx((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-
-  const slide = SLIDES[currentIdx];
+  const slide = OFFICIAL_HERO_SLIDES[currentIdx];
 
   return (
-    <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#DCE4EC] bg-gradient-to-r from-[#011F39] via-[#06294D] to-[#123F68] text-white">
-      {/* Decorative Golden Pattern / Shimmer Background */}
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#FAD465_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+    <div className="relative rounded-2xl overflow-hidden shadow-md bg-[#011F39] text-white min-h-[220px] sm:min-h-[260px] md:min-h-[300px] flex items-center select-none border border-[#DCE4EC]">
+      {/* Real Photographic Background */}
+      <img
+        src={slide.image}
+        alt="HRSJM Mission"
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out"
+        onError={(e) => {
+          // Fallback if image fails
+          (e.currentTarget as HTMLImageElement).src = '/assets/images/hero-home.webp';
+        }}
+      />
 
-      <div className="relative z-10 px-6 py-8 md:px-12 md:py-10 flex flex-col justify-between min-h-[220px] md:min-h-[260px]">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs border border-white/15 text-[#FAD465] text-[11px] font-bold tracking-wider uppercase mb-3">
-            <HeartHandshake size={13} />
-            <span>{slide.badge}</span>
-          </div>
+      {/* Dark Overlay (Exact APK rgba(3, 27, 49, 0.58)) */}
+      <div className="absolute inset-0 bg-[#031B31]/60" />
 
-          <h2 className="text-xl md:text-3xl font-bold font-['Playfair_Display',Georgia,serif] leading-tight text-white max-w-2xl">
-            {slide.title1} <span className="text-[#FAD465]">{slide.goldTitle}</span> {slide.title2}
+      {/* Main Content Area */}
+      <div className="relative z-10 w-full px-5 py-6 sm:px-8 sm:py-8 md:px-10 flex flex-col justify-between h-full min-h-[220px] sm:min-h-[260px] md:min-h-[300px]">
+        <div className="max-w-[75%] sm:max-w-[65%] md:max-w-[60%]">
+          {slide.eyebrow && (
+            <div className="text-[10px] font-bold text-[#FAD465] tracking-widest uppercase mb-1.5 font-['Inter',sans-serif]">
+              {slide.eyebrow}
+            </div>
+          )}
+
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-['Playfair_Display',Georgia,serif] leading-tight text-white tracking-tight">
+            {slide.headlineLines.map((line, i) => (
+              <React.Fragment key={i}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
+            <span className="text-[#FAD465] font-['Playfair_Display',Georgia,serif] font-bold">
+              {slide.goldLine}
+            </span>
           </h2>
 
-          <p className="text-xs md:text-sm text-blue-100/90 mt-2.5 max-w-xl leading-relaxed">
-            {slide.desc}
+          <p className="text-xs sm:text-[13px] text-white/95 mt-2.5 leading-relaxed font-['Inter',sans-serif] line-clamp-3">
+            {slide.supporting}
           </p>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          {slide.ctaText && slide.ctaLink && (
-            <Link
-              to={slide.ctaLink}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] text-xs font-bold rounded-xl shadow-md transition transform active:scale-95 cursor-pointer"
-            >
-              <span>{slide.ctaText}</span>
-              <ArrowRight size={14} />
-            </Link>
-          )}
-
-          {/* Dots Indicator & Controls */}
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
-              onClick={prevSlide}
-              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            <div className="flex gap-1.5 px-1">
-              {SLIDES.map((s, idx) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setCurrentIdx(idx)}
-                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                    idx === currentIdx ? 'w-5 bg-[#FAD465]' : 'w-1.5 bg-white/30'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={nextSlide}
-              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
-              aria-label="Next slide"
-            >
-              <ChevronRight size={16} />
-            </button>
+        {/* Right-Side Decorative Quote Script (Exact APK Cursive Treatment) */}
+        <div className="absolute right-4 sm:right-6 md:right-8 bottom-5 text-right pointer-events-none select-none">
+          <div className="font-['Caveat',cursive] italic text-xl sm:text-2xl md:text-3xl text-white/90 leading-tight">
+            {slide.scriptLines.map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
           </div>
+        </div>
+
+        {/* Interactive Pagination Dots (Bottom-Left per APK HeroBanner) */}
+        <div className="flex items-center gap-2 mt-4 pt-2">
+          {OFFICIAL_HERO_SLIDES.map((s, idx) => {
+            const isActive = idx === currentIdx;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setCurrentIdx(idx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer focus:outline-none ${
+                  isActive
+                    ? 'w-2.5 h-2.5 bg-[#FAD465] opacity-100 ring-2 ring-[#FAD465]/40'
+                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
   );
 };
-

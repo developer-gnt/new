@@ -167,8 +167,11 @@ export const AppRoutes: React.FC = () => {
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
+          <Route path="/membership" element={<UserMembershipPage />} />
+          <Route path="/membership/status" element={<UserMembershipPage />} />
           <Route path="/user/membership" element={<UserMembershipPage />} />
           <Route path="/user/membership-status" element={<UserMembershipPage />} />
+          <Route path="/user/membership/status" element={<UserMembershipPage />} />
           <Route path="/membership-status" element={<UserMembershipPage />} />
           <Route path="/membership-applications" element={<UserMembershipPage />} />
           <Route path="/user/profile" element={<UserProfilePage />} />

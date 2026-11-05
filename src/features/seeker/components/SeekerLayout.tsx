@@ -14,8 +14,9 @@ import {
   LogOut,
   CreditCard,
   PlusCircle,
-  HelpCircle,
+  AlertCircle,
   ChevronLeft,
+  ShieldCheck,
 } from 'lucide-react';
 import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
 import { AppErrorBoundary } from '../../../components/common/AppErrorBoundary';
@@ -23,6 +24,7 @@ import { useAuth, executeSignOut, resolveUserDestination } from '../../auth/stor
 import { authService } from '../../auth/services/authService';
 import { Navigate } from 'react-router-dom';
 import { useSeekerStore } from '../store/seekerStore';
+import { SeekerBottomNav } from './SeekerBottomNav';
 
 interface NavItem {
   name: string;
@@ -32,13 +34,14 @@ interface NavItem {
   highlight?: boolean;
 }
 
-const SEEKER_NAV_ITEMS: NavItem[] = [
+const SEEKER_SIDEBAR_ITEMS: NavItem[] = [
   { name: 'home', path: '/seeker/home', label: 'Home Dashboard', icon: House },
   { name: 'requests', path: '/seeker/requests', label: 'My Aid Tracker', icon: FileText },
   { name: 'apply', path: '/seeker/apply', label: 'Apply for Aid', icon: PlusCircle, highlight: true },
   { name: 'rights', path: '/seeker/rights', label: 'Know Your Rights', icon: Scale },
   { name: 'events', path: '/seeker/events', label: 'Events & Camps', icon: Calendar },
-  { name: 'support', path: '/seeker/support', label: 'Helpdesk & Grievance', icon: MessageSquare },
+  { name: 'support', path: '/seeker/support', label: 'Helpdesk & Support', icon: MessageSquare },
+  { name: 'complaint', path: '/seeker/complaint', label: 'File Grievance', icon: AlertCircle },
   { name: 'profile', path: '/seeker/profile', label: 'My Profile & Settings', icon: User },
   { name: 'id-card', path: '/seeker/profile/id-card', label: 'Digital Seeker ID', icon: CreditCard },
   { name: 'notifications', path: '/seeker/notifications', label: 'Notifications', icon: Bell },
@@ -126,8 +129,10 @@ export const SeekerLayout: React.FC = () => {
     return <Navigate to={safeDestination} replace />;
   }
 
+  const userInitial = user?.full_name?.charAt(0)?.toUpperCase() || 'S';
+
   return (
-    <div className="min-h-screen bg-[#FAF7F0] flex font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-[#FAF7F0] flex flex-col font-['Inter',sans-serif]">
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileDrawerOpen && (
         <div
@@ -212,7 +217,7 @@ export const SeekerLayout: React.FC = () => {
             </div>
           )}
 
-          {SEEKER_NAV_ITEMS.map((item) => {
+          {SEEKER_SIDEBAR_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isItemActive(item.path);
 
@@ -293,7 +298,7 @@ export const SeekerLayout: React.FC = () => {
                   <Phone size={13} />
                   <span>24x7 Helpline</span>
                 </div>
-                <div className="text-[11px] text-gray-300 mt-1">
+                <div className="text-[11px] text-gray-300 mt-1 leading-relaxed">
                   Urgent humanitarian, medical or legal relief.
                 </div>
                 <button
@@ -333,19 +338,18 @@ export const SeekerLayout: React.FC = () => {
           desktopCollapsed ? 'lg:ml-20' : 'lg:ml-64'
         }`}
       >
-        {/* Top Header */}
-        <header className="bg-white border-b border-[#DCE4EC] sticky top-0 z-30 shadow-xs">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Left Section: Hamburger Bar Button & Portal Badge */}
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* HAMBURGER BUTTON IN LEFT (toggles sidebar on desktop & mobile) */}
+        {/* TOP HEADER (Exact APK AdminHeader Replication: White bar, 56px, Brand in center, Bell & Avatar right) */}
+        <header className="bg-white border-b border-[#DCE4EC] sticky top-0 z-30 shadow-xs min-h-[56px] flex items-center">
+          <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-14">
+              {/* Left Section: Hamburger Bar Button */}
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleToggleHamburger}
                   className="p-2 -ml-2 rounded-xl text-[#06294D] hover:bg-[#EDF2F7] active:bg-[#DBE5EE] transition cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
-                  aria-label="Toggle Left Navigation Menu"
-                  title="Toggle Left Menu"
+                  aria-label="Toggle Navigation Menu"
+                  title="Toggle Navigation Menu"
                 >
                   <Menu size={22} className="text-[#06294D]" />
                 </button>
@@ -358,8 +362,8 @@ export const SeekerLayout: React.FC = () => {
                     <div className="text-[10px] font-bold tracking-widest text-[#06294D] uppercase">
                       HUMANITARIAN ASSISTANCE
                     </div>
-                    <div className="text-sm font-bold text-[#0B2F52] font-['Playfair_Display',Georgia,serif]">
-                      Donation Seeker Dashboard
+                    <div className="text-sm font-bold text-[#0B2F52] font-['Playfair_Display',Georgia,serif] leading-tight">
+                      Donation Seeker Portal
                     </div>
                   </div>
                 </NavLink>
@@ -369,7 +373,7 @@ export const SeekerLayout: React.FC = () => {
                 </span>
               </div>
 
-              {/* Right Section: Quick Helpline, Notification Bell & User Profile Menu */}
+              {/* Right Section: 24x7 Helpline CTA, Notification Bell & User Profile Menu */}
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Emergency Helpline CTA */}
                 <button
@@ -392,7 +396,7 @@ export const SeekerLayout: React.FC = () => {
                   <span className="sm:hidden">Apply</span>
                 </NavLink>
 
-                {/* Notification Bell */}
+                {/* Notification Bell with Badge */}
                 <NavLink
                   to="/seeker/notifications"
                   className="relative p-2 rounded-xl text-[#0B2F52] hover:bg-[#EDF2F7] transition cursor-pointer"
@@ -400,13 +404,13 @@ export const SeekerLayout: React.FC = () => {
                 >
                   <Bell size={20} />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
+                    <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-[#DC2626] text-white rounded-full text-[9px] font-bold px-1 flex items-center justify-center border-1.5 border-white">
                       {unreadCount}
                     </span>
                   )}
                 </NavLink>
 
-                {/* Profile Avatar & Dropdown */}
+                {/* Profile Avatar & Dropdown (APK AdminHeader style) */}
                 <div className="relative" ref={dropdownRef}>
                   <button
                     type="button"
@@ -414,8 +418,8 @@ export const SeekerLayout: React.FC = () => {
                     className="flex items-center gap-2 p-1 rounded-xl hover:bg-[#EDF2F7] transition cursor-pointer"
                     aria-expanded={profileDropdownOpen}
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#06294D] text-[#FAD465] flex items-center justify-center font-bold text-xs shadow-xs">
-                      {user?.full_name?.charAt(0) || 'S'}
+                    <div className="w-8 h-8 rounded-full bg-[#06294D] text-[#FAD465] flex items-center justify-center font-bold text-xs shadow-xs border border-[#FAD465]/40">
+                      {userInitial}
                     </div>
                     <span className="text-xs font-semibold text-[#0B2F52] hidden lg:block max-w-[120px] truncate">
                       {user?.full_name || 'Seeker'}
@@ -432,7 +436,8 @@ export const SeekerLayout: React.FC = () => {
                           {user?.email || user?.mobile_number || 'seeker@hrsjm.org'}
                         </div>
                         <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#ECFDF5] text-[#10B981] border border-[#A7F3D0]">
-                          Assistance Seeker Account
+                          <ShieldCheck size={11} />
+                          <span>Assistance Seeker Account</span>
                         </div>
                       </div>
 
@@ -469,7 +474,7 @@ export const SeekerLayout: React.FC = () => {
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2 hover:bg-[#EDF2F7] text-[#34516D] cursor-pointer"
                         >
-                          <HelpCircle size={15} className="text-[#06294D]" />
+                          <MessageSquare size={15} className="text-[#06294D]" />
                           <span>Helpdesk & Support</span>
                         </NavLink>
                       </div>
@@ -493,7 +498,7 @@ export const SeekerLayout: React.FC = () => {
         </header>
 
         {/* Dynamic Page Body with Error Boundary */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-12">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-24 lg:pb-12">
           <AppErrorBoundary>
             <Outlet />
           </AppErrorBoundary>
@@ -530,6 +535,9 @@ export const SeekerLayout: React.FC = () => {
           </div>
         </footer>
       </div>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (Exact APK SeekerTabNavigator Parity) */}
+      <SeekerBottomNav />
     </div>
   );
 };
