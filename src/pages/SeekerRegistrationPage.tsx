@@ -5,7 +5,6 @@ import {
   User,
   Phone,
   Mail,
-  Calendar,
   Lock,
   Eye,
   EyeOff,
@@ -36,9 +35,9 @@ import {
   URGENCY_LEVELS,
 } from '../features/seeker/data/seekerConstants';
 import {
-  formatDateToDMY,
   validateAgeEligibility,
 } from '../utils/age';
+import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
 import type {
   SeekerPersonalDetails,
   AssistanceNeedDetails,
@@ -48,7 +47,6 @@ import type {
   SeekerValidationErrors,
 } from '../features/seeker/types/seekerRegistration.types';
 
-const TODAY_ISO = new Date().toISOString().split('T')[0];
 const CURRENT_YEAR = new Date().getFullYear();
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -724,37 +722,16 @@ export const SeekerRegistrationPage: React.FC = () => {
 
               {/* DOB & Gender */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Date of Birth <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                      <Calendar size={16} />
-                    </div>
-                    <input
-                      type="date"
-                      required
-                      max={TODAY_ISO}
-                      value={personal.dob}
-                      onChange={(e) => handlePersonalChange('dob', e.target.value)}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm font-medium transition focus:outline-none focus:ring-2 ${
-                        errors.dob
-                          ? 'border-red-400 ring-red-100 bg-red-50/30'
-                          : 'border-slate-200 focus:border-[#011F39] focus:ring-[#011F39]/10'
-                      }`}
-                    />
-                  </div>
-                  {errors.dob ? (
-                    <p className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1">
-                      <AlertCircle size={13} /> {errors.dob}
-                    </p>
-                  ) : personal.dob ? (
-                    <p className="mt-1 text-[11px] text-slate-500">
-                      Formatted: {formatDateToDMY(personal.dob)}
-                    </p>
-                  ) : null}
-                </div>
+                {/* DOB with interactive Calendar format */}
+                <CalendarDatePicker
+                  label="Date of Birth"
+                  required
+                  minAge={18}
+                  value={personal.dob}
+                  error={errors.dob}
+                  placeholder="dd-mm-yyyy"
+                  onChange={(val) => handlePersonalChange('dob', val)}
+                />
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">

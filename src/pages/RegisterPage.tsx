@@ -23,10 +23,9 @@ import {
   formatDateToDMY,
   validateAgeEligibility,
 } from '../utils/age';
+import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
 import { ApiError } from '../services/apiClient';
 import type { RegisterFormData, RegisterValidationErrors } from '../features/auth/types/auth.types';
-
-const TODAY_ISO = new Date().toISOString().split('T')[0];
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -823,68 +822,40 @@ export const RegisterPage: React.FC = () => {
               )}
             </div>
 
-            {/* Field 4: Date of Birth (18+ enforcement) */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-700">
-                  Date of Birth <span className="text-rose-500">*</span>
-                </label>
-                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  Must be 18+ Years
-                </span>
-              </div>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.dob
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'dob'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <Calendar
-                  size={18}
-                  className={`mr-2.5 shrink-0 ${
-                    fieldErrors.dob ? 'text-rose-500' : 'text-slate-400'
-                  }`}
-                />
-                <input
-                  type="date"
-                  name="dob"
-                  value={formData.dob}
-                  max={TODAY_ISO}
-                  onFocus={() => setFocusedField('dob')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    const selectedVal = e.target.value;
-                    setFormData(p => ({ ...p, dob: selectedVal }));
+            {/* Field 4: Date of Birth (18+ enforcement with interactive Calendar format) */}
+            <CalendarDatePicker
+              label="Date of Birth"
+              required
+              minAge={18}
+              value={formData.dob}
+              error={fieldErrors.dob}
+              placeholder="dd-mm-yyyy"
+              onChange={(selectedVal) => {
+                setFormData((p) => ({ ...p, dob: selectedVal }));
 
-                    if (selectedVal) {
-                      const ageCheck = validateAgeEligibility(selectedVal);
-                      if (!ageCheck.isValid) {
-                        setFieldErrors(p => ({ ...p, dob: ageCheck.error || undefined }));
-                      } else if (!ageCheck.isEligible) {
-                        setIneligibleAge(ageCheck.age);
-                        setPhase('ineligible');
-                      } else {
-                        setFieldErrors(p => {
-                          const next = { ...p };
-                          delete next.dob;
-                          return next;
-                        });
-                      }
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium cursor-pointer"
-                />
-              </div>
-              {fieldErrors.dob && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.dob}</span>
-                </p>
-              )}
-            </div>
+                if (selectedVal) {
+                  const ageCheck = validateAgeEligibility(selectedVal);
+                  if (!ageCheck.isValid) {
+                    setFieldErrors((p) => ({ ...p, dob: ageCheck.error || undefined }));
+                  } else if (!ageCheck.isEligible) {
+                    setIneligibleAge(ageCheck.age);
+                    setPhase('ineligible');
+                  } else {
+                    setFieldErrors((p) => {
+                      const next = { ...p };
+                      delete next.dob;
+                      return next;
+                    });
+                  }
+                } else {
+                  setFieldErrors((p) => {
+                    const next = { ...p };
+                    delete next.dob;
+                    return next;
+                  });
+                }
+              }}
+            />
 
             {/* Field 5: Gender (Optional) */}
             <div>

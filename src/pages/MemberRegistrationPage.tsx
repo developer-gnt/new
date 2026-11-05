@@ -11,7 +11,6 @@ import {
   User,
   Phone,
   Mail,
-  Calendar,
   Lock,
   Eye,
   EyeOff,
@@ -40,6 +39,7 @@ import {
   formatDateToDMY,
   validateAgeEligibility,
 } from '../utils/age';
+import { CalendarDatePicker } from '../components/common/CalendarDatePicker';
 import { ApiError } from '../services/apiClient';
 import type {
   AddressInfoForm,
@@ -49,8 +49,6 @@ import type {
   SubmittedMembershipRecord,
   UploadedDocumentItem,
 } from '../features/membership/types/membership.types';
-
-const TODAY_ISO = new Date().toISOString().split('T')[0];
 
 export const MemberRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -1173,58 +1171,39 @@ export const MemberRegistrationPage: React.FC = () => {
 
               {/* Date of Birth & Gender Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* DOB */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700">
-                      Date of Birth <span className="text-rose-500">*</span>
-                    </label>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
-                      18+ Years
-                    </span>
-                  </div>
-                  <div
-                    className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                      personalErrors.dateOfBirth
-                        ? 'border-rose-300 bg-rose-50/20'
-                        : focusedField === 'dob'
-                        ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                        : 'border-slate-200'
-                    }`}
-                  >
-                    <Calendar size={18} className="text-slate-400 mr-2.5 shrink-0" />
-                    <input
-                      type="date"
-                      value={personal.dateOfBirth}
-                      max={TODAY_ISO}
-                      onFocus={() => setFocusedField('dob')}
-                      onBlur={() => setFocusedField(null)}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setPersonal(p => ({ ...p, dateOfBirth: val }));
-                        if (val) {
-                          const ageCheck = validateAgeEligibility(val);
-                          if (!ageCheck.isValid) {
-                            setPersonalErrors(err => ({ ...err, dateOfBirth: ageCheck.error || '' }));
-                          } else if (!ageCheck.isEligible) {
-                            setIneligibleAge(ageCheck.age);
-                            setPhase(-1);
-                          } else {
-                            setPersonalErrors(err => {
-                              const next = { ...err };
-                              delete next.dateOfBirth;
-                              return next;
-                            });
-                          }
-                        }
-                      }}
-                      className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium cursor-pointer"
-                    />
-                  </div>
-                  {personalErrors.dateOfBirth && (
-                    <p className="text-[11px] text-rose-600 mt-1 font-medium">{personalErrors.dateOfBirth}</p>
-                  )}
-                </div>
+                {/* DOB with interactive Calendar format */}
+                <CalendarDatePicker
+                  label="Date of Birth"
+                  required
+                  minAge={18}
+                  value={personal.dateOfBirth}
+                  error={personalErrors.dateOfBirth}
+                  placeholder="dd-mm-yyyy"
+                  onChange={(val) => {
+                    setPersonal((p) => ({ ...p, dateOfBirth: val }));
+                    if (val) {
+                      const ageCheck = validateAgeEligibility(val);
+                      if (!ageCheck.isValid) {
+                        setPersonalErrors((err) => ({ ...err, dateOfBirth: ageCheck.error || '' }));
+                      } else if (!ageCheck.isEligible) {
+                        setIneligibleAge(ageCheck.age);
+                        setPhase(-1);
+                      } else {
+                        setPersonalErrors((err) => {
+                          const next = { ...err };
+                          delete next.dateOfBirth;
+                          return next;
+                        });
+                      }
+                    } else {
+                      setPersonalErrors((err) => {
+                        const next = { ...err };
+                        delete next.dateOfBirth;
+                        return next;
+                      });
+                    }
+                  }}
+                />
 
                 {/* Gender */}
                 <div>

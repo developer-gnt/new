@@ -58,6 +58,27 @@ export function parseDateOfBirth(dob: string | Date | null | undefined): Date | 
 }
 
 /**
+ * Calculates current age in full years from date of birth
+ */
+export function calculateAge(
+  dob: string | Date | null | undefined,
+  referenceDate = new Date(),
+): number | null {
+  const birthDate = parseDateOfBirth(dob);
+  if (!birthDate) return null;
+  const refYear = referenceDate.getFullYear();
+  const refMonth = referenceDate.getMonth();
+  const refDay = referenceDate.getDate();
+
+  let age = refYear - birthDate.getFullYear();
+  const monthDiff = refMonth - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && refDay < birthDate.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : 0;
+}
+
+/**
  * Formats a Date object or date string into standard DD-MM-YYYY
  */
 export function formatDateToDMY(dateInput: Date | string): string {
@@ -142,4 +163,3 @@ export function validateAgeEligibility(
     error: null,
   };
 }
-
