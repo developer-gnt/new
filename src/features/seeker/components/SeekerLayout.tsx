@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
 import { AppErrorBoundary } from '../../../components/common/AppErrorBoundary';
-import { useAuth, executeSignOut } from '../../auth/store/authStore';
+import { useAuth, executeSignOut, resolveUserDestination } from '../../auth/store/authStore';
 import { authService } from '../../auth/services/authService';
 import { Navigate } from 'react-router-dom';
 import { useSeekerStore } from '../store/seekerStore';
@@ -47,7 +47,7 @@ const SEEKER_NAV_ITEMS: NavItem[] = [
 export const SeekerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isSeeker, isAdmin } = useAuth();
   const hasToken = Boolean(authService.getAuthToken());
   const { notifications, loadAll } = useSeekerStore();
 
@@ -116,6 +116,14 @@ export const SeekerLayout: React.FC = () => {
 
   if (!isAuthenticated && !hasToken) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
+  // Prevent non-seekers and non-admins from entering the seeker portal
+  if (!isSeeker && !isAdmin) {
+    const currentUser = user || authService.getCurrentUser();
+    const destination = resolveUserDestination(currentUser);
+    const safeDestination = destination.startsWith('/seeker') ? '/user/dashboard' : destination;
+    return <Navigate to={safeDestination} replace />;
   }
 
   return (

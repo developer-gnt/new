@@ -119,6 +119,21 @@ import { UserSupportPage } from '@/features/user/screens/UserSupportPage';
 import { UserMembershipPage } from '@/features/user/screens/UserMembershipPage';
 import { UserNotificationsPage } from '@/features/user/screens/UserNotificationsPage';
 import { UserProfilePage } from '@/features/user/screens/UserProfilePage';
+import { useAuth, resolveUserDestination } from '@/features/auth/store/authStore';
+import { authService } from '@/features/auth/services/authService';
+
+const DashboardRedirect: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
+
+  if (!isAuthenticated && !hasToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const currentUser = user || authService.getCurrentUser();
+  const destination = resolveUserDestination(currentUser);
+  return <Navigate to={destination} replace />;
+};
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -158,8 +173,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
         </Route>
 
-        {/* Admin Direct Aliases (Exclusively for Admin-only modules) */}
-        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+        {/* Role-Aware Dashboard Entry Point */}
+        <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/users" element={<Navigate to="/admin/users" replace />} />
         <Route path="/all-users" element={<Navigate to="/admin/all-users" replace />} />
         <Route path="/members" element={<Navigate to="/admin/members" replace />} />

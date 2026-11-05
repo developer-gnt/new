@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/features/auth/store/authStore';
+import { useAuth, resolveUserDestination } from '@/features/auth/store/authStore';
 import { authService } from '@/features/auth/services/authService';
 import { MemberSidebar } from './MemberSidebar';
 import { MemberHeader } from './MemberHeader';
@@ -9,7 +9,7 @@ import { useCurrentMember } from '../../features/member/store/memberStore';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 export const MemberLayout: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isMember, isAdmin, user } = useAuth();
   const hasToken = Boolean(authService.getAuthToken());
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,6 +33,14 @@ export const MemberLayout: React.FC = () => {
 
   if (!isAuthenticated && !hasToken) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
+  // Prevent non-members and non-admins from accessing the member area
+  if (!isMember && !isAdmin) {
+    const currentUser = user || authService.getCurrentUser();
+    const destination = resolveUserDestination(currentUser);
+    const safeDestination = destination.startsWith('/member') ? '/user/dashboard' : destination;
+    return <Navigate to={safeDestination} replace />;
   }
 
   return (

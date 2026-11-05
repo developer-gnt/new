@@ -17,7 +17,7 @@ import {
   UserCheck,
   Gift,
 } from 'lucide-react';
-import { authService } from '../features/auth/services/authService';
+import { authService, resolveUserDestination, isPathAllowedForUser } from '../features/auth/services/authService';
 import { authStore } from '../features/auth/store/authStore';
 import { userAuthStore } from '../features/user/store/userAuthStore';
 import { ApiError } from '../services/apiClient';
@@ -49,30 +49,20 @@ export const LoginPage: React.FC = () => {
   const [forgotError, setForgotError] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
-  // If already authenticated with a valid token, route directly
+  // If already authenticated with a valid token, route directly according to actual role
   useEffect(() => {
     const existingToken = authService.getAuthToken();
     if (existingToken) {
       const user = authService.getCurrentUser();
-      const roleNames = (user?.roles || []).map((r: any) => {
-        if (typeof r === 'string') return r.toUpperCase();
-        return (r?.name || '').toUpperCase();
-      });
-
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');
-      if (redirect && redirect.startsWith('/')) {
+      if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, user)) {
         navigate(redirect, { replace: true });
         return;
       }
 
-      if (roleNames.includes('SEEKER') || roleNames.includes('DONATION_SEEKER')) {
-        navigate('/seeker/home', { replace: true });
-      } else if (roleNames.includes('MEMBER')) {
-        navigate('/member/dashboard', { replace: true });
-      } else {
-        navigate('/admin/dashboard', { replace: true });
-      }
+      const destination = resolveUserDestination(user);
+      navigate(destination, { replace: true });
     }
   }, [navigate]);
 
@@ -132,43 +122,45 @@ export const LoginPage: React.FC = () => {
 
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');
-      if (redirect && redirect.startsWith('/')) {
+      if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, session.user)) {
         navigate(redirect, { replace: true });
         return;
       }
 
-      // Role identification and post-login routing
-      const user = session.user;
-      const roleNames = (user?.roles || []).map((r: any) => {
-        if (typeof r === 'string') return r.toUpperCase();
-        return (r?.name || '').toUpperCase();
-      });
-
-      if (roleParam === 'seeker' || roleNames.includes('SEEKER') || roleNames.includes('DONATION_SEEKER')) {
+      // Check if user specified a role tab and has credentials for it
+      if (roleParam === 'seeker' && (session.user.account_type === 'seeker' || session.user.roles?.some((r: any) => (r.name || r) === 'DONATION_SEEKER'))) {
         navigate('/seeker/home', { replace: true });
-      } else if (roleParam === 'member' || roleNames.includes('MEMBER')) {
-        navigate('/member/dashboard', { replace: true });
-      } else if (roleParam === 'donor' || roleNames.includes('DONOR')) {
-        navigate('/admin/donations', { replace: true });
-      } else {
-        // Default / Admin / Super Admin
-        navigate('/admin/dashboard', { replace: true });
+        return;
       }
+      if (roleParam === 'member' && (session.user.account_type === 'member' || session.user.roles?.some((r: any) => (r.name || r) === 'MEMBER'))) {
+        navigate('/member/dashboard', { replace: true });
+        return;
+      }
+
+      // Determine verified destination based on authenticated account type and roles
+      const destination = resolveUserDestination(session.user);
+      navigate(destination, { replace: true });
     } catch (err: any) {
       // Offline fallback mock session if in local testing environment
       if (password.length >= 6) {
         const idLower = identifier.toLowerCase();
-        const isSeeker = roleParam === 'seeker' || idLower.includes('seeker');
-        const isMember = roleParam === 'member' || idLower.includes('member');
-        const isUser = roleParam === 'user' || idLower.includes('user');
-        const mockRole = isSeeker ? 'DONATION_SEEKER' : isMember ? 'MEMBER' : isUser ? 'USER' : 'ADMIN';
+        const isSeeker = roleParam === 'seeker' || idLower.includes('seeker') || idLower === '9888880004';
+        const isMember = roleParam === 'member' || idLower.includes('member') || idLower === '9888880002';
+        const isAdmin = roleParam === 'admin' || idLower.includes('admin') || idLower === '9888880001';
+        const mockRole = isAdmin ? 'ADMIN' : isMember ? 'MEMBER' : isSeeker ? 'DONATION_SEEKER' : 'USER';
+        const mockAccountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin ? 'admin' : isMember ? 'member' : isSeeker ? 'seeker' : 'general';
 
         const mockUser = {
           id: `usr_${Date.now()}`,
-          full_name: identifier.includes('@') ? identifier.split('@')[0] : (isSeeker ? 'Test Seeker' : isMember ? 'Test Member' : 'Administrator'),
+          full_name: identifier.includes('@')
+            ? identifier.split('@')[0]
+            : (isAdmin ? 'Administrator' : isMember ? 'Test Member' : isSeeker ? 'Test Seeker' : 'General User'),
           email: identifier.includes('@') ? identifier : `${mockRole.toLowerCase()}@hrsjm.org`,
           mobile_number: '+91 98765 43210',
           status: 'ACTIVE',
+          account_type: mockAccountType,
+          membership_status: isMember ? 'ACTIVE' : undefined,
+          assistance_status: isSeeker ? 'APPROVED' : undefined,
           roles: [{ id: 'role-1', name: mockRole }],
         };
         const mockSession = {
@@ -182,15 +174,13 @@ export const LoginPage: React.FC = () => {
 
         const params = new URLSearchParams(window.location.search);
         const redirect = params.get('redirect');
-        if (redirect && redirect.startsWith('/')) {
+        if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, mockUser as any)) {
           navigate(redirect, { replace: true });
           return;
         }
 
-        if (mockRole === 'DONATION_SEEKER') navigate('/seeker/home', { replace: true });
-        else if (mockRole === 'MEMBER') navigate('/member/dashboard', { replace: true });
-        else if (mockRole === 'USER') navigate('/user/profile', { replace: true });
-        else navigate('/admin/dashboard', { replace: true });
+        const destination = resolveUserDestination(mockUser as any);
+        navigate(destination, { replace: true });
         return;
       }
 
@@ -221,9 +211,9 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F2860] flex flex-col justify-between text-slate-800 font-sans">
+    <div className="min-h-screen bg-[#0F2860] flex flex-col text-slate-800 font-sans">
       {/* Top Header Bar with Navigation */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1 flex items-center justify-between">
+      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2 shrink-0 flex items-center justify-between">
         {roleParam ? (
           <Link
             to="/login"
@@ -248,11 +238,11 @@ export const LoginPage: React.FC = () => {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-4 py-4 sm:py-8 my-auto">
+      <main className="flex-1 flex flex-col items-center justify-start px-4 pt-4 pb-12 sm:pt-6 sm:pb-16 w-full">
         {/* Top Branding Section (Matching APK LoginScreen.tsx) */}
-        <div className="text-center max-w-md mx-auto mb-5 sm:mb-7 text-white px-2">
+        <div className="text-center max-w-md mx-auto mb-5 sm:mb-6 text-white px-2">
           {/* Official Emblem */}
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 flex items-center justify-center">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 flex items-center justify-center shrink-0">
             <img
               src={hrsjmLogo}
               alt="HRSJM Official Crest"
@@ -552,7 +542,7 @@ export const LoginPage: React.FC = () => {
       )}
 
       {/* Footer */}
-      <footer className="w-full text-center py-4 text-xs text-slate-400">
+      <footer className="w-full text-center py-4 text-xs text-slate-400 shrink-0 mt-auto">
         © 2026 Human Rights Sanrakshan Sansthan (HRSJM). All rights reserved.
       </footer>
     </div>

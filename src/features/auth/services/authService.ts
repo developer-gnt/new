@@ -14,6 +14,113 @@ const TOKEN_KEY = 'hrsjm_auth_token';
 const REFRESH_TOKEN_KEY = 'hrsjm_refresh_token';
 const USER_KEY = 'hrsjm_user_profile';
 
+/**
+ * Resolves the appropriate destination route according to the user's authenticated account type and roles:
+ * - Admin -> /admin/dashboard
+ * - Member -> /member/dashboard
+ * - Donation Seeker -> /seeker/home
+ * - General User -> /user/dashboard
+ *
+ * Never defaults an unknown or general account to /admin/dashboard.
+ */
+export function resolveUserDestination(user: UserProfile | null | undefined): string {
+  if (!user) {
+    return '/login';
+  }
+
+  // 1. Direct account_type property as returned by backend /auth/me or /users/toProfile
+  const accountType = (user.account_type || '').toLowerCase().trim();
+  if (accountType === 'admin') return '/admin/dashboard';
+  if (accountType === 'member') return '/member/dashboard';
+  if (accountType === 'seeker') return '/seeker/home';
+  if (accountType === 'general') return '/user/dashboard';
+
+  // 2. Extract and normalize role names
+  const roleNames = (user.roles || []).map((r: any) => {
+    if (typeof r === 'string') return r.toUpperCase().trim();
+    return (r?.name || '').toUpperCase().trim();
+  });
+
+  // Admin takes top priority
+  if (
+    roleNames.includes('ADMIN') ||
+    roleNames.includes('SUPER_ADMIN') ||
+    roleNames.includes('SUPERADMIN')
+  ) {
+    return '/admin/dashboard';
+  }
+
+  // Member
+  if (
+    roleNames.includes('MEMBER') ||
+    user.membership_status === 'ACTIVE' ||
+    user.membership_status === 'APPROVED'
+  ) {
+    return '/member/dashboard';
+  }
+
+  // Donation Seeker
+  if (
+    roleNames.includes('SEEKER') ||
+    roleNames.includes('DONATION_SEEKER') ||
+    user.assistance_status === 'APPROVED'
+  ) {
+    return '/seeker/home';
+  }
+
+  // General user or default fallback
+  return '/user/dashboard';
+}
+
+/**
+ * Validates whether an authenticated user is permitted to access a specific target route.
+ */
+export function isPathAllowedForUser(path: string, user: UserProfile | null | undefined): boolean {
+  if (!user || !path || !path.startsWith('/')) return false;
+
+  const roleNames = (user.roles || []).map((r: any) => {
+    if (typeof r === 'string') return r.toUpperCase().trim();
+    return (r?.name || '').toUpperCase().trim();
+  });
+
+  const isAdmin =
+    user.account_type === 'admin' ||
+    roleNames.includes('ADMIN') ||
+    roleNames.includes('SUPER_ADMIN') ||
+    roleNames.includes('SUPERADMIN');
+
+  if (isAdmin) {
+    return true; // Admins have cross-portal privileges
+  }
+
+  const isMember =
+    user.account_type === 'member' ||
+    roleNames.includes('MEMBER') ||
+    user.membership_status === 'ACTIVE' ||
+    user.membership_status === 'APPROVED';
+
+  const isSeeker =
+    user.account_type === 'seeker' ||
+    roleNames.includes('SEEKER') ||
+    roleNames.includes('DONATION_SEEKER') ||
+    user.assistance_status === 'APPROVED';
+
+  if (path.startsWith('/admin')) {
+    return false; // Non-admin cannot access /admin
+  }
+
+  if (path.startsWith('/member')) {
+    return isMember;
+  }
+
+  if (path.startsWith('/seeker')) {
+    return isSeeker;
+  }
+
+  // All authenticated users can access /user/* or general public paths
+  return true;
+}
+
 export const authService = {
   getStoredToken(): string | null {
     try {
@@ -150,16 +257,39 @@ export const authService = {
 
       if (isNetworkError) {
         const id = payload.identifier.trim().toLowerCase();
-        const isSeeker = id.includes('seeker') || id === '9888880004';
         const isAdmin = id.includes('admin') || id === '9888880001';
+        const isMember = id.includes('member') || id === '9888880002';
+        const isSeeker = id.includes('seeker') || id === '9888880004';
 
-        const mockRole = isSeeker ? 'DONATION_SEEKER' : isAdmin ? 'ADMIN' : 'USER';
+        const mockRole = isAdmin ? 'ADMIN' : isMember ? 'MEMBER' : isSeeker ? 'DONATION_SEEKER' : 'USER';
+        const accountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin
+          ? 'admin'
+          : isMember
+          ? 'member'
+          : isSeeker
+          ? 'seeker'
+          : 'general';
+
         const mockUser: UserProfile = {
-          id: isSeeker ? 'seeker-test-uuid-0004' : 'admin-test-uuid-0001',
-          full_name: isSeeker ? 'HRSJM Test Seeker' : 'HRSJM Test Admin',
+          id: isAdmin
+            ? 'admin-test-uuid-0001'
+            : isMember
+            ? 'member-test-uuid-0002'
+            : isSeeker
+            ? 'seeker-test-uuid-0004'
+            : `user-test-uuid-${Date.now()}`,
+          full_name: isAdmin
+            ? 'HRSJM Test Admin'
+            : isMember
+            ? 'HRSJM Test Member'
+            : isSeeker
+            ? 'HRSJM Test Seeker'
+            : 'HRSJM General User',
           email: id.includes('@') ? id : `${mockRole.toLowerCase()}@hrsjm.org`,
-          mobile_number: isSeeker ? '9888880004' : '9888880001',
+          mobile_number: isAdmin ? '9888880001' : isMember ? '9888880002' : isSeeker ? '9888880004' : '9888880000',
           status: 'ACTIVE',
+          account_type: accountType,
+          membership_status: isMember ? 'ACTIVE' : undefined,
           roles: [{ name: mockRole, description: `${mockRole} role` }],
           assistance_status: isSeeker ? 'APPROVED' : undefined,
           city: 'Mumbai',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../store/authStore';
+import { useAuth, resolveUserDestination } from '../store/authStore';
 import { authService } from '../services/authService';
 
 interface ProtectedRouteProps {
@@ -12,7 +12,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRole = 'ANY',
 }) => {
-  const { isAuthenticated, isSeeker, isAdmin, isMember } = useAuth();
+  const { isAuthenticated, isSeeker, isAdmin, isMember, user } = useAuth();
   const hasToken = Boolean(authService.getAuthToken());
   const location = useLocation();
 
@@ -20,18 +20,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  const currentUser = user || authService.getCurrentUser();
+
   if (allowedRole === 'SEEKER' && !isSeeker && !isAdmin) {
-    // Non-seeker and non-admin
-    return <Navigate to="/seeker/home" replace />;
+    return <Navigate to={resolveUserDestination(currentUser)} replace />;
   }
 
   if (allowedRole === 'ADMIN' && !isAdmin) {
-    // Seeker trying to access admin
-    return <Navigate to="/seeker/home" replace />;
+    return <Navigate to={resolveUserDestination(currentUser)} replace />;
   }
 
   if (allowedRole === 'MEMBER' && !isMember && !isAdmin) {
-    return <Navigate to="/member/dashboard" replace />;
+    return <Navigate to={resolveUserDestination(currentUser)} replace />;
   }
 
   return <>{children}</>;

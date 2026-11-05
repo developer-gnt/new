@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/features/auth/store/authStore';
+import { useAuth, resolveUserDestination } from '@/features/auth/store/authStore';
 import { authService } from '@/features/auth/services/authService';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AppErrorBoundary } from '../common/AppErrorBoundary';
 
 export const AdminLayout: React.FC = () => {
-  const { isAuthenticated, isSeeker, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const hasToken = Boolean(authService.getAuthToken());
   const location = useLocation();
 
@@ -30,8 +30,12 @@ export const AdminLayout: React.FC = () => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
-  if (isAuthenticated && isSeeker && !isAdmin) {
-    return <Navigate to="/seeker/home" replace />;
+  // Prevent non-admin users from accessing the admin portal; route to their designated portal
+  if (!isAdmin) {
+    const currentUser = user || authService.getCurrentUser();
+    const destination = resolveUserDestination(currentUser);
+    const safeDestination = destination.startsWith('/admin') ? '/user/dashboard' : destination;
+    return <Navigate to={safeDestination} replace />;
   }
 
   return (

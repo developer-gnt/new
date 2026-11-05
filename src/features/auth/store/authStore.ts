@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react';
 import type { LoginPayload, RegisterPayload, UserProfile } from '../types/auth.types';
-import { authService } from '../services/authService';
+import { authService, resolveUserDestination, isPathAllowedForUser } from '../services/authService';
 import { userAuthStore } from '../../user/store/userAuthStore';
+
+export { resolveUserDestination, isPathAllowedForUser };
 
 interface AuthStoreState {
   user: UserProfile | null;
@@ -10,6 +12,7 @@ interface AuthStoreState {
   isSeeker: boolean;
   isAdmin: boolean;
   isMember: boolean;
+  isGeneralUser: boolean;
   version: number;
 }
 
@@ -32,17 +35,27 @@ class AuthStore {
       return (r?.name || '').toUpperCase();
     });
 
-    const isSeeker =
-      roleNames.includes('DONATION_SEEKER') ||
-      roleNames.includes('SEEKER') ||
-      (this.user as any)?.account_type === 'seeker';
+    const accountType = (this.user?.account_type || '').toLowerCase();
 
     const isAdmin =
+      accountType === 'admin' ||
       roleNames.includes('ADMIN') ||
       roleNames.includes('SUPER_ADMIN') ||
       roleNames.includes('SUPERADMIN');
 
-    const isMember = roleNames.includes('MEMBER');
+    const isMember =
+      accountType === 'member' ||
+      roleNames.includes('MEMBER') ||
+      this.user?.membership_status === 'ACTIVE' ||
+      this.user?.membership_status === 'APPROVED';
+
+    const isSeeker =
+      accountType === 'seeker' ||
+      roleNames.includes('DONATION_SEEKER') ||
+      roleNames.includes('SEEKER') ||
+      this.user?.assistance_status === 'APPROVED';
+
+    const isGeneralUser = !isAdmin && !isMember && !isSeeker;
 
     return {
       user: this.user,
@@ -51,6 +64,7 @@ class AuthStore {
       isSeeker,
       isAdmin,
       isMember,
+      isGeneralUser,
       version: this.version,
     };
   }

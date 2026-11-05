@@ -17,7 +17,7 @@ import {
   Loader2,
   Users,
 } from 'lucide-react';
-import { authService } from '../features/auth/services/authService';
+import { authService, resolveUserDestination } from '../features/auth/services/authService';
 import {
   formatDateToDMY,
   validateAgeEligibility,
@@ -70,7 +70,8 @@ export const RegisterPage: React.FC = () => {
   useEffect(() => {
     const token = authService.getAuthToken();
     if (token) {
-      navigate('/admin/dashboard', { replace: true });
+      const destination = resolveUserDestination(authService.getCurrentUser());
+      navigate(destination, { replace: true });
     }
   }, [navigate]);
 
@@ -519,7 +520,7 @@ export const RegisterPage: React.FC = () => {
           {/* Action CTAs */}
           <div className="space-y-3">
             <button
-              onClick={() => navigate('/admin/dashboard')}
+              onClick={() => navigate('/user/dashboard')}
               className="w-full py-3.5 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Go to Dashboard</span>
@@ -527,7 +528,7 @@ export const RegisterPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => navigate('/admin/profile')}
+              onClick={() => navigate('/user/profile')}
               className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs transition cursor-pointer"
             >
               View My Profile

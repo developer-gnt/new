@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { executeSignOut } from '@/features/auth/store/authStore';
+import { executeSignOut, useAuth } from '@/features/auth/store/authStore';
 import {
   Menu,
   Bell,
@@ -33,6 +33,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAdmin } = useAuth();
   const { member } = useCurrentMember();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -273,7 +274,8 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
 
               <div style={styles.dropdownDivider} />
 
-              <button
+              {isAdmin && (
+<button
                 type="button"
                 style={styles.dropdownItem}
                 onClick={() => {
@@ -284,6 +286,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
                 <ExternalLink size={16} color="#06294D" />
                 <span>Switch to Admin Portal</span>
               </button>
+              )}
 
               <div style={styles.dropdownDivider} />
 
