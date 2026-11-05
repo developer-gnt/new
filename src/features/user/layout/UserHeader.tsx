@@ -56,7 +56,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     if (onOpenNotifications) {
       onOpenNotifications();
     } else {
-      navigate('/notifications');
+      navigate('/user/notifications');
     }
   };
 
@@ -179,7 +179,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                     onClick={() => {
                       setDropdownOpen(false);
                       if (onOpenProfile) onOpenProfile();
-                      else navigate('/profile');
+                      else navigate('/user/profile');
                     }}
                     className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 text-left cursor-pointer"
                   >
@@ -206,4 +206,3 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     </header>
   );
 };
-

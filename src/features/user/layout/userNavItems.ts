@@ -101,7 +101,7 @@ export const USER_NAV_GROUPS: UserNavGroup[] = [
       {
         id: 'user-membership',
         title: 'Membership & Status',
-        path: '/membership-applications',
+        path: '/user/membership',
         icon: CreditCard,
       },
       {
@@ -118,16 +118,15 @@ export const USER_NAV_GROUPS: UserNavGroup[] = [
       {
         id: 'user-profile',
         title: 'My Profile',
-        path: '/profile',
+        path: '/user/profile',
         icon: User,
       },
       {
         id: 'user-notifications',
         title: 'Notifications',
-        path: '/notifications',
+        path: '/user/notifications',
         icon: Bell,
       },
     ],
   },
 ];
-

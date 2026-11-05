@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { MemberLayout } from '@/components/layout/MemberLayout';
 import { NotFoundPage } from '@/pages/NotFoundPage';
-import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // Admin Portal Feature Exports
 import {
@@ -168,9 +167,14 @@ export const AppRoutes: React.FC = () => {
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
-          <Route path="/user/membership" element={<ProtectedRoute><UserMembershipPage /></ProtectedRoute>} />
-          <Route path="/user/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
-          <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
+          <Route path="/user/membership" element={<UserMembershipPage />} />
+          <Route path="/user/membership-status" element={<UserMembershipPage />} />
+          <Route path="/membership-status" element={<UserMembershipPage />} />
+          <Route path="/membership-applications" element={<UserMembershipPage />} />
+          <Route path="/user/profile" element={<UserProfilePage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/user/notifications" element={<UserNotificationsPage />} />
+          <Route path="/notifications" element={<UserNotificationsPage />} />
         </Route>
 
         {/* Role-Aware Dashboard Entry Point */}
@@ -226,8 +230,6 @@ export const AppRoutes: React.FC = () => {
         {/* Member Registration Experience */}
         <Route path="/membership/apply" element={<MemberRegistrationPage />} />
         <Route path="/membership/categories" element={<MemberRegistrationPage />} />
-        <Route path="/membership" element={<MemberRegistrationPage />} />
-        <Route path="/membership-applications" element={<MemberRegistrationPage />} />
         <Route path="/member/register" element={<MemberRegistrationPage />} />
         <Route path="/become-a-member" element={<MemberRegistrationPage />} />
         <Route path="/apply-membership" element={<MemberRegistrationPage />} />

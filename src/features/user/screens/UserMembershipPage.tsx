@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
   CreditCard,
   CheckCircle,
@@ -24,9 +25,12 @@ import { MembershipStep3 } from '../components/membership/MembershipStep3';
 import { MembershipSubmitted } from '../components/membership/MembershipSubmitted';
 
 export const UserMembershipPage: React.FC = () => {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user } = useUserAuth();
 
-  const [activeTab, setActiveTab] = useState<'categories' | 'status'>('categories');
+  const initialTab = searchParams.get('tab') === 'status' || location.pathname.includes('status') ? 'status' : 'categories';
+  const [activeTab, setActiveTab] = useState<'categories' | 'status'>(initialTab);
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'district_state' | 'letter_pad' | 'national'>('all');
 
   // Wizard state
