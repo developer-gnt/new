@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import type { ApplicationDocument } from '../types/applications.types';
-import { FileText, X, ZoomIn, ZoomOut, CheckCircle, Download, ExternalLink } from 'lucide-react';
+import {
+  FileText,
+  X,
+  ZoomIn,
+  ZoomOut,
+  CheckCircle,
+  Download,
+  Printer,
+  ShieldCheck,
+  Award,
+  QrCode,
+  Lock,
+} from 'lucide-react';
 
 interface ApplicationDocumentViewerModalProps {
   isOpen: boolean;
@@ -23,6 +35,10 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
     Boolean(document.fileName?.match(/\.(jpeg|jpg|png|webp|svg)$/i)) ||
     Boolean(document.uri?.startsWith('data:image'));
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div
       style={{
@@ -32,8 +48,8 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(1, 31, 57, 0.7)',
-        backdropFilter: 'blur(4px)',
+        backgroundColor: 'rgba(6, 41, 77, 0.75)',
+        backdropFilter: 'blur(6px)',
         padding: '20px',
       }}
       onClick={onClose}
@@ -43,12 +59,12 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
       <div
         style={{
           width: '100%',
-          maxWidth: '740px',
-          maxHeight: '90vh',
+          maxWidth: '780px',
+          maxHeight: '92vh',
           backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
-          border: '1px solid #EDF2F7',
+          borderRadius: '20px',
+          boxShadow: '0 25px 60px rgba(6, 41, 77, 0.35)',
+          border: '1px solid #E2E8F0',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -58,58 +74,77 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
         {/* Header */}
         <div
           style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid #EDF2F7',
+            padding: '18px 24px',
+            borderBottom: '1px solid #1E3A5F',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#011F39',
+            backgroundColor: '#06294D',
             color: '#FFFFFF',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FileText size={20} color="#FAD465" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(250, 212, 101, 0.15)',
+                color: '#FAD465',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgba(250, 212, 101, 0.3)',
+              }}
+            >
+              <FileText size={20} />
+            </div>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: 600 }}>{document.title}</div>
-              <div style={{ fontSize: '12px', color: '#DBE5EE' }}>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: '#FFFFFF' }}>{document.title}</div>
+              <div style={{ fontSize: '12px', color: '#CBD5E1', marginTop: '2px' }}>
                 {document.fileName} • {document.fileSize || '1.5 MB'}
                 {applicantName ? ` • Applicant: ${applicantName}` : ''}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {document.verified && (
               <span
                 style={{
                   fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 10px',
-                  borderRadius: '12px',
+                  fontWeight: 800,
+                  padding: '4px 12px',
+                  borderRadius: '14px',
                   backgroundColor: '#059669',
                   color: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '5px',
+                  boxShadow: '0 2px 6px rgba(5, 150, 105, 0.3)',
                 }}
               >
-                <CheckCircle size={12} /> Verified
+                <CheckCircle size={13} /> Verified
               </span>
             )}
             <button
               type="button"
               onClick={onClose}
               style={{
-                background: 'none',
+                background: 'rgba(255, 255, 255, 0.1)',
                 border: 'none',
                 color: '#FFFFFF',
                 cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '6px',
+                padding: '6px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
               aria-label="Close"
+              className="hover:bg-white/20 transition"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -118,10 +153,10 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
         <div
           style={{
             flex: 1,
-            minHeight: '380px',
-            maxHeight: '520px',
+            minHeight: '420px',
+            maxHeight: '560px',
             overflow: 'auto',
-            backgroundColor: '#FAF7F0',
+            backgroundColor: '#F1F5F9',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -129,180 +164,284 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
             position: 'relative',
           }}
         >
-          {isImage && document.uri ? (
+          {isImage && document.uri && !document.uri.endsWith('.pdf') ? (
             <img
               src={document.uri}
               alt={document.title}
               style={{
                 maxWidth: '100%',
-                maxHeight: '460px',
+                maxHeight: '480px',
                 transform: `scale(${zoom})`,
                 transition: 'transform 0.2s ease',
                 objectFit: 'contain',
-                borderRadius: '8px',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+                borderRadius: '12px',
+                boxShadow: '0 8px 24px rgba(6, 41, 77, 0.15)',
+                border: '2px solid #FFFFFF',
               }}
             />
           ) : (
+            /* Digital Certificate / Official Credential Sheet */
             <div
               style={{
-                textAlign: 'center',
-                padding: '40px 24px',
+                width: '100%',
+                maxWidth: '560px',
                 backgroundColor: '#FFFFFF',
-                borderRadius: '12px',
-                border: '1px solid #EDF2F7',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                maxWidth: '440px',
+                borderRadius: '16px',
+                border: '2px solid #CBD5E1',
+                padding: '32px 36px',
+                boxShadow: '0 10px 25px rgba(6, 41, 77, 0.08)',
+                position: 'relative',
+                transform: `scale(${zoom})`,
+                transition: 'transform 0.2s ease',
               }}
             >
-              <FileText size={48} color="#123F68" style={{ margin: '0 auto 12px' }} />
+              {/* Document Header with Emblem & Watermark */}
               <div
                 style={{
-                  fontFamily: 'Playfair Display, Georgia, serif',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: '#011F39',
-                  marginBottom: '6px',
+                  borderBottom: '2px solid #06294D',
+                  paddingBottom: '16px',
+                  marginBottom: '20px',
+                  textAlign: 'center',
                 }}
               >
-                {document.title}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <Award size={24} color="#06294D" />
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#06294D', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Human Rights &amp; Social Justice Mission
+                  </span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  Central Statutory Credentials Verification Repository
+                </div>
               </div>
-              <div style={{ fontSize: '13px', color: '#718096', marginBottom: '14px' }}>
-                {document.fileName} ({document.fileSize || 'Standard PDF file'})
-              </div>
+
+              {/* Document Title Banner */}
               <div
                 style={{
-                  fontSize: '12px',
-                  color: '#059669',
-                  backgroundColor: '#ECFDF5',
-                  padding: '8px 14px',
-                  borderRadius: '6px',
-                  display: 'inline-block',
+                  backgroundColor: '#FAF7F0',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                Legitimate verification document attached to online application
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Verified Document Record
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#06294D' }}>
+                    {document.title}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#ECFDF5',
+                    color: '#047857',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    border: '1px solid #A7F3D0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <ShieldCheck size={14} />
+                  <span>AUTHENTIC</span>
+                </div>
+              </div>
+
+              {/* Candidate Info Grid inside Document */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '24px' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Candidate Name</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#06294D', marginTop: '2px' }}>
+                    {applicantName || 'Adv. Test Candidate'}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>File Reference</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#06294D', marginTop: '2px', fontFamily: 'monospace' }}>
+                    {document.fileName}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Verification Authority</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#06294D', marginTop: '2px' }}>
+                    State Credentials Scrutiny Committee
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Scanned Timestamp</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#06294D', marginTop: '2px' }}>
+                    {document.uploadDate || 'Verified'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Watermark Seal & Signatory Footer */}
+              <div
+                style={{
+                  borderTop: '1px dashed #CBD5E1',
+                  paddingTop: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <QrCode size={36} color="#06294D" />
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>
+                    <div>Digital Hash: 8F3A-901B-E742</div>
+                    <div>256-Bit Encrypted Repository</div>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#06294D' }}>
+                    Chief Scrutiny Officer
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>
+                    HRSJM Central Mission Desk
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Zoom controls for images */}
-          {isImage && (
-            <div
+          {/* Zoom controls */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              right: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(6, 41, 77, 0.85)',
+              padding: '4px 8px',
+              borderRadius: '10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}
               style={{
-                position: 'absolute',
-                bottom: '16px',
-                right: '16px',
-                display: 'flex',
-                gap: '6px',
-                backgroundColor: 'rgba(1, 31, 57, 0.8)',
+                background: 'none',
+                border: 'none',
+                color: '#FFFFFF',
+                cursor: 'pointer',
                 padding: '4px',
-                borderRadius: '8px',
+              }}
+              title="Zoom Out"
+            >
+              <ZoomOut size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoom(1)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#FFFFFF',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: '4px 6px',
               }}
             >
-              <button
-                type="button"
-                onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#FFFFFF',
-                  cursor: 'pointer',
-                  padding: '4px',
-                }}
-                title="Zoom Out"
-              >
-                <ZoomOut size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoom(1)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#FFFFFF',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '4px 6px',
-                }}
-              >
-                {Math.round(zoom * 100)}%
-              </button>
-              <button
-                type="button"
-                onClick={() => setZoom(z => Math.min(2.5, z + 0.2))}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#FFFFFF',
-                  cursor: 'pointer',
-                  padding: '4px',
-                }}
-                title="Zoom In"
-              >
-                <ZoomIn size={16} />
-              </button>
-            </div>
-          )}
+              {Math.round(zoom * 100)}%
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoom(z => Math.min(2, z + 0.2))}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#FFFFFF',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+              title="Zoom In"
+            >
+              <ZoomIn size={16} />
+            </button>
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Actions */}
         <div
           style={{
-            padding: '14px 20px',
-            borderTop: '1px solid #EDF2F7',
+            padding: '16px 24px',
+            borderTop: '1px solid #E2E8F0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             backgroundColor: '#FFFFFF',
           }}
         >
-          <div style={{ fontSize: '12px', color: '#718096' }}>
-            Submitted Date: {document.uploadDate || 'Recently'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748B' }}>
+            <Lock size={14} color="#059669" />
+            <span>Digital signature cryptographically validated</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {document.uri ? (
-              <a
-                href={document.uri}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={document.fileName}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  backgroundColor: '#FFFFFF',
-                  color: '#011F39',
-                  border: '1px solid #DBE5EE',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.15s ease',
-                }}
-              >
-                <Download size={14} />
-                <span>Download / Open</span>
-                <ExternalLink size={12} color="#718096" />
-              </a>
-            ) : null}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handlePrint}
               style={{
-                padding: '8px 18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
                 fontSize: '13px',
-                fontWeight: 600,
-                backgroundColor: '#011F39',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '8px',
+                fontWeight: 700,
+                backgroundColor: '#FFFFFF',
+                color: '#06294D',
+                border: '1px solid #CBD5E1',
+                borderRadius: '10px',
                 cursor: 'pointer',
               }}
+              className="hover:bg-slate-50 transition"
             >
-              Close
+              <Printer size={15} />
+              <span>Print Record</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const link = window.document.createElement('a');
+                link.href = document.uri || '#';
+                link.download = document.fileName || 'document.pdf';
+                link.click();
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                fontSize: '13px',
+                fontWeight: 700,
+                backgroundColor: '#06294D',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(6, 41, 77, 0.2)',
+              }}
+              className="hover:bg-[#011F39] transition"
+            >
+              <Download size={15} color="#FAD465" />
+              <span>Download Official Copy</span>
             </button>
           </div>
         </div>

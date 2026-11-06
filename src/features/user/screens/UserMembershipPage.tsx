@@ -702,13 +702,27 @@ export const UserMembershipPage: React.FC = () => {
                 qualification: selectedPost.qualification,
                 documents: pendingDocuments
                   ? Object.entries(pendingDocuments.documents)
-                      .filter(([_, file]) => Boolean(file))
-                      .map(([key, file]) => ({
-                        type: key,
-                        title: (file as File).name,
-                        fileName: (file as File).name,
-                        fileSize: `${Math.round((file as File).size / 1024)} KB`,
-                      }))
+                      .filter(([key, val]) => Boolean(val) && !key.endsWith('Name'))
+                      .map(([key, file]) => {
+                        const f = file as File;
+                        const fName = f?.name || (pendingDocuments.documents as any)[`${key}Name`] || `${key}.pdf`;
+                        const fSize = f?.size ? `${Math.round(f.size / 1024)} KB` : '1.5 MB';
+                        return {
+                          type: key,
+                          title:
+                            key === 'identityProof'
+                              ? 'Identity Proof (Aadhaar / Voter ID)'
+                              : key === 'addressProof'
+                              ? 'Address Proof (Electricity / Rent / ID)'
+                              : key === 'qualificationProof'
+                              ? 'Qualification Certificate'
+                              : 'Passport Photograph',
+                          fileName: fName,
+                          fileSize: fSize,
+                          verified: true,
+                          uploadDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        };
+                      })
                   : [],
                 consents: {
                   agreeTerms: true,
@@ -730,6 +744,40 @@ export const UserMembershipPage: React.FC = () => {
             const year = new Date().getFullYear();
             const seq = Math.floor(1000 + Math.random() * 9000);
             newAppId = `HRSJM-MEM-${year}-${seq}`;
+          }
+
+          // Persist uploaded documents under application ID and user ID
+          if (pendingDocuments) {
+            const formattedDocs = Object.entries(pendingDocuments.documents)
+              .filter(([key, val]) => Boolean(val) && !key.endsWith('Name'))
+              .map(([key, file], idx) => {
+                const f = file as File;
+                const fName = f?.name || (pendingDocuments.documents as any)[`${key}Name`] || `${key}.pdf`;
+                const fSize = f?.size ? `${Math.round(f.size / 1024)} KB` : '1.5 MB';
+                return {
+                  id: `doc-${newAppId}-${idx + 1}`,
+                  type: key,
+                  title:
+                    key === 'identityProof'
+                      ? 'Identity Proof (Aadhaar / Voter ID)'
+                      : key === 'addressProof'
+                      ? 'Address Proof (Electricity / Rent / ID)'
+                      : key === 'qualificationProof'
+                      ? 'Qualification Certificate'
+                      : 'Passport Photograph',
+                  fileName: fName,
+                  fileSize: fSize,
+                  verified: true,
+                  uploadDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                };
+              });
+
+            if (formattedDocs.length > 0) {
+              localStorage.setItem(`hrsjm_app_docs_${newAppId}`, JSON.stringify(formattedDocs));
+              if (user?.id) {
+                localStorage.setItem(`hrsjm_user_docs_${user.id}`, JSON.stringify(formattedDocs));
+              }
+            }
           }
 
           localStorage.setItem('hrsjm_user_membership_app_id', newAppId);

@@ -45,6 +45,24 @@ export interface MembershipApplicationItem {
   rejectionReason?: string;
   documents?: ApplicationDocument[];
   activityLog?: ApplicationActivityLog[];
+  paymentMethod?: string;
+  transactionId?: string;
+  paymentDate?: string;
+  validityDays?: number;
+  qualificationRequirement?: string;
+  stateChapter?: string;
+  district?: string;
+  adminNotes?: string;
+  kitFulfillment?: {
+    status?: string;
+    courierName?: string;
+    trackingNumber?: string;
+    deliveryAddress?: string;
+    items?: string[];
+    notes?: string;
+  };
+  userId?: string;
+  categoryId?: string;
 }
 
 export interface ApplicationStatsData {

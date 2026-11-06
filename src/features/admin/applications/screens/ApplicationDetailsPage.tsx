@@ -256,47 +256,57 @@ export const ApplicationDetailsPage: React.FC = () => {
       <div
         style={{
           display: 'flex',
-          gap: '8px',
+          gap: '10px',
           marginBottom: '20px',
-          borderBottom: '1px solid #EDF2F7',
+          borderBottom: '1px solid #E2E8F0',
           paddingBottom: '12px',
+          overflowX: 'auto',
         }}
       >
         {tabs.map(tab => {
           const isActive = activeTab === tab.key;
+          const TabIcon = tab.icon;
+          const docCount = application.documents?.length || 4;
+
           return (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
               style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: isActive ? '#011F39' : '#FFFFFF',
-                color: isActive ? '#FFFFFF' : '#34516D',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 22px',
+                borderRadius: '24px',
+                border: isActive ? '1px solid #06294D' : '1px solid #E2E8F0',
+                backgroundColor: isActive ? '#06294D' : '#FFFFFF',
+                color: isActive ? '#FFFFFF' : '#475569',
                 fontSize: '13px',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                boxShadow: isActive ? '0 2px 6px rgba(1, 31, 57, 0.15)' : 'none',
+                boxShadow: isActive ? '0 2px 8px rgba(6, 41, 77, 0.2)' : '0 1px 2px rgba(0,0,0,0.02)',
+                whiteSpace: 'nowrap',
               }}
+              className="hover:scale-102 active:scale-98"
             >
-              {tab.label}
-              {tab.key === 'documents' && application.documents?.length ? (
+              <TabIcon size={16} color={isActive ? '#FAD465' : '#64748B'} />
+              <span>{tab.label}</span>
+              {tab.key === 'documents' && (
                 <span
                   style={{
-                    marginLeft: '8px',
-                    padding: '2px 6px',
-                    borderRadius: '10px',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
                     fontSize: '11px',
-                    backgroundColor: isActive ? '#FAD465' : '#EDF2F7',
-                    color: isActive ? '#011F39' : '#718096',
+                    fontWeight: 800,
+                    backgroundColor: isActive ? '#FAD465' : '#F1F5F9',
+                    color: '#06294D',
                   }}
                 >
-                  {application.documents.length}
+                  {docCount}
                 </span>
-              ) : null}
+              )}
             </button>
           );
         })}
