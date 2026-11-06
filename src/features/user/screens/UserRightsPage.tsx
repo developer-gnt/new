@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Scale,
   Search,
@@ -62,7 +63,25 @@ const deduplicateByTitle = (list: RightsArticle[]): RightsArticle[] => {
   });
 };
 
+const getRightRouteId = (article: RightsArticle): string => {
+  const rawId = (article.id || '').replace(/^r-/, '');
+  if (rawId.includes('human')) return 'human-rights';
+  if (rawId.includes('women')) return 'womens-rights';
+  if (rawId.includes('education')) return 'right-to-education';
+  if (rawId.includes('child')) return 'childrens-rights';
+  if (rawId.includes('labor') || rawId.includes('labour')) return 'labour-rights';
+  if (rawId.includes('senior') || rawId.includes('elder')) return 'senior-citizen-rights';
+  if (rawId.includes('minority')) return 'minority-rights';
+  if (rawId.includes('information') || rawId.includes('rti')) return 'right-to-information';
+  if (rawId.includes('speech')) return 'freedom-of-speech';
+  if (rawId.includes('custod') || rawId.includes('libert')) return 'civil-liberties';
+  if (rawId.includes('civil')) return 'civil-rights';
+  if (rawId.includes('fundamental')) return 'fundamental-rights';
+  return rawId || 'human-rights';
+};
+
 export const UserRightsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [articles, setArticles] = useState<RightsArticle[]>(USER_RIGHTS_ARTICLES);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -186,7 +205,7 @@ export const UserRightsPage: React.FC = () => {
           {filteredArticles.map(article => (
             <div
               key={article.id}
-              onClick={() => setActiveArticle(article)}
+              onClick={() => navigate(`/rights/${getRightRouteId(article)}`)}
               className="flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md transition-all cursor-pointer group"
             >
               <div>
