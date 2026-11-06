@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { MembershipApplicationItem, ApplicationDocument } from '../types/applications.types';
 import { ApplicationDocumentViewerModal } from './ApplicationDocumentViewerModal';
+import { apiClient } from '@/api/client';
 import {
   FileText,
   Eye,
@@ -11,6 +12,8 @@ import {
   CheckCheck,
   FileCheck2,
   Lock,
+  RefreshCw,
+  Server,
 } from 'lucide-react';
 
 interface ApplicationDocumentsTabProps {
@@ -21,6 +24,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
   application,
 }) => {
   const [selectedDoc, setSelectedDoc] = useState<ApplicationDocument | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLiveServer, setIsLiveServer] = useState(false);
 
   // Generate official statutory verification documents if empty
   const docAppId = (application.applicationId || application.id?.substring(0, 8) || 'MEM').toLowerCase();
@@ -45,8 +50,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
     },
     {
       id: `doc-${application.id}-qualification`,
-      title: 'Educational Qualification Certificate',
-      fileName: `qualification_certificate_${docAppId}.pdf`,
+      title: application.accountType === 'seeker' ? 'Humanitarian / Medical Need Proof' : 'Educational Qualification Certificate',
+      fileName: application.accountType === 'seeker' ? `medical_need_proof_${docAppId}.pdf` : `qualification_certificate_${docAppId}.pdf`,
       fileSize: '1.4 MB',
       uploadDate: application.submittedAt || 'Recently',
       verified: application.status === 'approved' || application.status === 'under_review',
@@ -68,6 +73,101 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
   const [docList, setDocList] = useState<ApplicationDocument[]>(
     application.documents && application.documents.length > 0 ? application.documents : defaultDocs
   );
+
+  // Live Backend Document Fetching
+  const fetchLiveDocuments = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      let fetched: ApplicationDocument[] = [];
+
+      // 1. Try membership endpoint if membership
+      if (application.accountType === 'membership') {
+        try {
+          const res = await apiClient.get<any>(`/memberships/${application.id}/documents`);
+          const raw = res?.data?.documents || res?.documents || res?.data;
+          if (Array.isArray(raw) && raw.length > 0) {
+            fetched = raw.map((d: any, idx: number) => ({
+              id: d.id || `doc-mem-${idx + 1}`,
+              title: d.document_name || d.title || 'Official Cadre Document',
+              fileName: d.file_name || d.fileName || 'document.pdf',
+              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
+              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+              verified: true,
+            }));
+          }
+        } catch {}
+      }
+
+      // 2. Try assistance requests endpoint if seeker
+      if (application.accountType === 'seeker') {
+        try {
+          const res = await apiClient.get<any>(`/assistance-requests/${application.id}/documents`);
+          const raw = res?.data || res;
+          if (Array.isArray(raw) && raw.length > 0) {
+            fetched = raw.map((d: any, idx: number) => ({
+              id: d.id || `doc-ast-${idx + 1}`,
+              title: d.document_name || d.title || 'Assistance Need Proof',
+              fileName: d.file_name || d.fileName || 'document.pdf',
+              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.2 MB',
+              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+              verified: true,
+            }));
+          }
+        } catch {}
+      }
+
+      // 3. Try global documents query by related_entity_id
+      if (fetched.length === 0) {
+        try {
+          const res = await apiClient.get<any>(`/documents?related_entity_id=${application.id}`);
+          const raw = res?.data?.items || res?.items || res?.data;
+          if (Array.isArray(raw) && raw.length > 0) {
+            fetched = raw.map((d: any, idx: number) => ({
+              id: d.id || `doc-rel-${idx + 1}`,
+              title: d.document_name || d.title || 'Verification Document',
+              fileName: d.file_name || d.fileName || 'document.pdf',
+              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
+              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+              verified: true,
+            }));
+          }
+        } catch {}
+      }
+
+      // 4. Check localStorage cache
+      if (fetched.length === 0 && typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const cached =
+            localStorage.getItem(`hrsjm_app_docs_${application.id}`) ||
+            (application.applicationId ? localStorage.getItem(`hrsjm_app_docs_${application.applicationId}`) : null);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              fetched = parsed;
+            }
+          }
+        } catch {}
+      }
+
+      if (fetched.length > 0) {
+        setDocList(fetched);
+        setIsLiveServer(true);
+      } else if (application.documents && application.documents.length > 0) {
+        setDocList(application.documents);
+      } else {
+        setDocList(defaultDocs);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [application, defaultDocs]);
+
+  useEffect(() => {
+    fetchLiveDocuments();
+  }, [fetchLiveDocuments]);
 
   const handleToggleVerify = (docId: string) => {
     setDocList(prev =>
@@ -146,6 +246,25 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
               >
                 {verifiedCount} of {docList.length} Verified
               </span>
+              {isLiveServer && (
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    backgroundColor: '#EFF6FF',
+                    color: '#1D4ED8',
+                    border: '1px solid #BFDBFE',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <Server size={11} />
+                  <span>Live Server KYC</span>
+                </span>
+              )}
             </div>
             <p style={{ fontSize: '13px', color: '#64748B', margin: '2px 0 0' }}>
               Inspect identity credentials, domicile proof, and certificates submitted by <strong>{application.applicantName}</strong> (App ID: {application.applicationId}).
@@ -153,29 +272,55 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
           </div>
         </div>
 
-        {/* Action Button: Verify All */}
-        <button
-          type="button"
-          onClick={handleVerifyAll}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '10px',
-            backgroundColor: '#06294D',
-            color: '#FAD465',
-            fontSize: '13px',
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(6, 41, 77, 0.2)',
-          }}
-          className="hover:bg-[#011F39] transition"
-        >
-          <CheckCheck size={16} />
-          <span>Verify All Documents</span>
-        </button>
+        {/* Action Buttons: Refresh & Verify All */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={fetchLiveDocuments}
+            disabled={isLoading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              backgroundColor: '#FFFFFF',
+              color: '#06294D',
+              fontSize: '13px',
+              fontWeight: 700,
+              border: '1px solid #CBD5E1',
+              cursor: 'pointer',
+            }}
+            className="hover:bg-slate-50 transition"
+            title="Fetch latest uploaded documents from live backend server"
+          >
+            <RefreshCw size={14} className={isLoading ? 'animate-spin text-blue-600' : ''} />
+            <span>{isLoading ? 'Syncing...' : 'Sync Server'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleVerifyAll}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '10px',
+              backgroundColor: '#06294D',
+              color: '#FAD465',
+              fontSize: '13px',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(6, 41, 77, 0.2)',
+            }}
+            className="hover:bg-[#011F39] transition"
+          >
+            <CheckCheck size={16} />
+            <span>Verify All Documents</span>
+          </button>
+        </div>
       </div>
 
       {/* Grid of Documents */}

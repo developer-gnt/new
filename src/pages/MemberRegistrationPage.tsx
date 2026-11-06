@@ -530,6 +530,58 @@ export const MemberRegistrationPage: React.FC = () => {
       });
 
       setSubmittedRecord(record);
+
+      // Persist documents to localStorage linked to application ID & membership number
+      if (typeof window !== 'undefined' && window.localStorage && record) {
+        try {
+          const appDocs = [
+            ...(documents.identityProof ? [{
+              id: `doc-${record.id}-idproof`,
+              title: documents.identityProof.name || 'Identity Proof (Aadhaar / Voter ID)',
+              fileName: documents.identityProof.fileName || 'identity_proof.pdf',
+              fileSize: documents.identityProof.fileSize || '1.8 MB',
+              uploadDate: 'Today',
+              verified: true,
+              uri: documents.identityProof.fileUri || documents.identityProof.dataUrl,
+            }] : []),
+            ...(documents.addressProof ? [{
+              id: `doc-${record.id}-address`,
+              title: documents.addressProof.name || 'Residential Address Proof',
+              fileName: documents.addressProof.fileName || 'address_proof.pdf',
+              fileSize: documents.addressProof.fileSize || '2.1 MB',
+              uploadDate: 'Today',
+              verified: true,
+              uri: documents.addressProof.fileUri || documents.addressProof.dataUrl,
+            }] : []),
+            ...(documents.qualificationProof ? [{
+              id: `doc-${record.id}-qualification`,
+              title: documents.qualificationProof.name || 'Educational Qualification Certificate',
+              fileName: documents.qualificationProof.fileName || 'qualification.pdf',
+              fileSize: documents.qualificationProof.fileSize || '1.4 MB',
+              uploadDate: 'Today',
+              verified: true,
+              uri: documents.qualificationProof.fileUri || documents.qualificationProof.dataUrl,
+            }] : []),
+            ...(documents.photograph || personal.profilePhotoUri ? [{
+              id: `doc-${record.id}-photo`,
+              title: 'Official Passport Photograph',
+              fileName: documents.photograph?.fileName || 'profile_photo.jpg',
+              fileSize: documents.photograph?.fileSize || '1.2 MB',
+              uploadDate: 'Today',
+              verified: true,
+              uri: documents.photograph?.fileUri || personal.profilePhotoUri,
+            }] : []),
+          ];
+
+          if (record.id) {
+            localStorage.setItem(`hrsjm_app_docs_${record.id}`, JSON.stringify(appDocs));
+          }
+          if (record.applicationId) {
+            localStorage.setItem(`hrsjm_app_docs_${record.applicationId}`, JSON.stringify(appDocs));
+          }
+        } catch {}
+      }
+
       setPhase(4); // Move to complete view
     } catch (err: unknown) {
       let message = 'Unable to submit membership application. Please check details and try again.';

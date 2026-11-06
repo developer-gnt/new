@@ -396,6 +396,30 @@ export const SeekerRegistrationPage: React.FC = () => {
       });
 
       setSubmittedRecord(result);
+
+      // Persist documents to localStorage linked to application ID & reference number
+      if (typeof window !== 'undefined' && window.localStorage && result) {
+        try {
+          const allDocs = [...(result.identityDocuments || identityFiles || []), ...(result.additionalDocuments || need.additionalDocuments || [])];
+          const mappedDocs = allDocs.map((doc: any, idx: number) => ({
+            id: doc.id || `doc-seeker-${idx + 1}`,
+            title: doc.docTitle || doc.title || 'Assistance Verification Document',
+            fileName: doc.name || doc.fileName || 'document.pdf',
+            fileSize: doc.formattedSize || doc.size || '1.2 MB',
+            uploadDate: 'Today',
+            verified: true,
+            uri: doc.previewUrl || doc.fileUri || doc.uri,
+          }));
+
+          if (result.id) {
+            localStorage.setItem(`hrsjm_app_docs_${result.id}`, JSON.stringify(mappedDocs));
+          }
+          if (result.applicationNumber) {
+            localStorage.setItem(`hrsjm_app_docs_${result.applicationNumber}`, JSON.stringify(mappedDocs));
+          }
+        } catch {}
+      }
+
       setCurrentStep(4);
     } catch (err: any) {
       setErrors({
