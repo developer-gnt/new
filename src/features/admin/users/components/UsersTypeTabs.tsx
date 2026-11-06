@@ -24,7 +24,6 @@ export const UsersTypeTabs: React.FC<UsersTypeTabsProps> = ({
     { key: 'admin', label: 'Admins', count: counts.admin },
     { key: 'member', label: 'Members', count: counts.member },
     { key: 'seeker', label: 'Donation Seekers', count: counts.seeker },
-    { key: 'donor', label: 'Donors', count: counts.donor },
     { key: 'general', label: 'General Users', count: counts.general },
   ];
 
