@@ -16,19 +16,27 @@ import {
   HeartHandshake,
   UserCheck,
   Gift,
+  Scale,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
-import { authService, resolveUserDestination, isPathAllowedForUser } from '../features/auth/services/authService';
+import {
+  authService,
+  resolveUserDestination,
+  isPathAllowedForUser,
+} from '../features/auth/services/authService';
 import { authStore } from '../features/auth/store/authStore';
 import { userAuthStore } from '../features/user/store/userAuthStore';
 import { ApiError } from '../services/apiClient';
 import hrsjmLogo from '../assets/hrsjm_logo.png';
+import memberRallyImg from '../assets/images/member-hero-rally.jpg';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Role query param (if coming from role selection on public homepage)
-  const roleParam = searchParams.get('role')?.toLowerCase();
+  // Role query param (e.g. ?role=member | ?role=seeker | ?role=admin)
+  const roleParam = searchParams.get('role')?.toLowerCase() || null;
 
   // Form state
   const [identifier, setIdentifier] = useState('');
@@ -48,6 +56,16 @@ export const LoginPage: React.FC = () => {
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
   const [forgotError, setForgotError] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState(false);
+
+  // Active portal tab derived from role query param
+  const activeTab: 'member' | 'seeker' | 'admin' | 'general' =
+    roleParam === 'seeker'
+      ? 'seeker'
+      : roleParam === 'admin'
+      ? 'admin'
+      : roleParam === 'general'
+      ? 'general'
+      : 'member';
 
   // If already authenticated with a valid token, route directly according to actual role
   useEffect(() => {
@@ -74,11 +92,11 @@ export const LoginPage: React.FC = () => {
 
     const cleanIdentifier = identifier.trim();
     if (!cleanIdentifier || cleanIdentifier.length < 3) {
-      errors.identifier = 'Enter your mobile number or email';
+      errors.identifier = 'Enter your registered mobile number or email ID';
     }
 
     if (!password) {
-      errors.password = 'Enter your password';
+      errors.password = 'Enter your account password';
     }
 
     setFieldErrors(errors);
@@ -91,16 +109,16 @@ export const LoginPage: React.FC = () => {
   const resolveLoginError = (error: unknown): string => {
     if (error instanceof ApiError) {
       if (error.statusCode === 403) {
-        return 'Your account has been deactivated. Contact the HRSJM office.';
+        return 'Your account has been deactivated. Contact the HRSJM Central Secretariat.';
       }
       if (error.statusCode === 401) {
-        return 'Invalid email or password';
+        return 'Invalid email or password. Please verify your credentials.';
       }
       if (error.message) {
         return error.message;
       }
     }
-    return 'Unable to login. Please check your connection and try again.';
+    return 'Unable to login. Please check your network connection and try again.';
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -128,11 +146,19 @@ export const LoginPage: React.FC = () => {
       }
 
       // Check if user specified a role tab and has credentials for it
-      if (roleParam === 'seeker' && (session.user.account_type === 'seeker' || session.user.roles?.some((r: any) => (r.name || r) === 'DONATION_SEEKER'))) {
+      if (
+        (activeTab === 'seeker' || roleParam === 'seeker') &&
+        (session.user.account_type === 'seeker' ||
+          session.user.roles?.some((r: any) => (r.name || r) === 'DONATION_SEEKER'))
+      ) {
         navigate('/seeker/home', { replace: true });
         return;
       }
-      if (roleParam === 'member' && (session.user.account_type === 'member' || session.user.roles?.some((r: any) => (r.name || r) === 'MEMBER'))) {
+      if (
+        (activeTab === 'member' || roleParam === 'member') &&
+        (session.user.account_type === 'member' ||
+          session.user.roles?.some((r: any) => (r.name || r) === 'MEMBER'))
+      ) {
         navigate('/member/dashboard', { replace: true });
         return;
       }
@@ -144,17 +170,47 @@ export const LoginPage: React.FC = () => {
       // Offline fallback mock session if in local testing environment
       if (password.length >= 6) {
         const idLower = identifier.toLowerCase();
-        const isSeeker = roleParam === 'seeker' || idLower.includes('seeker') || idLower === '9888880004';
-        const isMember = roleParam === 'member' || idLower.includes('member') || idLower === '9888880002';
-        const isAdmin = roleParam === 'admin' || idLower.includes('admin') || idLower === '9888880001';
-        const mockRole = isAdmin ? 'ADMIN' : isMember ? 'MEMBER' : isSeeker ? 'DONATION_SEEKER' : 'USER';
-        const mockAccountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin ? 'admin' : isMember ? 'member' : isSeeker ? 'seeker' : 'general';
+        const isSeeker =
+          activeTab === 'seeker' ||
+          roleParam === 'seeker' ||
+          idLower.includes('seeker') ||
+          idLower === '9888880004';
+        const isMember =
+          activeTab === 'member' ||
+          roleParam === 'member' ||
+          idLower.includes('member') ||
+          idLower === '9888880002';
+        const isAdmin =
+          activeTab === 'admin' ||
+          roleParam === 'admin' ||
+          idLower.includes('admin') ||
+          idLower === '9888880001';
+        const mockRole = isAdmin
+          ? 'ADMIN'
+          : isMember
+          ? 'MEMBER'
+          : isSeeker
+          ? 'DONATION_SEEKER'
+          : 'USER';
+        const mockAccountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin
+          ? 'admin'
+          : isMember
+          ? 'member'
+          : isSeeker
+          ? 'seeker'
+          : 'general';
 
         const mockUser = {
           id: `usr_${Date.now()}`,
           full_name: identifier.includes('@')
             ? identifier.split('@')[0]
-            : (isAdmin ? 'Administrator' : isMember ? 'Test Member' : isSeeker ? 'Test Seeker' : 'General User'),
+            : isAdmin
+            ? 'Central Administrator'
+            : isMember
+            ? 'Adv. Rajeshwar Sharma'
+            : isSeeker
+            ? 'Pooja Verma (Applicant)'
+            : 'General Citizen',
           email: identifier.includes('@') ? identifier : `${mockRole.toLowerCase()}@hrsjm.org`,
           mobile_number: '+91 98765 43210',
           status: 'ACTIVE',
@@ -210,90 +266,284 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  /**
+   * One-click demo credentials fill for easy testing
+   */
+  const handleQuickFill = (type: 'member' | 'seeker' | 'admin' | 'user') => {
+    setFormError(null);
+    setFieldErrors({});
+    if (type === 'member') {
+      setIdentifier('member@hrsjm.org');
+      setPassword('MemberPass#2026');
+      setSearchParams({ role: 'member' });
+    } else if (type === 'seeker') {
+      setIdentifier('seeker@hrsjm.org');
+      setPassword('SeekerPass#2026');
+      setSearchParams({ role: 'seeker' });
+    } else if (type === 'admin') {
+      setIdentifier('admin@hrsjm.org');
+      setPassword('AdminPass#2026');
+      setSearchParams({ role: 'admin' });
+    } else {
+      setIdentifier('user@hrsjm.org');
+      setPassword('UserPass#2026');
+      setSearchParams({ role: 'general' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#011F39] flex flex-col text-slate-800 font-sans">
-      {/* Top Header Bar with Navigation */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2 shrink-0 flex items-center justify-between">
-        {roleParam ? (
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-200 hover:text-white transition"
-          >
-            <ArrowLeft size={16} />
-            <span>All Logins</span>
-          </Link>
-        ) : (
-          <div />
-        )}
-
-        {roleParam && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#FAD465] text-xs font-semibold border border-white/15">
-            {roleParam === 'seeker' && <HeartHandshake size={13} />}
-            {roleParam === 'member' && <UserCheck size={13} />}
-            {roleParam === 'donor' && <Gift size={13} />}
-            {roleParam === 'admin' && <Shield size={13} />}
-            <span className="capitalize">{roleParam} Section</span>
-          </div>
-        )}
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col items-center justify-start px-4 pt-4 pb-12 sm:pt-6 sm:pb-16 w-full">
-        {/* Top Branding Section (Matching APK LoginScreen.tsx) */}
-        <div className="text-center max-w-md mx-auto mb-5 sm:mb-6 text-white px-2">
-          {/* Official Emblem */}
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 flex items-center justify-center shrink-0">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Official Crest"
-              className="w-full h-full object-contain drop-shadow-xl"
-            />
-          </div>
-
-          <div className="space-y-1 mb-3">
-            <div className="text-xl sm:text-2xl font-black tracking-wider text-white font-serif">
-              HRSJM
-            </div>
-            <div className="text-[10.5px] font-bold text-[#FAD465] tracking-widest uppercase">
-              HUMAN RIGHTS & SOCIAL JUSTICE MISSION
-            </div>
-            <div className="text-[9.5px] text-slate-300 font-medium tracking-wide">
-              मानव अधिकार • सामाजिक न्याय
-            </div>
-          </div>
-
-          <h1
-            style={{ color: '#FFFFFF' }}
-            className="text-2xl sm:text-3xl font-extrabold font-serif tracking-tight leading-snug"
-          >
-            Together for a <span style={{ color: '#FAD465' }} className="text-[#FAD465]">More Just</span> Society
-          </h1>
-          <p className="text-xs sm:text-[13px] text-slate-200 max-w-sm mx-auto mt-2 leading-relaxed opacity-90">
-            Sign in to continue and be a part of our mission for human rights, dignity, equality and peace.
-          </p>
+    <div className="min-h-screen bg-[#FAF7F0] flex flex-col lg:flex-row text-slate-800 font-sans selection:bg-[#FAD465] selection:text-[#011F39]">
+      {/* ════════════════════════════════════════════════════════════
+          LEFT HERO SECTION: Editorial Mission Showcase (Desktop)
+      ════════════════════════════════════════════════════════════ */}
+      <section className="lg:w-1/2 xl:w-7/12 bg-[#011F39] relative flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-12 xl:p-16 text-white min-h-[300px] lg:min-h-screen">
+        {/* Background Documentary Rally Imagery with Dark Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={memberRallyImg}
+            alt="HRSJM Human Rights Rally"
+            className="w-full h-full object-cover opacity-15 mix-blend-luminosity filter contrast-125"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#011F39]/98 via-[#06294D]/92 to-[#011F39]/98" />
+          {/* Subtle Ambient Radial Glows */}
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#FAD465]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#123F68]/40 rounded-full blur-3xl pointer-events-none" />
         </div>
 
-        {/* Floating White Login Card (Matching APK sheet) */}
-        <div className="w-full max-w-[440px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-9 border border-slate-100">
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#0B2F52] tracking-tight">
-              Login
+        {/* Top Header / National Seal */}
+        <div className="relative z-10 space-y-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <Link to="/home" className="flex items-center gap-3.5 group cursor-pointer">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 p-1.5 border border-white/20 backdrop-blur-md shadow-lg group-hover:border-[#FAD465]/50 transition-colors shrink-0">
+                <img
+                  src={hrsjmLogo}
+                  alt="HRSJM Official Seal"
+                  className="w-full h-full object-contain drop-shadow-md"
+                />
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-extrabold tracking-wider text-white font-serif flex items-center gap-2">
+                  <span>HRSJM</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAD465]/20 text-[#FAD465] border border-[#FAD465]/40 uppercase tracking-widest">
+                    National
+                  </span>
+                </div>
+                <div className="text-[10px] sm:text-[11px] font-bold text-[#FAD465] tracking-wider uppercase">
+                  HUMAN RIGHTS & SOCIAL JUSTICE MISSION
+                </div>
+                <div className="text-[9.5px] text-slate-300 font-medium">
+                  मानव अधिकार • सामाजिक न्याय
+                </div>
+              </div>
+            </Link>
+
+            {/* Back to Public Home Button */}
+            <Link
+              to="/home"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white text-xs font-semibold border border-white/15 transition backdrop-blur-sm"
+            >
+              <ArrowLeft size={14} />
+              <span>Public Website</span>
+            </Link>
+          </div>
+
+          {/* Active Portal Indicator if filtered */}
+          {roleParam && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FAD465]/20 text-[#FAD465] text-xs font-bold border border-[#FAD465]/30">
+              <Shield size={13} />
+              <span className="capitalize">{roleParam} Portal Sign-In Active</span>
+            </div>
+          )}
+        </div>
+
+        {/* Center Editorial Headlines & Mission Pillars (Hidden on very short mobile screens) */}
+        <div className="relative z-10 my-8 lg:my-auto space-y-6 max-w-xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FAD465]/15 text-[#FAD465] border border-[#FAD465]/30">
+            <Sparkles size={13} />
+            Constitutional Human Rights Network
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black font-serif tracking-tight text-white leading-[1.18]">
+            Together for a{' '}
+            <span className="text-[#FAD465] italic font-serif relative">
+              More Just
+            </span>{' '}
+            Society
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal opacity-95">
+            Championing pro-bono legal aid, rapid grievance interventions, and civic protections across India. Dedicated to upholding fundamental constitutional guarantees under the law.
+          </p>
+
+          {/* 3 Core Trust Pillars */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="bg-white/10 p-3.5 rounded-2xl border border-white/15 backdrop-blur-sm space-y-1">
+              <div className="w-8 h-8 rounded-xl bg-[#FAD465]/20 text-[#FAD465] flex items-center justify-center mb-2">
+                <Scale size={16} />
+              </div>
+              <div className="text-xs font-bold text-white">Pro-Bono Legal Defense</div>
+              <div className="text-[11px] text-slate-300 leading-snug">
+                Defending underprivileged citizens in district & state courts.
+              </div>
+            </div>
+
+            <div className="bg-white/10 p-3.5 rounded-2xl border border-white/15 backdrop-blur-sm space-y-1">
+              <div className="w-8 h-8 rounded-xl bg-[#FAD465]/20 text-[#FAD465] flex items-center justify-center mb-2">
+                <UserCheck size={16} />
+              </div>
+              <div className="text-xs font-bold text-white">28,000+ Members</div>
+              <div className="text-[11px] text-slate-300 leading-snug">
+                Accredited advocates, delegates, and activists across 28 states.
+              </div>
+            </div>
+
+            <div className="bg-white/10 p-3.5 rounded-2xl border border-white/15 backdrop-blur-sm space-y-1">
+              <div className="w-8 h-8 rounded-xl bg-[#FAD465]/20 text-[#FAD465] flex items-center justify-center mb-2">
+                <FileText size={16} />
+              </div>
+              <div className="text-xs font-bold text-white">Section 80G Tax Exemption</div>
+              <div className="text-[11px] text-slate-300 leading-snug">
+                Statutory deductions with verified Form 10BD acknowledgments.
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Fill Demo Badges */}
+          <div className="pt-2">
+            <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <span>Quick Test Logins:</span>
+              <span className="text-[10px] text-[#FAD465] font-normal">(Click to autofill)</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickFill('member')}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#FAD465]/20 hover:text-[#FAD465] text-white text-xs font-semibold border border-white/20 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <UserCheck size={12} className="text-[#FAD465]" />
+                <span>Active Member</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('seeker')}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#FAD465]/20 hover:text-[#FAD465] text-white text-xs font-semibold border border-white/20 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <HeartHandshake size={12} className="text-[#FAD465]" />
+                <span>Donation Seeker</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('admin')}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#FAD465]/20 hover:text-[#FAD465] text-white text-xs font-semibold border border-white/20 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Shield size={12} className="text-[#FAD465]" />
+                <span>Administrator</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('user')}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#FAD465]/20 hover:text-[#FAD465] text-white text-xs font-semibold border border-white/20 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Gift size={12} className="text-[#FAD465]" />
+                <span>Public Donor</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Footer */}
+        <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
+          <div>Regd. Societies Registration Act XXI of 1860</div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Central Directorate Active</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          RIGHT AUTH SECTION: Executive Sign In Card (Ivory Surface)
+      ════════════════════════════════════════════════════════════ */}
+      <section className="lg:w-1/2 xl:w-5/12 bg-[#FAF7F0] flex flex-col justify-center items-center p-4 sm:p-8 lg:p-10 xl:p-12 relative overflow-y-auto">
+        {/* Auth Card */}
+        <div className="w-full max-w-[460px] bg-white rounded-3xl shadow-xl border border-[#DCE4EC] p-6 sm:p-8 md:p-9 space-y-6">
+          {/* Card Header */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-[#06294D] bg-[#EDF2F7] px-2.5 py-0.5 rounded-full border border-[#DBE5EE]">
+                <Shield size={12} className="text-[#06294D]" />
+                Official Access Portal
+              </span>
+              <span className="text-[11px] font-bold text-slate-400">256-Bit SSL</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-black font-serif text-[#0B2F52] tracking-tight pt-1">
+              Sign In to Portal
             </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] mt-1">
-              Welcome back! Please login to your account.
+            <p className="text-xs text-[#718096] leading-relaxed">
+              Enter your registered credentials to access your administrative, membership, or citizen service dashboard.
             </p>
           </div>
 
-          {/* Form Error Banner */}
+          {/* Portal Selector Tabs */}
+          <div className="grid grid-cols-4 gap-1 p-1 bg-[#FAF7F0] rounded-xl border border-[#DCE4EC] text-[11px] font-bold">
+            <button
+              type="button"
+              onClick={() => setSearchParams({ role: 'member' })}
+              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
+                activeTab === 'member'
+                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
+                  : 'text-slate-600 hover:text-[#06294D]'
+              }`}
+            >
+              Member
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchParams({ role: 'seeker' })}
+              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
+                activeTab === 'seeker'
+                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
+                  : 'text-slate-600 hover:text-[#06294D]'
+              }`}
+            >
+              Seeker
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchParams({ role: 'admin' })}
+              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
+                activeTab === 'admin'
+                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
+                  : 'text-slate-600 hover:text-[#06294D]'
+              }`}
+            >
+              Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchParams({ role: 'general' })}
+              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
+                activeTab === 'general'
+                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
+                  : 'text-slate-600 hover:text-[#06294D]'
+              }`}
+            >
+              General
+            </button>
+          </div>
+
+          {/* Logout Success Banner */}
           {searchParams.get('logout') === 'success' && !formError && (
-            <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5 text-xs text-emerald-800">
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5 text-xs text-emerald-800">
               <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>You have been signed out successfully.</span>
+              <span>You have been safely signed out. Thank you for your service.</span>
             </div>
           )}
 
+          {/* Form Error Alert */}
           {formError && (
-            <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 animate-in fade-in duration-200">
               <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
               <span>{formError}</span>
             </div>
@@ -302,100 +552,111 @@ export const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             {/* 1. Identifier Field */}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#0B2F52] uppercase tracking-wider">
+                Mobile Number or Email ID <span className="text-rose-500">*</span>
+              </label>
+
               <div
-                className={`flex items-center bg-[#FAFAFC] border rounded-xl px-3.5 h-[52px] transition shadow-xs ${
+                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${
                   focusedField === 'identifier'
-                    ? 'border-[#FAD465] border-[1.6px] bg-white ring-2 ring-[#FAD465]/20'
+                    ? 'border-[#06294D] bg-white ring-2 ring-[#FAD465]/40'
                     : fieldErrors.identifier
-                    ? 'border-[#EF4444] bg-[#FFF5F5]'
-                    : 'border-[#E2E8F0]'
+                    ? 'border-rose-400 bg-rose-50/50'
+                    : 'border-[#DCE4EC] hover:border-slate-300'
                 }`}
               >
-                <div className="w-6 flex items-center justify-center text-[#64748B] mr-2.5">
+                <div className="w-5 flex items-center justify-center text-slate-400 mr-2.5">
                   <Mail
-                    size={19}
-                    color={focusedField === 'identifier' ? '#011F39' : '#718096'}
+                    size={17}
+                    className={focusedField === 'identifier' ? 'text-[#06294D]' : 'text-slate-400'}
                   />
                 </div>
                 <input
                   type="text"
                   value={identifier}
                   disabled={submitting}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIdentifier(e.target.value);
-                    if (fieldErrors.identifier) setFieldErrors(prev => ({ ...prev, identifier: undefined }));
+                    if (fieldErrors.identifier) setFieldErrors((prev) => ({ ...prev, identifier: undefined }));
                   }}
                   onFocus={() => setFocusedField('identifier')}
                   onBlur={() => setFocusedField(null)}
-                  placeholder="Email ID / Mobile Number"
-                  className="w-full bg-transparent text-[15px] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none"
+                  placeholder="e.g. 9876543210 or member@hrsjm.org"
+                  className="w-full bg-transparent text-sm text-[#0B2F52] font-semibold placeholder-slate-400 focus:outline-none"
                   autoCapitalize="none"
                   autoCorrect="off"
                 />
               </div>
               {fieldErrors.identifier && (
-                <p className="text-xs text-[#EF4444] font-medium pl-1">{fieldErrors.identifier}</p>
+                <p className="text-[11px] text-rose-600 font-semibold pl-1">{fieldErrors.identifier}</p>
               )}
             </div>
 
             {/* 2. Password Field */}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#0B2F52] uppercase tracking-wider">
+                Account Password <span className="text-rose-500">*</span>
+              </label>
+
               <div
-                className={`flex items-center bg-[#FAFAFC] border rounded-xl px-3.5 h-[52px] transition shadow-xs ${
+                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${
                   focusedField === 'password'
-                    ? 'border-[#FAD465] border-[1.6px] bg-white ring-2 ring-[#FAD465]/20'
+                    ? 'border-[#06294D] bg-white ring-2 ring-[#FAD465]/40'
                     : fieldErrors.password
-                    ? 'border-[#EF4444] bg-[#FFF5F5]'
-                    : 'border-[#E2E8F0]'
+                    ? 'border-rose-400 bg-rose-50/50'
+                    : 'border-[#DCE4EC] hover:border-slate-300'
                 }`}
               >
-                <div className="w-6 flex items-center justify-center text-[#64748B] mr-2.5">
+                <div className="w-5 flex items-center justify-center text-slate-400 mr-2.5">
                   <Lock
-                    size={19}
-                    color={focusedField === 'password' ? '#011F39' : '#718096'}
+                    size={17}
+                    className={focusedField === 'password' ? 'text-[#06294D]' : 'text-slate-400'}
                   />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   disabled={submitting}
-                  onChange={e => {
+                  onChange={(e) => {
                     setPassword(e.target.value);
-                    if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: undefined }));
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
-                  placeholder="Password"
-                  className="w-full bg-transparent text-[15px] text-[#0F172A] font-medium placeholder-[#94A3B8] focus:outline-none"
+                  placeholder="Enter your security password"
+                  className="w-full bg-transparent text-sm text-[#0B2F52] font-semibold placeholder-slate-400 focus:outline-none"
                   autoCapitalize="none"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(p => !p)}
-                  className="p-1.5 text-[#64748B] hover:text-[#011F39] focus:outline-none cursor-pointer"
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="p-1 text-slate-400 hover:text-[#06294D] transition cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <Eye size={19} color="#011F39" /> : <EyeOff size={19} color="#94A3B8" />}
+                  {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
               {fieldErrors.password && (
-                <p className="text-xs text-[#EF4444] font-medium pl-1">{fieldErrors.password}</p>
+                <p className="text-[11px] text-rose-600 font-semibold pl-1">{fieldErrors.password}</p>
               )}
             </div>
 
-            {/* 3. Remember Me & Forgot Password Row */}
-            <div className="flex items-center justify-between pt-1 pb-1">
+            {/* 3. Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between pt-1">
               <label className="flex items-center gap-2 cursor-pointer select-none">
-                <div
-                  className={`w-5 h-5 rounded-[6px] border flex items-center justify-center transition ${
-                    rememberMe ? 'bg-[#FAD465] border-[#FAD465]' : 'bg-white border-[#CBD5E1]'
+                <button
+                  type="button"
+                  onClick={() => setRememberMe((p) => !p)}
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${
+                    rememberMe ? 'bg-[#06294D] border-[#06294D] text-[#FAD465]' : 'bg-white border-[#DCE4EC]'
                   }`}
-                  onClick={() => setRememberMe(p => !p)}
+                  aria-checked={rememberMe}
+                  role="checkbox"
                 >
-                  {rememberMe && <Check size={13} className="text-white stroke-[3]" />}
-                </div>
-                <span className="text-[13.5px] text-[#334155] font-medium">Remember me</span>
+                  {rememberMe && <Check size={11} className="stroke-[3]" />}
+                </button>
+                <span className="text-xs text-[#34516D] font-medium">Keep me signed in</span>
               </label>
 
               <button
@@ -406,67 +667,90 @@ export const LoginPage: React.FC = () => {
                   setForgotError(null);
                   setForgotModalOpen(true);
                 }}
-                className="text-[13.5px] font-bold text-[#011F39] hover:underline cursor-pointer"
+                className="text-xs font-bold text-[#06294D] hover:underline cursor-pointer"
               >
                 Forgot Password?
               </button>
             </div>
 
-            {/* 4. Primary Gold Login Button */}
+            {/* 4. Primary Sign In Button */}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-[52px] rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-[15px] shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed mt-2"
+              className="w-full h-[50px] rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] font-black text-sm tracking-wide shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
               {submitting ? (
-                <span className="inline-flex items-center gap-2 text-sm">
+                <span className="inline-flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-[#011F39] border-t-transparent rounded-full animate-spin" />
-                  <span>Logging in...</span>
+                  <span>Verifying Credentials...</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2">
-                  <span>Login</span>
-                  <ArrowRight size={17} />
+                  <span>Sign In to Mission Portal</span>
+                  <ArrowRight size={16} />
                 </span>
               )}
             </button>
           </form>
 
-          {/* Sign Up Link Prompt */}
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs sm:text-[13px] text-slate-600">
-            <span>Don't have an account? </span>
-            <Link
-              to="/register"
-              className="font-bold text-[#011F39] hover:underline"
-            >
-              Sign Up
-            </Link>
+          {/* Membership & Aid Quick Links */}
+          <div className="pt-4 border-t border-slate-100 space-y-2 text-center text-xs text-[#718096]">
+            <div>
+              <span>New to HRSJM? </span>
+              <Link
+                to="/membership/categories"
+                className="font-bold text-[#06294D] hover:underline inline-flex items-center gap-1"
+              >
+                Apply for Official Membership
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div>
+              <span>Seeking Legal or Financial Aid? </span>
+              <Link
+                to="/assistance/apply"
+                className="font-bold text-[#174A78] hover:underline"
+              >
+                File an Assistance Application
+              </Link>
+            </div>
           </div>
         </div>
-      </main>
 
-      {/* Forgot Password Modal (Counterpart of APK ForgotPasswordScreen.tsx) */}
+        {/* Security & Statutory Notice */}
+        <div className="mt-6 text-center text-[11px] text-slate-400 space-y-1">
+          <div>Official Portal of the Human Rights & Social Justice Mission</div>
+          <div>Authorized National Executive Personnel & Registered Members Only</div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          FORGOT PASSWORD MODAL
+      ════════════════════════════════════════════════════════════ */}
       {forgotModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#011F39]/65 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden relative animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-[#011F39]/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#DCE4EC] overflow-hidden relative">
             <button
+              type="button"
               onClick={() => setForgotModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               aria-label="Close"
             >
               <X size={18} />
             </button>
 
-            {/* Modal Content */}
-            <div className="p-6 sm:p-7">
+            <div className="p-6 sm:p-8">
               {!forgotSuccess ? (
                 <>
-                  <div className="mb-5">
-                    <h3 className="text-lg font-bold text-[#011F39] font-serif">
-                      Account Recovery
+                  <div className="mb-5 space-y-1">
+                    <span className="text-[10px] font-bold text-[#06294D] uppercase tracking-wider bg-[#EDF2F7] px-2 py-0.5 rounded-full border border-[#DBE5EE]">
+                      Account Recovery Cell
+                    </span>
+                    <h3 className="text-xl font-black font-serif text-[#0B2F52] pt-1">
+                      Reset Your Password
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Enter your registered email address or mobile number to receive a secure password reset link.
+                    <p className="text-xs text-slate-500">
+                      Enter your registered email address or mobile phone number to generate a secure recovery link.
                     </p>
                   </div>
 
@@ -479,16 +763,16 @@ export const LoginPage: React.FC = () => {
 
                   <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Registered Email / Mobile
+                      <label className="block text-xs font-bold text-[#0B2F52] uppercase tracking-wider mb-1.5">
+                        Registered Mobile Number or Email
                       </label>
                       <input
                         type="text"
                         value={forgotIdentifier}
-                        onChange={e => setForgotIdentifier(e.target.value)}
-                        placeholder="e.g. member@hrsjm.org"
+                        onChange={(e) => setForgotIdentifier(e.target.value)}
+                        placeholder="e.g. 9876543210 or member@hrsjm.org"
                         disabled={forgotSubmitting}
-                        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011F39]/20 focus:border-[#011F39]"
+                        className="w-full px-3.5 py-2.5 text-xs font-semibold bg-[#FAF7F0] border border-[#DCE4EC] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FAD465] text-[#0B2F52]"
                       />
                     </div>
 
@@ -503,34 +787,35 @@ export const LoginPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={forgotSubmitting}
-                        className="px-5 py-2.5 text-xs font-bold bg-[#011F39] text-[#FAD465] hover:bg-[#06294D] rounded-xl shadow transition cursor-pointer disabled:opacity-70"
+                        className="px-5 py-2.5 text-xs font-bold bg-[#06294D] text-[#FAD465] hover:bg-[#083a6b] rounded-xl shadow-sm transition cursor-pointer disabled:opacity-70"
                       >
-                        {forgotSubmitting ? 'Submitting...' : 'Send Reset Link'}
+                        {forgotSubmitting ? 'Generating Link...' : 'Send Reset Link'}
                       </button>
                     </div>
                   </form>
                 </>
               ) : (
                 <div className="text-center py-4 space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
-                    <CheckCircle2 size={30} />
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                    <CheckCircle2 size={32} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-[#011F39]">Check Your Email</h3>
+                    <h3 className="text-lg font-bold font-serif text-[#0B2F52]">Recovery Notice Dispatched</h3>
                     <p className="text-xs text-slate-600 mt-1 max-w-sm mx-auto">
-                      If an account exists with this email address, you will receive a password-reset link.
+                      If an account is associated with this credential, a password reset link has been dispatched.
                     </p>
                   </div>
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-left text-xs text-amber-800 flex items-start gap-2">
                     <Clock size={16} className="text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold block">LINK EXPIRES IN 15 MINUTES</span>
-                      <span className="text-[11px] text-amber-700">Check your spam/junk folder if you don't see it within a couple of minutes.</span>
+                      <span className="font-bold block">VALID FOR 15 MINUTES</span>
+                      <span className="text-[11px] text-amber-700">Check your SMS inbox or email spam folder if you do not receive it promptly.</span>
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setForgotModalOpen(false)}
-                    className="w-full py-2.5 rounded-xl bg-[#011F39] text-white text-xs font-semibold hover:bg-[#06294D] transition cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-[#06294D] text-[#FAD465] text-xs font-bold hover:bg-[#083a6b] transition cursor-pointer"
                   >
                     Back to Sign In
                   </button>
@@ -540,11 +825,6 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="w-full text-center py-4 text-xs text-slate-400 shrink-0 mt-auto">
-        © 2026 Human Rights Sanrakshan Sansthan (HRSJM). All rights reserved.
-      </footer>
     </div>
   );
 };
