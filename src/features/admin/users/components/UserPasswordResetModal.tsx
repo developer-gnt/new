@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { UserItem } from '../types/user.types';
 import { usersStore } from '../store/usersStore';
 import { KeyRound, Eye, EyeOff, Copy, Check, X, RefreshCw } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface UserPasswordResetModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export const UserPasswordResetModal: React.FC<UserPasswordResetModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useLockBodyScroll(Boolean(isOpen && user));
 
   if (!isOpen || !user) return null;
 

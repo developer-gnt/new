@@ -22,10 +22,15 @@ export const ApplicationApplicantSummaryCard: React.FC<ApplicationApplicantSumma
   application,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const isSeeker = getApplicationAccountType(application) === 'seeker';
   const feeAmount = getApplicationFeeAmount(application);
   const paymentStatus = getApplicationPaymentStatus(application);
   const statusStyle = STATUS_STYLES[application.status] || STATUS_STYLES.submitted;
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [application.avatarUrl]);
 
   const initials = application.applicantName
     .split(' ')
@@ -74,10 +79,11 @@ export const ApplicationApplicantSummaryCard: React.FC<ApplicationApplicantSumma
       {/* Left Column: Avatar + Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', minWidth: '320px', flex: 1 }}>
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          {application.avatarUrl ? (
+          {application.avatarUrl && !imgError ? (
             <img
               src={application.avatarUrl}
               alt={application.applicantName}
+              onError={() => setImgError(true)}
               style={{
                 width: '84px',
                 height: '84px',

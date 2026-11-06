@@ -294,7 +294,7 @@ export const SeekerRowCard: React.FC<SeekerRowCardProps> = ({
                 style={menuItemStyle}
               >
                 <FileCheck size={15} color="#2563EB" />
-                <span>Review & Assess</span>
+                <span>Manage Aid & Progress</span>
               </button>
 
               {isReviewable && (

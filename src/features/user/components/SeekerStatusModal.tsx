@@ -1,5 +1,6 @@
 import React from 'react';
 import { HeartHandshake, X, Check, AlertCircle, Clock, ArrowRight } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface SeekerStatusModalProps {
   visible: boolean;
@@ -20,6 +21,8 @@ export const SeekerStatusModal: React.FC<SeekerStatusModalProps> = ({
   onReapply,
   onApplyMembership,
 }) => {
+  useLockBodyScroll(visible);
+
   if (!visible) return null;
 
   const isApproved = status === 'active';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { MembershipApplicationItem, ApplicationDocument } from '../types/applications.types';
 import { ApplicationDocumentViewerModal } from './ApplicationDocumentViewerModal';
 import { apiClient } from '@/api/client';
@@ -29,7 +29,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
 
   // Generate official statutory verification documents if empty
   const docAppId = (application.applicationId || application.id?.substring(0, 8) || 'MEM').toLowerCase();
-  const defaultDocs: ApplicationDocument[] = [
+  
+  const defaultDocs = useMemo<ApplicationDocument[]>(() => [
     {
       id: `doc-${application.id}-idproof`,
       title: 'Identity Proof (Aadhaar / Voter ID)',
@@ -68,11 +69,38 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         application.avatarUrl ||
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
     },
-  ];
+  ], [application.id, application.applicationId, application.submittedAt, application.status, application.accountType, application.avatarUrl, docAppId]);
 
-  const [docList, setDocList] = useState<ApplicationDocument[]>(
-    application.documents && application.documents.length > 0 ? application.documents : defaultDocs
-  );
+  // Initial documents resolution from cache or application props
+  const [docList, setDocList] = useState<ApplicationDocument[]>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const cached =
+          localStorage.getItem(`hrsjm_app_docs_${application.id}`) ||
+          (application.applicationId ? localStorage.getItem(`hrsjm_app_docs_${application.applicationId}`) : null);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return application.documents && application.documents.length > 0 ? application.documents : defaultDocs;
+  });
+
+  const saveDocsToCache = (docs: ApplicationDocument[]) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        if (application.id) {
+          localStorage.setItem(`hrsjm_app_docs_${application.id}`, JSON.stringify(docs));
+        }
+        if (application.applicationId) {
+          localStorage.setItem(`hrsjm_app_docs_${application.applicationId}`, JSON.stringify(docs));
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to persist documents to localStorage:', err);
+    }
+  };
 
   // Live Backend Document Fetching
   const fetchLiveDocuments = useCallback(async () => {
@@ -80,65 +108,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
     try {
       let fetched: ApplicationDocument[] = [];
 
-      // 1. Try membership endpoint if membership
-      if (application.accountType === 'membership') {
-        try {
-          const res = await apiClient.get<any>(`/memberships/${application.id}/documents`);
-          const raw = res?.data?.documents || res?.documents || res?.data;
-          if (Array.isArray(raw) && raw.length > 0) {
-            fetched = raw.map((d: any, idx: number) => ({
-              id: d.id || `doc-mem-${idx + 1}`,
-              title: d.document_name || d.title || 'Official Cadre Document',
-              fileName: d.file_name || d.fileName || 'document.pdf',
-              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
-              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
-              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
-              verified: true,
-            }));
-          }
-        } catch {}
-      }
-
-      // 2. Try assistance requests endpoint if seeker
-      if (application.accountType === 'seeker') {
-        try {
-          const res = await apiClient.get<any>(`/assistance-requests/${application.id}/documents`);
-          const raw = res?.data || res;
-          if (Array.isArray(raw) && raw.length > 0) {
-            fetched = raw.map((d: any, idx: number) => ({
-              id: d.id || `doc-ast-${idx + 1}`,
-              title: d.document_name || d.title || 'Assistance Need Proof',
-              fileName: d.file_name || d.fileName || 'document.pdf',
-              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.2 MB',
-              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
-              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
-              verified: true,
-            }));
-          }
-        } catch {}
-      }
-
-      // 3. Try global documents query by related_entity_id
-      if (fetched.length === 0) {
-        try {
-          const res = await apiClient.get<any>(`/documents?related_entity_id=${application.id}`);
-          const raw = res?.data?.items || res?.items || res?.data;
-          if (Array.isArray(raw) && raw.length > 0) {
-            fetched = raw.map((d: any, idx: number) => ({
-              id: d.id || `doc-rel-${idx + 1}`,
-              title: d.document_name || d.title || 'Verification Document',
-              fileName: d.file_name || d.fileName || 'document.pdf',
-              fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
-              uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
-              uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
-              verified: true,
-            }));
-          }
-        } catch {}
-      }
-
-      // 4. Check localStorage cache
-      if (fetched.length === 0 && typeof window !== 'undefined' && window.localStorage) {
+      // 1. Check localStorage cache first
+      if (typeof window !== 'undefined' && window.localStorage) {
         try {
           const cached =
             localStorage.getItem(`hrsjm_app_docs_${application.id}`) ||
@@ -152,31 +123,99 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         } catch {}
       }
 
+      // 2. If not found in cache, query live server API
+      if (fetched.length === 0) {
+        if (application.accountType === 'membership') {
+          try {
+            const res = await apiClient.get<any>(`/memberships/${application.id}/documents`);
+            const raw = res?.data?.documents || res?.documents || res?.data;
+            if (Array.isArray(raw) && raw.length > 0) {
+              fetched = raw.map((d: any, idx: number) => ({
+                id: d.id || `doc-mem-${idx + 1}`,
+                title: d.document_name || d.title || 'Official Cadre Document',
+                fileName: d.file_name || d.fileName || 'document.pdf',
+                fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
+                uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+                uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+                verified: true,
+              }));
+              setIsLiveServer(true);
+            }
+          } catch {}
+        }
+
+        if (fetched.length === 0 && application.accountType === 'seeker') {
+          try {
+            const res = await apiClient.get<any>(`/assistance-requests/${application.id}/documents`);
+            const raw = res?.data || res;
+            if (Array.isArray(raw) && raw.length > 0) {
+              fetched = raw.map((d: any, idx: number) => ({
+                id: d.id || `doc-ast-${idx + 1}`,
+                title: d.document_name || d.title || 'Assistance Need Proof',
+                fileName: d.file_name || d.fileName || 'document.pdf',
+                fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.2 MB',
+                uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+                uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+                verified: true,
+              }));
+              setIsLiveServer(true);
+            }
+          } catch {}
+        }
+
+        if (fetched.length === 0) {
+          try {
+            const res = await apiClient.get<any>(`/documents?related_entity_id=${application.id}`);
+            const raw = res?.data?.items || res?.items || res?.data;
+            if (Array.isArray(raw) && raw.length > 0) {
+              fetched = raw.map((d: any, idx: number) => ({
+                id: d.id || `doc-rel-${idx + 1}`,
+                title: d.document_name || d.title || 'Verification Document',
+                fileName: d.file_name || d.fileName || 'document.pdf',
+                fileSize: d.file_size ? `${(d.file_size / (1024 * 1024)).toFixed(1)} MB` : d.fileSize || '1.5 MB',
+                uploadDate: d.created_at ? new Date(d.created_at).toLocaleDateString('en-GB') : 'Verified Server Upload',
+                uri: d.storage_path ? (d.storage_path.startsWith('/') ? d.storage_path : `/${d.storage_path}`) : d.uri || `/api/v1/documents/${d.id}/download`,
+                verified: true,
+              }));
+              setIsLiveServer(true);
+            }
+          } catch {}
+        }
+      }
+
       if (fetched.length > 0) {
         setDocList(fetched);
-        setIsLiveServer(true);
+        saveDocsToCache(fetched);
       } else if (application.documents && application.documents.length > 0) {
         setDocList(application.documents);
+        saveDocsToCache(application.documents);
       } else {
         setDocList(defaultDocs);
       }
     } finally {
       setIsLoading(false);
     }
-  }, [application, defaultDocs]);
+  }, [application.id, application.applicationId, application.accountType, application.documents, defaultDocs]);
 
+  // Trigger sync only when the application changes, not on every render
   useEffect(() => {
     fetchLiveDocuments();
-  }, [fetchLiveDocuments]);
+  }, [application.id, application.applicationId]);
 
   const handleToggleVerify = (docId: string) => {
-    setDocList(prev =>
-      prev.map(d => (d.id === docId ? { ...d, verified: !d.verified } : d))
-    );
+    setDocList(prev => {
+      const updated = prev.map(d => (d.id === docId ? { ...d, verified: !d.verified } : d));
+      saveDocsToCache(updated);
+      return updated;
+    });
   };
 
   const handleVerifyAll = () => {
-    setDocList(prev => prev.map(d => ({ ...d, verified: true })));
+    setDocList(prev => {
+      const updated = prev.map(d => ({ ...d, verified: true }));
+      saveDocsToCache(updated);
+      return updated;
+    });
   };
 
   const verifiedCount = docList.filter(d => d.verified).length;

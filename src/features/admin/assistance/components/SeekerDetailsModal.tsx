@@ -19,6 +19,7 @@ import type { AssistanceRequest, AssistanceStatus } from '../types/assistance.ty
 import { AssistanceStatusBadge } from './AssistanceStatusBadge';
 import { URGENCY_CONFIG } from '../data/assistanceFixtures';
 import { assistanceStore } from '../store/assistanceStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface SeekerDetailsModalProps {
   visible: boolean;
@@ -48,6 +49,8 @@ export const SeekerDetailsModal: React.FC<SeekerDetailsModalProps> = ({
   const [checkDoc, setCheckDoc] = useState(true);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+
+  useLockBodyScroll(Boolean(visible && request));
 
   if (!visible || !request) return null;
 

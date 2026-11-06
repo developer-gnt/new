@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { X, Filter } from 'lucide-react';
 import type { MemberSortOption, MembershipCategoryItem } from '../types/members.types';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface MemberFilterModalProps {
   visible: boolean;
@@ -27,6 +28,8 @@ export const MemberFilterModal: React.FC<MemberFilterModalProps> = ({
   const [localCategory, setLocalCategory] = useState(selectedCategory);
   const [localStatus, setLocalStatus] = useState(selectedStatus);
   const [localSort, setLocalSort] = useState(selectedSort);
+
+  useLockBodyScroll(visible);
 
   if (!visible) return null;
 

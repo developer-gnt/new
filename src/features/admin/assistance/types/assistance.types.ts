@@ -5,7 +5,14 @@ export type AssistanceStatus =
   | 'REJECTED'
   | 'CLOSED';
 
-export type AssistanceTabKey = 'ALL' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
+export type AssistanceTabKey =
+  | 'ALL'
+  | 'ACTIVE'
+  | 'URGENT'
+  | 'COMPLETED'
+  | 'APPROVED'
+  | 'UNDER_REVIEW'
+  | 'REJECTED';
 
 export type UrgencyLevel = 'NORMAL' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
@@ -55,11 +62,15 @@ export interface AssistanceRequest {
 
 export interface AssistanceSummaryStats {
   total: number;
-  underReview: number;
-  approved: number;
-  rejected: number;
-  closed: number;
+  active?: number;
+  urgent?: number;
+  completed?: number;
+  underReview?: number;
+  approved?: number;
+  rejected?: number;
+  closed?: number;
   totalAmount: number;
+  totalTarget?: number;
 }
 
 export interface AssistanceQuery {

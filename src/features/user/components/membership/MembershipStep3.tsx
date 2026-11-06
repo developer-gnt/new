@@ -19,6 +19,7 @@ export interface DocumentState {
   qualificationProofName?: string;
   photoProof?: File | null;
   photoProofName?: string;
+  urls?: Record<string, string>;
 }
 
 export interface Step3SubmitPayload {
@@ -60,11 +61,20 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setDocuments(prev => ({
-        ...prev,
-        [field]: file,
-        [nameField]: file.name,
-      }));
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setDocuments(prev => ({
+          ...prev,
+          [field]: file,
+          [nameField]: file.name,
+          urls: {
+            ...(prev.urls || {}),
+            [field]: dataUrl,
+          },
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 

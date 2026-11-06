@@ -187,10 +187,8 @@ export const AssistanceFiltersModal: React.FC<AssistanceFiltersModalProps> = ({
               onChange={(e) => setStatus(e.target.value)}
               style={inputStyle}
             >
-              <option value="ALL">All Statuses</option>
-              <option value="UNDER_REVIEW">Under Review</option>
-              <option value="APPROVED">Approved Causes</option>
-              <option value="REJECTED">Rejected / Declined</option>
+              <option value="ALL">All Approved Causes</option>
+              <option value="APPROVED">Active Approved Causes</option>
               <option value="CLOSED">Closed / Disbursed</option>
             </select>
           </div>

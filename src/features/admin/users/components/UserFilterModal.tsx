@@ -6,6 +6,7 @@ import type {
   UserSortOption,
 } from '../types/user.types';
 import { Filter, X, RotateCcw } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface UserFilterModalProps {
   isOpen: boolean;
@@ -56,6 +57,8 @@ export const UserFilterModal: React.FC<UserFilterModalProps> = ({
   const [selectedSort, setSelectedSort] = useState<UserSortOption>(
     currentFilters.sortBy || 'newest'
   );
+
+  useLockBodyScroll(isOpen);
 
   if (!isOpen) return null;
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { UserVerificationDocument } from '../types/user.types';
 import { FileText, CheckCircle, X } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface UserDocumentViewerModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export const UserDocumentViewerModal: React.FC<UserDocumentViewerModalProps> = (
   onClose,
   onVerify,
 }) => {
+  useLockBodyScroll(Boolean(isOpen && document));
+
   if (!isOpen || !document) return null;
 
   const isImage =

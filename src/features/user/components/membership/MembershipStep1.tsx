@@ -46,9 +46,13 @@ export const MembershipStep1: React.FC<MembershipStep1Props> = ({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoPreview(url);
-      setFormData(prev => ({ ...prev, photoUrl: url }));
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result as string;
+        setPhotoPreview(base64Url);
+        setFormData(prev => ({ ...prev, photoUrl: base64Url }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { UserItem } from '../types/user.types';
 import { Lock, Unlock, Trash2, X } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface UserConfirmationModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const UserConfirmationModal: React.FC<UserConfirmationModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  useLockBodyScroll(Boolean(isOpen && user && action));
+
   if (!isOpen || !user || !action) return null;
 
   const isBlock = action === 'block';

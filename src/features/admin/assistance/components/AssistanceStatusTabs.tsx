@@ -13,10 +13,10 @@ export const AssistanceStatusTabs: React.FC<AssistanceStatusTabsProps> = ({
   stats,
 }) => {
   const tabs: { key: AssistanceTabKey; label: string; count: number }[] = [
-    { key: 'ALL', label: 'All Requests', count: stats.total },
-    { key: 'UNDER_REVIEW', label: 'Under Review', count: stats.underReview },
-    { key: 'APPROVED', label: 'Approved Causes', count: stats.approved },
-    { key: 'REJECTED', label: 'Rejected / Declined', count: stats.rejected },
+    { key: 'ALL', label: 'All Approved Causes', count: stats.total || 0 },
+    { key: 'ACTIVE', label: 'Active Fundraising', count: stats.active || 0 },
+    { key: 'URGENT', label: 'Urgent Relief', count: stats.urgent || 0 },
+    { key: 'COMPLETED', label: 'Fully Funded / Disbursed', count: stats.completed || 0 },
   ];
 
   return (

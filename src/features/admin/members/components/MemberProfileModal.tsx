@@ -291,6 +291,8 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showIdCardModal, setShowIdCardModal] = useState(false);
 
+  useLockBodyScroll(Boolean(visible && member));
+
   if (!visible || !member) return null;
 
   const copyToClipboard = (text: string, key: string) => {

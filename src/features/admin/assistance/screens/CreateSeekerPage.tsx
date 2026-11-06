@@ -19,7 +19,7 @@ export const CreateSeekerPage: React.FC = () => {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [description, setDescription] = useState('');
-  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApprove, setAutoApprove] = useState(true);
   const [adminRemark, setAdminRemark] = useState('');
 
   const [documentName, setDocumentName] = useState('');

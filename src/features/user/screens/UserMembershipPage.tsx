@@ -702,11 +702,12 @@ export const UserMembershipPage: React.FC = () => {
                 qualification: selectedPost.qualification,
                 documents: pendingDocuments
                   ? Object.entries(pendingDocuments.documents)
-                      .filter(([key, val]) => Boolean(val) && !key.endsWith('Name'))
+                      .filter(([key, val]) => Boolean(val) && !key.endsWith('Name') && key !== 'urls')
                       .map(([key, file]) => {
                         const f = file as File;
                         const fName = f?.name || (pendingDocuments.documents as any)[`${key}Name`] || `${key}.pdf`;
                         const fSize = f?.size ? `${Math.round(f.size / 1024)} KB` : '1.5 MB';
+                        const fUri = pendingDocuments.documents?.urls?.[key] || (key === 'photoProof' ? step1Data.photoUrl : undefined);
                         return {
                           type: key,
                           title:
@@ -719,6 +720,7 @@ export const UserMembershipPage: React.FC = () => {
                               : 'Passport Photograph',
                           fileName: fName,
                           fileSize: fSize,
+                          uri: fUri,
                           verified: true,
                           uploadDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                         };
@@ -749,11 +751,12 @@ export const UserMembershipPage: React.FC = () => {
           // Persist uploaded documents under application ID and user ID
           if (pendingDocuments) {
             const formattedDocs = Object.entries(pendingDocuments.documents)
-              .filter(([key, val]) => Boolean(val) && !key.endsWith('Name'))
+              .filter(([key, val]) => Boolean(val) && !key.endsWith('Name') && key !== 'urls')
               .map(([key, file], idx) => {
                 const f = file as File;
                 const fName = f?.name || (pendingDocuments.documents as any)[`${key}Name`] || `${key}.pdf`;
                 const fSize = f?.size ? `${Math.round(f.size / 1024)} KB` : '1.5 MB';
+                const fUri = pendingDocuments.documents?.urls?.[key] || (key === 'photoProof' ? step1Data.photoUrl : undefined);
                 return {
                   id: `doc-${newAppId}-${idx + 1}`,
                   type: key,
@@ -767,6 +770,7 @@ export const UserMembershipPage: React.FC = () => {
                       : 'Passport Photograph',
                   fileName: fName,
                   fileSize: fSize,
+                  uri: fUri,
                   verified: true,
                   uploadDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                 };

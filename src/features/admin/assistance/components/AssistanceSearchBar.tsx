@@ -178,7 +178,7 @@ export const AssistanceSearchBar: React.FC<AssistanceSearchBarProps> = ({
           )}
         </button>
 
-        {/* Add Seeker / Cause Button */}
+        {/* Add Cause Button */}
         <button
           type="button"
           onClick={onAddSeeker}
@@ -198,7 +198,7 @@ export const AssistanceSearchBar: React.FC<AssistanceSearchBarProps> = ({
           }}
         >
           <Plus size={16} color="#FAD465" />
-          <span>Register Seeker</span>
+          <span>Create Aid Cause</span>
         </button>
       </div>
     </div>

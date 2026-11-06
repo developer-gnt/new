@@ -56,3 +56,4 @@ export function useLockBodyScroll(locked: boolean = true) {
 }
 
 export default useLockBodyScroll;
+

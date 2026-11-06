@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 export type ConfirmationType = 'approve' | 'reject';
 
@@ -19,6 +20,8 @@ export const ApplicationStatusConfirmationModal: React.FC<ApplicationStatusConfi
   onConfirm,
 }) => {
   const [reason, setReason] = useState('Incomplete documents');
+
+  useLockBodyScroll(Boolean(isOpen && type));
 
   if (!isOpen || !type) return null;
 

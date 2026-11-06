@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   HeartHandshake,
   RefreshCw,
@@ -64,49 +65,63 @@ export const AssistanceListPage: React.FC = () => {
     setIsRefreshing(false);
   };
 
-  // Compute live statistics directly from requests array
-  const stats = useMemo(() => {
-    let underReview = 0;
-    let approved = 0;
-    let rejected = 0;
-    let closed = 0;
-    let totalAmount = 0;
+  // Only approved causes appear on this page.
+  // Unapproved, under review, and pending donor seeker applications are managed in /admin/membership-applications
+  const approvedCauses = useMemo(() => {
+    return requests.filter((r) => r.status === 'APPROVED' || r.status === 'CLOSED');
+  }, [requests]);
 
-    for (const r of requests) {
-      if (r.status === 'UNDER_REVIEW' || r.status === 'PENDING') {
-        underReview++;
-      } else if (r.status === 'APPROVED') {
-        approved++;
-        totalAmount += Number(r.raised_amount || r.requested_amount || 0);
-      } else if (r.status === 'REJECTED') {
-        rejected++;
-      } else if (r.status === 'CLOSED') {
-        closed++;
-        totalAmount += Number(r.raised_amount || r.requested_amount || 0);
+  // Compute live statistics directly from approved causes
+  const stats = useMemo(() => {
+    let active = 0;
+    let urgent = 0;
+    let completed = 0;
+    let totalAmount = 0;
+    let totalTarget = 0;
+
+    for (const r of approvedCauses) {
+      const raised = Number(r.raised_amount) || 0;
+      const target = Number(r.requested_amount) || 0;
+      totalAmount += raised;
+      totalTarget += target;
+
+      const isCompleted = r.status === 'CLOSED' || (target > 0 && raised >= target);
+      if (isCompleted) {
+        completed++;
+      } else {
+        active++;
+      }
+
+      if (r.urgency === 'HIGH' || r.urgency === 'CRITICAL') {
+        urgent++;
       }
     }
 
     return {
-      total: requests.length,
-      underReview,
-      approved,
-      rejected,
-      closed,
+      total: approvedCauses.length,
+      active,
+      urgent,
+      completed,
       totalAmount,
+      totalTarget,
     };
-  }, [requests]);
+  }, [approvedCauses]);
 
-  // Filtered requests list
+  // Filtered requests list (restricted to approved donor seeker causes)
   const filteredRequests = useMemo(() => {
-    let result = [...requests];
+    let result = [...approvedCauses];
 
     // Status Tab filter
-    if (selectedTab === 'UNDER_REVIEW') {
-      result = result.filter((r) => r.status === 'UNDER_REVIEW' || r.status === 'PENDING');
-    } else if (selectedTab === 'APPROVED') {
-      result = result.filter((r) => r.status === 'APPROVED');
-    } else if (selectedTab === 'REJECTED') {
-      result = result.filter((r) => r.status === 'REJECTED');
+    if (selectedTab === 'ACTIVE') {
+      result = result.filter(
+        (r) => r.status === 'APPROVED' && (Number(r.raised_amount) || 0) < Number(r.requested_amount || 0)
+      );
+    } else if (selectedTab === 'URGENT') {
+      result = result.filter((r) => r.urgency === 'HIGH' || r.urgency === 'CRITICAL');
+    } else if (selectedTab === 'COMPLETED') {
+      result = result.filter(
+        (r) => r.status === 'CLOSED' || (Number(r.raised_amount) || 0) >= Number(r.requested_amount || 0)
+      );
     }
 
     // Category filter
@@ -156,7 +171,7 @@ export const AssistanceListPage: React.FC = () => {
     }
 
     return result;
-  }, [requests, selectedTab, selectedCategory, selectedUrgency, filterState, searchQuery]);
+  }, [approvedCauses, selectedTab, selectedCategory, selectedUrgency, filterState, searchQuery]);
 
   // Pagination slice
   const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize));
@@ -246,11 +261,11 @@ export const AssistanceListPage: React.FC = () => {
                 letterSpacing: '-0.02em',
               }}
             >
-              Donation Seekers & Aid Management
+              Donation Causes & Aid Management
             </h1>
           </div>
           <p style={{ margin: '4px 0 0 40px', fontSize: '13px', color: '#6B7280' }}>
-            Administrative evaluation, verification and allocation of medical, education, disaster and social relief grants
+            Fundraising, verification and disbursement of medical, education, disaster and social relief grants for approved causes
           </p>
         </div>
 
@@ -318,9 +333,52 @@ export const AssistanceListPage: React.FC = () => {
             }}
           >
             <Plus size={16} color="#FAD465" />
-            <span>Register Seeker</span>
+            <span>Create Aid Cause</span>
           </button>
         </div>
+      </div>
+
+      {/* Informational routing banner */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          padding: '12px 16px',
+          backgroundColor: '#EFF6FF',
+          border: '1px solid #BFDBFE',
+          borderRadius: '10px',
+          marginBottom: '20px',
+          fontSize: '13px',
+          color: '#1E40AF',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertCircle size={16} color="#2563EB" style={{ flexShrink: 0 }} />
+          <span>
+            <strong>Approved Causes Only:</strong> This page manages active relief causes and aid disbursement for approved donor seeker applications. New, unreviewed applications are processed under{' '}
+            <Link to="/admin/membership-applications" style={{ color: '#1D4ED8', fontWeight: 600, textDecoration: 'underline' }}>
+              All Applications
+            </Link>.
+          </span>
+        </div>
+        <Link
+          to="/admin/membership-applications"
+          style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#1D4ED8',
+            backgroundColor: '#DBEAFE',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Review Applications →
+        </Link>
       </div>
 
       {/* Top 5 KPI Statistics Cards */}

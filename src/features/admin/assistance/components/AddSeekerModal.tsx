@@ -4,6 +4,7 @@ import { X, Heart, CheckCircle2 } from 'lucide-react';
 import type { UrgencyLevel } from '../types/assistance.types';
 import { CAUSE_OPTIONS, PRESET_AMOUNTS } from '../data/assistanceFixtures';
 import { assistanceStore } from '../store/assistanceStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface AddSeekerModalProps {
   visible: boolean;
@@ -26,7 +27,7 @@ export const AddSeekerModal: React.FC<AddSeekerModalProps> = ({
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [description, setDescription] = useState('');
-  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApprove, setAutoApprove] = useState(true);
   const [adminRemark, setAdminRemark] = useState('');
 
   const [documentName, setDocumentName] = useState('');
@@ -34,6 +35,8 @@ export const AddSeekerModal: React.FC<AddSeekerModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useLockBodyScroll(visible);
 
   if (!visible) return null;
 
@@ -135,7 +138,7 @@ export const AddSeekerModal: React.FC<AddSeekerModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Heart size={20} color="#FAD465" />
             <h3 style={{ margin: 0, fontSize: '16.5px', fontWeight: 700, color: '#FFFFFF' }}>
-              Register Donation Seeker & Aid Request
+              Create Approved Aid & Relief Cause
             </h3>
           </div>
           <button
@@ -449,7 +452,7 @@ export const AddSeekerModal: React.FC<AddSeekerModalProps> = ({
               }}
             >
               <CheckCircle2 size={16} />
-              <span>{isSubmitting ? 'Registering...' : 'Register Seeker'}</span>
+              <span>{isSubmitting ? 'Publishing...' : 'Publish Aid Cause'}</span>
             </button>
           </div>
         </form>

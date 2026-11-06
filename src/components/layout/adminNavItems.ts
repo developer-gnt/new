@@ -41,7 +41,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'users', title: 'User Management', path: '/admin/users', icon: Users },
       { id: 'membership_applications', title: 'All Applications', path: '/admin/membership-applications', icon: FileText, badge: '5' },
       { id: 'members', title: 'Members Directory', path: '/admin/members', icon: UserCheck },
-      { id: 'assistance', title: 'Donation Seekers & Aid', path: '/admin/assistance', icon: HeartHandshake },
+      { id: 'assistance', title: 'Donation Causes & Aid', path: '/admin/assistance', icon: HeartHandshake },
       { id: 'complaints', title: 'Support & Complaints', path: '/admin/support', icon: MessageSquare, badge: '2' },
     ],
   },

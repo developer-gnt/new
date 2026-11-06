@@ -5,6 +5,7 @@ import type {
   ApplicationStatus,
 } from '../types/applications.types';
 import { Filter, X, RotateCcw } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface ApplicationsFilterModalProps {
   isOpen: boolean;
@@ -49,6 +50,8 @@ export const ApplicationsFilterModal: React.FC<ApplicationsFilterModalProps> = (
   const [selectedSort, setSelectedSort] = useState<ApplicationFilterOptions['sortBy']>(
     currentFilters.sortBy || 'newest'
   );
+
+  useLockBodyScroll(isOpen);
 
   if (!isOpen) return null;
 

@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { X, ShieldAlert, ShieldCheck, KeyRound, Copy, Check } from 'lucide-react';
 import type { Member } from '../types/members.types';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 export type ConfirmationType = 'TOGGLE_STATUS' | 'RESET_PASSWORD';
 
@@ -24,6 +25,8 @@ export const MemberConfirmationModal: React.FC<MemberConfirmationModalProps> = (
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultPass, setResultPass] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useLockBodyScroll(Boolean(visible && member));
 
   if (!visible || !member) return null;
 

@@ -102,15 +102,18 @@ export const MembershipApplyPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fakeUrl = URL.createObjectURL(file);
-
-    if (field === 'photo') {
-      updatePersonal({ photoUrl: fakeUrl, photoFileName: file.name });
-    } else if (field === 'idProof') {
-      updateDocuments({ idProofFileUrl: fakeUrl, idProofFileName: file.name });
-    } else if (field === 'signature') {
-      updateDocuments({ signatureFileUrl: fakeUrl, signatureFileName: file.name });
-    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (field === 'photo') {
+        updatePersonal({ photoUrl: dataUrl, photoFileName: file.name });
+      } else if (field === 'idProof') {
+        updateDocuments({ idProofFileUrl: dataUrl, idProofFileName: file.name });
+      } else if (field === 'signature') {
+        updateDocuments({ signatureFileUrl: dataUrl, signatureFileName: file.name });
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = () => {

@@ -15,6 +15,7 @@ import {
 import type { PaymentPayload, PaymentReceiptDetails } from '../types/payment.types';
 import { cashfreeService } from '../services/cashfreeService';
 import { useAuth } from '../../auth/store/authStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 export interface GlobalPaymentModalProps {
   isOpen: boolean;
@@ -457,6 +458,8 @@ export const GlobalPaymentModal: React.FC<GlobalPaymentModalProps> = ({
   payload,
   onSuccess,
 }) => {
+  useLockBodyScroll(isOpen);
+
   if (!isOpen) return null;
 
   const instanceKey = `${payload.purpose}_${payload.entityId || payload.referenceId || ''}_${payload.amount || ''}_${payload.userId || ''}`;

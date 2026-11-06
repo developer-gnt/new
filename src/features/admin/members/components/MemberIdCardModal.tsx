@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, Printer, RefreshCw, ShieldCheck, QrCode } from 'lucide-react';
 import type { Member } from '../types/members.types';
 import { HrsjmLogo } from '@/components/common/HrsjmLogo';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface MemberIdCardModalProps {
   visible: boolean;
@@ -16,6 +17,8 @@ export const MemberIdCardModal: React.FC<MemberIdCardModalProps> = ({
   member,
 }) => {
   const [side, setSide] = useState<'FRONT' | 'BACK'>('FRONT');
+
+  useLockBodyScroll(Boolean(visible && member));
 
   if (!visible || !member) return null;
 

@@ -23,10 +23,15 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
   application,
   onView,
 }) => {
+  const [imgError, setImgError] = React.useState(false);
   const isSeeker = getApplicationAccountType(application) === 'seeker';
   const feeAmount = getApplicationFeeAmount(application);
   const paymentStatus = getApplicationPaymentStatus(application);
   const statusStyle = STATUS_STYLES[application.status] || STATUS_STYLES.submitted;
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [application.avatarUrl]);
 
   const initials = application.applicantName
     .split(' ')
@@ -46,10 +51,11 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
       {/* Applicant Info */}
       <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {application.avatarUrl ? (
+          {application.avatarUrl && !imgError ? (
             <img
               src={application.avatarUrl}
               alt={application.applicantName}
+              onError={() => setImgError(true)}
               style={{
                 width: '40px',
                 height: '40px',

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, CheckCircle2 } from 'lucide-react';
 import type { AssistanceRequest } from '../types/assistance.types';
 import { assistanceStore } from '../store/assistanceStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface ApproveAssistanceModalProps {
   visible: boolean;
@@ -19,6 +20,8 @@ export const ApproveAssistanceModal: React.FC<ApproveAssistanceModalProps> = ({
 }) => {
   const [remark, setRemark] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useLockBodyScroll(Boolean(visible && request));
 
   if (!visible || !request) return null;
 

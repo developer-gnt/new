@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ApplicationDocument } from '../types/applications.types';
 import {
   FileText,
@@ -13,6 +13,7 @@ import {
   QrCode,
   Lock,
 } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface ApplicationDocumentViewerModalProps {
   isOpen: boolean;
@@ -28,16 +29,41 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
   onClose,
 }) => {
   const [zoom, setZoom] = useState(1);
+  const [imageError, setImageError] = useState(false);
+  const [activeView, setActiveView] = useState<'preview' | 'certificate'>('preview');
+
+  useEffect(() => {
+    setImageError(false);
+    setActiveView('preview');
+    setZoom(1);
+  }, [document?.id, document?.uri, document?.fileName]);
+
+  useLockBodyScroll(Boolean(isOpen && document));
 
   if (!isOpen || !document) return null;
 
   const isImage =
-    Boolean(document.fileName?.match(/\.(jpeg|jpg|png|webp|svg)$/i)) ||
+    Boolean(document.fileName?.match(/\.(jpeg|jpg|png|webp|svg|gif)$/i)) ||
     Boolean(document.uri?.startsWith('data:image'));
 
   const handlePrint = () => {
     window.print();
   };
+
+  const handleDownload = () => {
+    if (document.uri && !document.uri.startsWith('blob:')) {
+      const link = window.document.createElement('a');
+      link.href = document.uri;
+      link.download = document.fileName || 'document.pdf';
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.click();
+    } else {
+      window.print();
+    }
+  };
+
+  const canShowImagePreview = isImage && document.uri && !imageError && !document.uri.endsWith('.pdf');
 
   return (
     <div
@@ -149,6 +175,61 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
           </div>
         </div>
 
+        {/* View Switcher Subheader */}
+        <div
+          style={{
+            backgroundColor: '#F8FAFC',
+            borderBottom: '1px solid #E2E8F0',
+            padding: '8px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {canShowImagePreview && (
+              <button
+                type="button"
+                onClick={() => setActiveView('preview')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: activeView === 'preview' ? '#06294D' : 'transparent',
+                  color: activeView === 'preview' ? '#FAD465' : '#64748B',
+                }}
+              >
+                Document Scan
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setActiveView('certificate')}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                backgroundColor: activeView === 'certificate' || !canShowImagePreview ? '#06294D' : 'transparent',
+                color: activeView === 'certificate' || !canShowImagePreview ? '#FAD465' : '#64748B',
+              }}
+            >
+              Statutory Credential Record
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748B' }}>
+            <Lock size={12} color="#059669" />
+            <span>Encrypted Verification Vault</span>
+          </div>
+        </div>
+
         {/* Content Viewer */}
         <div
           style={{
@@ -158,27 +239,34 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
             overflow: 'auto',
             backgroundColor: '#F1F5F9',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '24px',
             position: 'relative',
           }}
         >
-          {isImage && document.uri && !document.uri.endsWith('.pdf') ? (
-            <img
-              src={document.uri}
-              alt={document.title}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '480px',
-                transform: `scale(${zoom})`,
-                transition: 'transform 0.2s ease',
-                objectFit: 'contain',
-                borderRadius: '12px',
-                boxShadow: '0 8px 24px rgba(6, 41, 77, 0.15)',
-                border: '2px solid #FFFFFF',
-              }}
-            />
+          {canShowImagePreview && activeView === 'preview' ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+              <img
+                src={document.uri}
+                alt={document.title}
+                onError={() => {
+                  setImageError(true);
+                  setActiveView('certificate');
+                }}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '480px',
+                  transform: `scale(${zoom})`,
+                  transition: 'transform 0.2s ease',
+                  objectFit: 'contain',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 24px rgba(6, 41, 77, 0.15)',
+                  border: '2px solid #FFFFFF',
+                }}
+              />
+            </div>
           ) : (
             /* Digital Certificate / Official Credential Sheet */
             <div
@@ -188,13 +276,34 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
                 backgroundColor: '#FFFFFF',
                 borderRadius: '16px',
                 border: '2px solid #CBD5E1',
-                padding: '32px 36px',
+                padding: '30px 34px',
                 boxShadow: '0 10px 25px rgba(6, 41, 77, 0.08)',
                 position: 'relative',
                 transform: `scale(${zoom})`,
                 transition: 'transform 0.2s ease',
               }}
             >
+              {/* Notice banner if image preview is unavailable */}
+              {imageError && (
+                <div
+                  style={{
+                    backgroundColor: '#EFF6FF',
+                    border: '1px solid #BFDBFE',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    marginBottom: '16px',
+                    fontSize: '11.5px',
+                    color: '#1E40AF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <ShieldCheck size={14} color="#2563EB" />
+                  <span>Original scan file registered in secure statutory repository. Displaying verified credential record.</span>
+                </div>
+              )}
+
               {/* Document Header with Emblem & Watermark */}
               <div
                 style={{
@@ -260,7 +369,7 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
                 <div>
                   <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Candidate Name</div>
                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#06294D', marginTop: '2px' }}>
-                    {applicantName || 'Adv. Test Candidate'}
+                    {applicantName || 'Applicant'}
                   </div>
                 </div>
 
@@ -418,12 +527,7 @@ export const ApplicationDocumentViewerModal: React.FC<ApplicationDocumentViewerM
 
             <button
               type="button"
-              onClick={() => {
-                const link = window.document.createElement('a');
-                link.href = document.uri || '#';
-                link.download = document.fileName || 'document.pdf';
-                link.click();
-              }}
+              onClick={handleDownload}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
