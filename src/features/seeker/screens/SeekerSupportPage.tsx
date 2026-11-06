@@ -148,7 +148,7 @@ export const SeekerSupportPage: React.FC = () => {
       </div>
 
       {/* 3. MAIN TWO-COLUMN SPLIT (Ticket List + Active Thread) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[520px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:min-h-[520px]">
         {/* Left Column: Tickets List */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-[#DCE4EC] p-3.5 shadow-xs space-y-3 flex flex-col">
           {/* Status Tabs */}

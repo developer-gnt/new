@@ -1,6 +1,8 @@
 import { apiClient, ENDPOINTS } from '@/api';
 import type {
   CreateTicketBody,
+  CreatePublicComplaintBody,
+  CreateContactInquiryBody,
   SupportTicket,
   SupportTicketListData,
   SupportTicketMessage,
@@ -55,5 +57,21 @@ export const supportService = {
 
   async create(body: CreateTicketBody): Promise<SupportTicket> {
     return apiClient.post<SupportTicket>(ENDPOINTS.support.create, body);
+  },
+
+  async createPublic(body: CreatePublicComplaintBody): Promise<{ ticketNumber: string; id?: string; message?: string }> {
+    return apiClient.post<{ ticketNumber: string; id?: string; message?: string }>(
+      ENDPOINTS.support.publicCreate,
+      body,
+      { skipAuth: true }
+    );
+  },
+
+  async submitContactInquiry(body: CreateContactInquiryBody): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>(
+      ENDPOINTS.support.contact,
+      body,
+      { skipAuth: true }
+    );
   },
 };

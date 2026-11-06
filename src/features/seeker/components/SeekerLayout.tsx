@@ -31,13 +31,12 @@ interface NavItem {
   path: string;
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number; color?: string }>;
-  highlight?: boolean;
 }
 
 const SEEKER_SIDEBAR_ITEMS: NavItem[] = [
   { name: 'home', path: '/seeker/home', label: 'Home Dashboard', icon: House },
   { name: 'requests', path: '/seeker/requests', label: 'My Aid Tracker', icon: FileText },
-  { name: 'apply', path: '/seeker/apply', label: 'Apply for Aid', icon: PlusCircle, highlight: true },
+  { name: 'apply', path: '/seeker/apply', label: 'Apply for Aid', icon: PlusCircle },
   { name: 'rights', path: '/seeker/rights', label: 'Know Your Rights', icon: Scale },
   { name: 'events', path: '/seeker/events', label: 'Events & Camps', icon: Calendar },
   { name: 'support', path: '/seeker/support', label: 'Helpdesk & Support', icon: MessageSquare },
@@ -61,7 +60,12 @@ export const SeekerLayout: React.FC = () => {
 
   useEffect(() => {
     loadAll();
-  }, [loadAll]);
+  }, []);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   // Close mobile drawer on Escape key press
   useEffect(() => {
@@ -236,8 +240,6 @@ export const SeekerLayout: React.FC = () => {
                 } ${
                   active
                     ? 'bg-[#123F68] text-[#FAD465] font-bold shadow-xs'
-                    : item.highlight
-                    ? 'bg-[#FFF9E6] hover:bg-[#FEF08A] border border-[#FAD465]'
                     : 'text-[#DBE5EE] hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -250,21 +252,13 @@ export const SeekerLayout: React.FC = () => {
                   <Icon
                     size={18}
                     className={`shrink-0 ${
-                      active
-                        ? 'text-[#FAD465]'
-                        : item.highlight
-                        ? 'text-[#B45309]'
-                        : 'text-[#DBE5EE]'
+                      active ? 'text-[#FAD465]' : 'text-[#DBE5EE]'
                     }`}
                   />
                   {(!desktopCollapsed || mobileDrawerOpen) && (
                     <span
                       className={`truncate ${
-                        active
-                          ? 'text-[#FAD465] font-bold'
-                          : item.highlight
-                          ? 'text-[#011F39] font-bold'
-                          : 'text-[#DBE5EE]'
+                        active ? 'text-[#FAD465] font-bold' : 'text-[#DBE5EE]'
                       }`}
                     >
                       {item.label}
@@ -277,11 +271,6 @@ export const SeekerLayout: React.FC = () => {
                     {item.name === 'notifications' && unreadCount > 0 && (
                       <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">
                         {unreadCount}
-                      </span>
-                    )}
-                    {item.highlight && !active && (
-                      <span className="text-[9px] font-extrabold text-[#92400E] bg-[#FDE68A] px-1.5 py-0.5 rounded uppercase tracking-wider">
-                        Apply
                       </span>
                     )}
                   </div>
@@ -499,8 +488,8 @@ export const SeekerLayout: React.FC = () => {
 
         {/* Dynamic Page Body with Error Boundary */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-24 lg:pb-12">
-          <AppErrorBoundary>
-            <Outlet />
+          <AppErrorBoundary key={location.pathname}>
+            <Outlet key={location.pathname} />
           </AppErrorBoundary>
         </main>
 

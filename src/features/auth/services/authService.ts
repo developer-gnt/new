@@ -216,175 +216,62 @@ export const authService = {
    * Checks whether mobile number or email already exists in the backend database.
    */
   async checkDuplicates(payload: CheckDuplicatesPayload): Promise<CheckDuplicatesResult> {
-    try {
-      const res = await apiClient.post<CheckDuplicatesResult>('/auth/check-duplicates', {
-        mobile_number: payload.mobile_number ? payload.mobile_number.replace(/\D/g, '').slice(-10) : undefined,
-        email: payload.email ? payload.email.trim().toLowerCase() : undefined,
-        exclude_user_id: payload.exclude_user_id,
-      });
-      return res;
-    } catch {
-      // In offline / mock mode fallback, consider available
-      return {
-        available: true,
-        mobile_taken: false,
-        email_taken: false,
-      };
-    }
+    const res = await apiClient.post<CheckDuplicatesResult>('/auth/check-duplicates', {
+      mobile_number: payload.mobile_number ? payload.mobile_number.replace(/\D/g, '').slice(-10) : undefined,
+      email: payload.email ? payload.email.trim().toLowerCase() : undefined,
+      exclude_user_id: payload.exclude_user_id,
+    });
+    return res;
   },
 
   /**
    * Validates credentials against POST /auth/login and stores session tokens.
+   * Connects exclusively to the authentic backend API without password substitution or mock sessions.
    */
   async login(payload: LoginPayload): Promise<AuthSession> {
-    try {
-      const res = await apiClient.post<any>('/auth/login', {
-        identifier: payload.identifier.trim(),
-        password: payload.password,
-      });
+    const res = await apiClient.post<any>('/auth/login', {
+      identifier: payload.identifier.trim(),
+      password: payload.password,
+    });
 
-      const session: AuthSession = res?.data || res;
-      if (session?.access_token && session?.user) {
-        this.saveSession(session, payload.rememberMe ?? true);
-        return session;
-      }
-      throw new Error(res?.message || 'Invalid login response from server.');
-    } catch (err: any) {
-      // If server is unavailable / offline, provide simulated fallback for test accounts
-      const isNetworkError =
-        err?.statusCode === 503 ||
-        err?.message?.includes('Failed to fetch') ||
-        err?.message?.includes('NetworkError') ||
-        err?.message?.includes('not running');
-
-      if (isNetworkError) {
-        const id = payload.identifier.trim().toLowerCase();
-        const isAdmin = id.includes('admin') || id === '9888880001';
-        const isMember = id.includes('member') || id === '9888880002';
-        const isSeeker = id.includes('seeker') || id === '9888880004';
-
-        const mockRole = isAdmin ? 'ADMIN' : isMember ? 'MEMBER' : isSeeker ? 'DONATION_SEEKER' : 'USER';
-        const accountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin
-          ? 'admin'
-          : isMember
-          ? 'member'
-          : isSeeker
-          ? 'seeker'
-          : 'general';
-
-        const mockUser: UserProfile = {
-          id: isAdmin
-            ? 'admin-test-uuid-0001'
-            : isMember
-            ? 'member-test-uuid-0002'
-            : isSeeker
-            ? 'seeker-test-uuid-0004'
-            : `user-test-uuid-${Date.now()}`,
-          full_name: isAdmin
-            ? 'HRSJM Test Admin'
-            : isMember
-            ? 'HRSJM Test Member'
-            : isSeeker
-            ? 'HRSJM Test Seeker'
-            : 'HRSJM General User',
-          email: id.includes('@') ? id : `${mockRole.toLowerCase()}@hrsjm.org`,
-          mobile_number: isAdmin ? '9888880001' : isMember ? '9888880002' : isSeeker ? '9888880004' : '9888880000',
-          status: 'ACTIVE',
-          account_type: accountType,
-          membership_status: isMember ? 'ACTIVE' : undefined,
-          roles: [{ name: mockRole, description: `${mockRole} role` }],
-          assistance_status: isSeeker ? 'APPROVED' : undefined,
-          city: 'Mumbai',
-          state: 'Maharashtra',
-          address: 'HRSJM Social Welfare Center, Bandra West',
-          pincode: '400050',
-          created_at: new Date().toISOString(),
-        };
-
-        const mockSession: AuthSession = {
-          user: mockUser,
-          access_token: 'mock-jwt-token-' + Date.now(),
-          refresh_token: 'mock-refresh-token-' + Date.now(),
-        };
-        this.saveSession(mockSession, payload.rememberMe ?? true);
-        return mockSession;
-      }
-      throw err;
+    const session: AuthSession = res?.data || res;
+    if (session?.access_token && session?.user) {
+      this.saveSession(session, payload.rememberMe ?? true);
+      return session;
     }
+    throw new Error(res?.message || 'Invalid login response from server.');
   },
 
   /**
    * Registers a new user account via POST /auth/register and sets session tokens.
    */
   async register(payload: RegisterPayload): Promise<AuthSession> {
-    try {
-      const res = await apiClient.post<any>('/auth/register', {
-        full_name: payload.full_name.trim(),
-        mobile_number: payload.mobile_number.replace(/\D/g, '').slice(-10),
-        email: payload.email ? payload.email.trim().toLowerCase() : undefined,
-        dob: payload.dob || payload.date_of_birth,
-        password: payload.password,
-        confirm_password: payload.confirm_password || payload.password,
-        role_name: payload.role_name || 'USER',
-      });
+    const res = await apiClient.post<any>('/auth/register', {
+      full_name: payload.full_name.trim(),
+      mobile_number: payload.mobile_number.replace(/\D/g, '').slice(-10),
+      email: payload.email ? payload.email.trim().toLowerCase() : undefined,
+      dob: payload.dob || payload.date_of_birth,
+      password: payload.password,
+      confirm_password: payload.confirm_password || payload.password,
+      role_name: payload.role_name || 'USER',
+    });
 
-      const session: AuthSession = res?.data || res;
-      if (session?.access_token && session?.user) {
-        this.saveSession(session);
-        return session;
-      }
-      throw new Error(res?.message || 'Registration failed.');
-    } catch (err: any) {
-      const isNetworkError =
-        err?.statusCode === 503 ||
-        err?.message?.includes('Failed to fetch') ||
-        err?.message?.includes('NetworkError') ||
-        err?.message?.includes('not running');
-
-      if (isNetworkError) {
-        const mockUser: UserProfile = {
-          id: `user-reg-${Date.now()}`,
-          full_name: payload.full_name.trim(),
-          email: payload.email?.trim() || null,
-          mobile_number: payload.mobile_number.replace(/\D/g, '').slice(-10),
-          status: 'ACTIVE',
-          roles: [{ name: payload.role_name || 'USER' }],
-          assistance_status: payload.role_name === 'DONATION_SEEKER' ? 'PENDING' : undefined,
-          address: payload.address || '',
-          city: payload.city || '',
-          state: payload.state || '',
-          pincode: payload.pincode || '',
-          date_of_birth: payload.dob || payload.date_of_birth || '',
-          created_at: new Date().toISOString(),
-        };
-
-        const mockSession: AuthSession = {
-          user: mockUser,
-          access_token: 'mock-jwt-token-' + Date.now(),
-          refresh_token: 'mock-refresh-token-' + Date.now(),
-        };
-        this.saveSession(mockSession);
-        return mockSession;
-      }
-      throw err;
+    const session: AuthSession = res?.data || res;
+    if (session?.access_token && session?.user) {
+      this.saveSession(session);
+      return session;
     }
+    throw new Error(res?.message || 'Registration failed.');
   },
 
   /**
    * Requests a database-backed password reset link via POST /auth/forgot-password.
    */
   async forgotPassword(identifier: string): Promise<ForgotPasswordResult> {
-    try {
-      const res = await apiClient.post<ForgotPasswordResult>('/auth/forgot-password', {
-        identifier: identifier.trim(),
-      });
-      return res;
-    } catch {
-      // Mock result if offline
-      return {
-        delivered_mechanism: identifier.includes('@') ? 'EMAIL' : 'SMS',
-      };
-    }
+    const res = await apiClient.post<ForgotPasswordResult>('/auth/forgot-password', {
+      identifier: identifier.trim(),
+    });
+    return res;
   },
 
   /**
@@ -395,45 +282,25 @@ export const authService = {
     if (!cleanToken) {
       return { valid: false, message: 'Missing reset token' };
     }
-    try {
-      const res = await apiClient.get<VerifyResetTokenResult>('/auth/verify-reset-token', {
-        params: { token: cleanToken },
-      });
-      return res || { valid: true };
-    } catch (err: any) {
-      if (err?.statusCode === 503 || err?.message?.includes('not running')) {
-        return { valid: true, email: 'member@hrsjm.org' };
-      }
-      return {
-        valid: false,
-        message: err?.message || 'Invalid or expired reset token.',
-      };
-    }
+    const res = await apiClient.get<VerifyResetTokenResult>('/auth/verify-reset-token', {
+      params: { token: cleanToken },
+    });
+    return res;
   },
 
   /**
    * Resets account password using valid reset token via POST /auth/reset-password.
    */
   async resetPassword(payload: ResetPasswordPayload): Promise<{ success: boolean; message: string }> {
-    try {
-      const res = await apiClient.post<any>('/auth/reset-password', {
-        token: payload.token.trim(),
-        password: payload.password,
-        confirm_password: payload.confirm_password,
-      });
-      return {
-        success: true,
-        message: res?.message || 'Password updated successfully.',
-      };
-    } catch (err: any) {
-      if (err?.statusCode === 503 || err?.message?.includes('not running')) {
-        return {
-          success: true,
-          message: 'Password updated successfully (offline mode).',
-        };
-      }
-      throw err;
-    }
+    const res = await apiClient.post<any>('/auth/reset-password', {
+      token: payload.token.trim(),
+      password: payload.password,
+      confirm_password: payload.confirm_password,
+    });
+    return {
+      success: true,
+      message: res?.message || 'Password updated successfully.',
+    };
   },
 
   async fetchMe(): Promise<UserProfile | null> {
@@ -444,47 +311,36 @@ export const authService = {
         this.updateStoredUser(user);
         return user;
       }
-      return this.getStoredUser();
-    } catch {
-      return this.getStoredUser();
+      this.clearSession();
+      return null;
+    } catch (err: any) {
+      if (err?.status === 401 || err?.statusCode === 401) {
+        this.clearSession();
+      }
+      return null;
     }
   },
 
   async updateMe(data: Partial<UserProfile>): Promise<UserProfile> {
-    try {
-      const res = await apiClient.patch<any>('/auth/me', {
-        full_name: data.full_name,
-        email: data.email,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        pincode: data.pincode,
-      });
-      const updated = res?.data || res || data;
-      this.updateStoredUser(updated);
-      return updated;
-    } catch {
-      const updated = this.updateStoredUser(data) || (data as UserProfile);
-      return updated;
-    }
+    const res = await apiClient.patch<any>('/auth/me', {
+      full_name: data.full_name,
+      email: data.email,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      pincode: data.pincode,
+    });
+    const updated = res?.data || res || data;
+    this.updateStoredUser(updated);
+    return updated;
   },
 
   async changePassword(payload: ChangePasswordPayload): Promise<{ success: boolean; message: string }> {
-    try {
-      const res = await apiClient.post<any>('/auth/change-password', payload);
-      return {
-        success: true,
-        message: res?.message || 'Password changed successfully.',
-      };
-    } catch (err: any) {
-      if (err?.statusCode === 503 || err?.message?.includes('not running')) {
-        return {
-          success: true,
-          message: 'Password updated successfully (offline mode).',
-        };
-      }
-      throw err;
-    }
+    const res = await apiClient.post<any>('/auth/change-password', payload);
+    return {
+      success: true,
+      message: res?.message || 'Password changed successfully.',
+    };
   },
 
   /**

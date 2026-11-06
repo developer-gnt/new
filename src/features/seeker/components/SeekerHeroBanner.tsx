@@ -126,7 +126,7 @@ export const SeekerHeroBanner: React.FC<SeekerHeroBannerProps> = ({ showCta: _sh
         </div>
 
         {/* Right-Side Decorative Quote Script (Exact APK Cursive Treatment) */}
-        <div className="absolute right-4 sm:right-6 md:right-8 bottom-5 text-right pointer-events-none select-none">
+        <div className="hidden sm:block absolute right-4 sm:right-6 md:right-8 bottom-5 text-right pointer-events-none select-none">
           <div className="font-['Caveat',cursive] italic text-xl sm:text-2xl md:text-3xl text-white/90 leading-tight">
             {slide.scriptLines.map((line, i) => (
               <div key={i}>{line}</div>

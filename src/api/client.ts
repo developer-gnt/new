@@ -58,7 +58,14 @@ function buildUrl(endpoint: string, params?: Record<string, string | number | bo
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { params, body, skipAuth, headers: customHeaders, ...fetchInit } = options;
-  const url = buildUrl(endpoint, params);
+  const effectiveParams =
+    params ||
+    (options &&
+    typeof options === 'object' &&
+    !('headers' in options || 'body' in options || 'skipAuth' in options || 'method' in options || 'signal' in options)
+      ? (options as Record<string, any>)
+      : undefined);
+  const url = buildUrl(endpoint, effectiveParams);
 
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
@@ -102,6 +109,21 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
       errorDetails = errorJson?.error?.details || errorJson?.details;
     } catch {
       // Body is not valid JSON
+    }
+
+    // Clear invalid or expired session on 401 Unauthorized
+    if (response.status === 401 && !url.includes('/auth/login')) {
+      clearAuthToken();
+      try {
+        localStorage.removeItem('hrsjm_auth_token');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('hrsjm_user_profile');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('hrsjm:auth:logout'));
+        }
+      } catch {
+        // ignore
+      }
     }
 
     throw new ApiError(errorMessage, response.status, errorCode, errorDetails);

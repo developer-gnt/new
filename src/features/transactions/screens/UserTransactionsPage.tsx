@@ -184,7 +184,7 @@ export const UserTransactionsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16 font-sans">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
       {/* Top Banner Header */}
       <div className="bg-gradient-to-r from-[#011F39] via-[#06294D] to-[#011F39] text-white p-6 sm:p-8 rounded-2xl shadow-md border border-[#FAD465]/30 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -263,13 +263,13 @@ export const UserTransactionsPage: React.FC = () => {
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">
-              80G Tax Benefit
+              80G Eligible Donations
             </span>
             <div className="text-xl sm:text-2xl font-bold text-[#011F39] mt-1 font-mono">
               ₹{(summary.tax_exemption_total || 0).toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#011F39] mt-0.5 block font-medium">
-              50% IT Deduction Eligible
+            <span className="text-[11px] text-emerald-700 mt-0.5 block font-medium">
+              50% IT Deduction: ₹{Math.round((summary.tax_exemption_total || 0) * 0.5).toLocaleString('en-IN')}
             </span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-[#FAD465]/20 flex items-center justify-center text-[#011F39] shrink-0 border border-[#FAD465]/40">
@@ -472,7 +472,11 @@ export const UserTransactionsPage: React.FC = () => {
                         {txn.receipt_number && (
                           <div className="inline-flex items-center gap-1 text-[10.5px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded mt-1 border border-emerald-200">
                             <ShieldCheck size={11} className="text-emerald-600" />
-                            <span>80G Receipt: {txn.receipt_number}</span>
+                            <span>
+                              {txn.category_code === 'DONATION' || txn.related_info?.tax_exemption_eligible
+                                ? `80G Receipt: ${txn.receipt_number}`
+                                : `Receipt: ${txn.receipt_number}`}
+                            </span>
                           </div>
                         )}
                       </td>
@@ -511,7 +515,11 @@ export const UserTransactionsPage: React.FC = () => {
                               title="View and Download 80G Receipt"
                             >
                               <Receipt size={13} />
-                              <span className="hidden sm:inline">80G Receipt</span>
+                              <span className="hidden sm:inline">
+                                {txn.category_code === 'DONATION' || txn.related_info?.tax_exemption_eligible
+                                  ? '80G Receipt'
+                                  : 'Receipt'}
+                              </span>
                             </button>
                           ) : (
                             <button
@@ -656,13 +664,13 @@ export const UserTransactionsPage: React.FC = () => {
               </div>
 
               {/* 80G Tax Exemption Note */}
-              {selectedTxn.related_info.tax_exemption_eligible && (
+              {(selectedTxn.category_code === 'DONATION' || selectedTxn.related_info.tax_exemption_eligible) && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-2.5">
                   <ShieldCheck size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold">50% Income Tax Exemption Under Section 80G</p>
-                    <p className="text-[11px] text-emerald-800 mt-0.5">
-                      This donation qualifies for tax exemption. Your receipt has been digitally filed with the Central Tax Authority under URN AABTH4589KF20214.
+                    <p className="font-bold">50% Income Tax Deduction Under Section 80G</p>
+                    <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
+                      Donation Amount: <strong>₹{selectedTxn.amount.toLocaleString('en-IN')}</strong> • Allowable 50% IT Deduction: <strong>₹{Math.round(selectedTxn.amount * 0.5).toLocaleString('en-IN')}</strong>. Validated under Section 80G(5)(vi) (URN: AABTH4589KF20214).
                     </p>
                   </div>
                 </div>
@@ -712,7 +720,9 @@ export const UserTransactionsPage: React.FC = () => {
                 <ShieldCheck className="text-[#FAD465] w-5 h-5" />
                 <div>
                   <h3 className="font-serif font-bold text-base text-white">
-                    Official 80G Contribution Receipt
+                    {receiptModalTxn.category_code === 'DONATION' || receiptModalTxn.related_info?.tax_exemption_eligible
+                      ? 'Official 80G Contribution Receipt'
+                      : 'Official Payment Receipt'}
                   </h3>
                   <p className="text-[11px] text-slate-300 font-mono">
                     Receipt No: {receiptModalTxn.receipt_number || `REC-${receiptModalTxn.transaction_id}`}
@@ -809,11 +819,23 @@ export const UserTransactionsPage: React.FC = () => {
                 </div>
 
                 {/* Section 80G Statutory Exemption Box */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-900 leading-relaxed">
-                  <div className="font-bold mb-0.5">80G Income Tax Deduction Exemption:</div>
-                  Donations made to Human Rights Sanrakshan Jan Manch are eligible for deduction under
-                  Section 80G(5)(vi) of the Income Tax Act 1961. (URN: AABTH4589KF20214).
-                </div>
+                {receiptModalTxn.category_code === 'DONATION' || receiptModalTxn.related_info?.tax_exemption_eligible ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-900 leading-relaxed">
+                    <div className="font-bold mb-0.5">80G Income Tax Statutory Exemption Certificate:</div>
+                    <div className="text-slate-800 mt-0.5">
+                      Donation Amount: <strong>₹{receiptModalTxn.amount.toLocaleString('en-IN')}</strong> • 50% Tax Deduction Claimable: <strong>₹{Math.round(receiptModalTxn.amount * 0.5).toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div className="text-[10.5px] text-amber-800 mt-1">
+                      Donations made to Human Rights Sanrakshan Jan Manch are eligible for deduction under
+                      Section 80G(5)(vi) of the Income Tax Act 1961 (URN: AABTH4589KF20214).
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-[11px] text-slate-700 leading-relaxed">
+                    <div className="font-bold mb-0.5">Statutory Enrollment & Membership Fee:</div>
+                    Official computer-generated receipt for statutory membership term fee. Membership dues are not eligible for 80G donation tax deduction under Indian tax law.
+                  </div>
+                )}
               </div>
             </div>
 

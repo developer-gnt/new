@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -10,36 +10,88 @@ import {
   CreditCard,
   ShieldAlert,
   ArrowRight,
+  Loader2,
 } from 'lucide-react';
-import { NotificationsService } from '../../admin/notifications/services/notificationsService';
+import { notificationsService } from '../../admin/notifications/services/notificationsService';
 import type { NotificationItem } from '../../admin/notifications/types/notifications.types';
+import { filterBroadcastsForRole } from '@/features/content';
 
 export const UserNotificationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
-    NotificationsService.getInstance().getNotifications() || []
-  );
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
 
-  const handleMarkAllRead = () => {
-    const updated = notifications.map(n => ({
+  useEffect(() => {
+    let isMounted = true;
+    const loadLiveNotifications = async () => {
+      try {
+        const liveItems = await notificationsService.fetchMyNotifications();
+        if (isMounted) {
+          const rawBroadcasts = notificationsService.getBroadcasts() || [];
+          const authorizedBroadcasts = filterBroadcastsForRole(rawBroadcasts, 'USER');
+          const mappedBroadcasts: NotificationItem[] = authorizedBroadcasts.map((b) => ({
+            recipient_id: `bc-${b.id}`,
+            is_read: false,
+            read_at: null,
+            created_at: b.created_at,
+            notification: {
+              id: b.id,
+              title: b.title,
+              body: b.body,
+              target_audience: b.target_audience,
+              sent_at: b.sent_at,
+              category: b.category,
+              priority: b.priority,
+              deepLinkUrl: '/user/notifications',
+            },
+          }));
+
+          // Deduplicate items
+          const combined = [...mappedBroadcasts, ...liveItems];
+          const seen = new Set();
+          const unique = combined.filter((item) => {
+            const key = item.notification.id || item.recipient_id;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+
+          setNotifications(unique);
+          setLoading(false);
+        }
+      } catch {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadLiveNotifications();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    const updated = notifications.map((n) => ({
       ...n,
       is_read: true,
       read_at: new Date().toISOString(),
     }));
     setNotifications(updated);
-    NotificationsService.getInstance().saveNotifications(updated);
+    await notificationsService.markAllReadApi();
   };
 
-  const handleItemClick = (item: NotificationItem) => {
+  const handleItemClick = async (item: NotificationItem) => {
     // mark this item as read
-    const updated = notifications.map(n =>
+    const updated = notifications.map((n) =>
       n.notification.id === item.notification.id
         ? { ...n, is_read: true, read_at: new Date().toISOString() }
         : n
     );
     setNotifications(updated);
-    NotificationsService.getInstance().saveNotifications(updated);
+    await notificationsService.markReadApi(item.recipient_id);
 
     // Navigate to deepLink if present
     if (item.notification.deepLinkUrl) {
@@ -70,7 +122,7 @@ export const UserNotificationsPage: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -123,7 +175,12 @@ export const UserNotificationsPage: React.FC = () => {
       </div>
 
       {/* Notifications List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 text-slate-500 flex flex-col items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-[#06294D] mb-2" />
+          <p className="text-sm font-bold text-slate-700">Loading notifications...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 text-slate-500">
           <Bell size={36} className="mx-auto mb-2 text-slate-400" />
           <p className="text-sm font-bold text-slate-700">No notifications to display</p>

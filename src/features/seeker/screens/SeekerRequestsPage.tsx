@@ -31,6 +31,10 @@ export const SeekerRequestsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
+  React.useEffect(() => {
+    loadAll().catch(() => {});
+  }, [loadAll]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadAll();

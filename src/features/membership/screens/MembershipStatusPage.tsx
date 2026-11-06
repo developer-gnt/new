@@ -122,7 +122,7 @@ export const MembershipStatusPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F0] text-slate-900 font-sans pb-20">
+    <div className="w-full bg-[#FAF7F0] text-slate-900 font-sans pb-8">
       {/* Top Banner */}
       <section className="bg-gradient-to-r from-[#011F39] via-[#06294D] to-[#011F39] text-white py-12 px-4 shadow-md border-b-2 border-[#FAD465]/30">
         <div className="max-w-4xl mx-auto text-center space-y-4">

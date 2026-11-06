@@ -1,3 +1,4 @@
+import { apiClient } from '@/api';
 import type {
   CreateExpensePayload,
   ExpenseEntryItem,
@@ -10,7 +11,7 @@ import {
   ASSET_PAYMENT_ACCOUNTS,
 } from '../data/expensesFixtures';
 
-const API_BASE = '/api/v1/expense-entries';
+const API_BASE = '/expense-entries';
 
 export interface ListExpensesParams {
   page?: number;
@@ -34,23 +35,23 @@ export const expensesService = {
       if (params?.search?.trim()) query.append('search', params.search.trim());
       if (params?.expense_account_id) query.append('expense_account_id', params.expense_account_id);
 
-      const url = `${API_BASE}${query.toString() ? `?${query.toString()}` : ''}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
+      const qs = query.toString() ? `?${query.toString()}` : '';
+      const data: any = await apiClient.get<any>(`${API_BASE}${qs}`);
       const items: ExpenseEntryItem[] = Array.isArray(data?.items)
         ? data.items
-        : Array.isArray(data)
-          ? data
-          : [];
+        : Array.isArray(data?.data?.items)
+          ? data.data.items
+          : Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data)
+              ? data
+              : [];
 
       return {
         items,
-        total: data?.total ?? items.length,
-        page: data?.page ?? 1,
-        totalPages: data?.total_pages ?? 1,
+        total: data?.total ?? data?.data?.total ?? items.length,
+        page: data?.page ?? data?.data?.page ?? 1,
+        totalPages: data?.total_pages ?? data?.data?.total_pages ?? 1,
       };
     } catch {
       return {
@@ -64,11 +65,7 @@ export const expensesService = {
 
   async getById(id: string): Promise<ExpenseEntryItem | undefined> {
     try {
-      const response = await fetch(`${API_BASE}/${id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await apiClient.get<any>(`${API_BASE}/${id}`);
       return data?.data ?? data;
     } catch {
       return INITIAL_EXPENSE_FIXTURES.find((e) => e.id === id);
@@ -77,15 +74,7 @@ export const expensesService = {
 
   async create(payload: CreateExpensePayload): Promise<ExpenseEntryItem> {
     try {
-      const response = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await apiClient.post<any>(API_BASE, payload);
       return data?.data ?? data;
     } catch {
       const expType = OFFICIAL_EXPENSE_TYPES.find((t) => t.code === payload.expense_account_id) || {
@@ -152,17 +141,13 @@ export const expensesService = {
 
   async cancel(id: string, cancellationReason?: string): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE}/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'CANCELLED',
-          cancellation_reason: cancellationReason,
-        }),
+      await apiClient.patch<any>(`${API_BASE}/${id}/status`, {
+        status: 'CANCELLED',
+        cancellation_reason: cancellationReason,
       });
-      return response.ok;
+      return true;
     } catch {
-      return true; // Local store handles cancellation
+      return true;
     }
   },
 };

@@ -169,7 +169,7 @@ export const UserDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 space-y-6 pt-3 md:pt-4">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 1. Pending Membership Application Alert Banner */}
       {hasPendingMemberApp && (
         <div

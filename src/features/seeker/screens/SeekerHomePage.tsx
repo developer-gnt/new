@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -25,13 +25,16 @@ import {
 import { SeekerHeroBanner } from '../components/SeekerHeroBanner';
 import { SeekerTimelineStepper } from '../components/SeekerTimelineStepper';
 import { useSeekerStore } from '../store/seekerStore';
+import { eventsStore } from '@/features/admin/events/store/eventsStore';
+import { newsStore } from '@/features/admin/news/store/newsStore';
+import { filterEventsForRole, filterNewsForRole } from '@/features/content';
 
 // Exact APK Data Sets
 const RIGHTS_CATEGORIES = [
-  { id: 'human-rights', title: 'Human\nRights', icon: Globe, link: '/seeker/rights/human-rights' },
+  { id: 'fundamental-rights', title: 'Human\nRights', icon: Globe, link: '/seeker/rights/fundamental-rights' },
   { id: 'womens-rights', title: "Women's\nRights", icon: Heart, link: '/seeker/rights/womens-rights' },
   { id: 'right-to-education', title: 'Right to\nEducation', icon: BookOpen, link: '/seeker/rights/right-to-education' },
-  { id: 'childrens-rights', title: "Children's\nRights", icon: Smile, link: '/seeker/rights/childrens-rights' },
+  { id: 'civil-rights', title: "Civil\nRights", icon: Smile, link: '/seeker/rights/civil-rights' },
 ];
 
 const WHAT_WE_DO_ITEMS = [
@@ -96,8 +99,48 @@ const LATEST_NEWS = [
 
 export const SeekerHomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { requests } = useSeekerStore();
+  const { requests, loadAll } = useSeekerStore();
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+
+  useEffect(() => {
+    loadAll().catch(() => {});
+  }, [loadAll]);
+
+  const eventsSnapshot = useSyncExternalStore(eventsStore.subscribe, eventsStore.getSnapshot);
+  const newsSnapshot = useSyncExternalStore(newsStore.subscribe, newsStore.getSnapshot);
+
+  const seekerEvents = useMemo(() => {
+    const authorized = filterEventsForRole(eventsSnapshot.events, 'SEEKER');
+    if (!authorized || authorized.length === 0) return UPCOMING_EVENTS;
+    return authorized.slice(0, 3).map((e) => {
+      const dt = new Date(e.startAt || e.created_at || '');
+      const day = !isNaN(dt.getTime()) ? String(dt.getDate()).padStart(2, '0') : '25';
+      const month = !isNaN(dt.getTime())
+        ? dt.toLocaleString('en-IN', { month: 'short' }).toUpperCase()
+        : 'NOV';
+      return {
+        id: e.id,
+        day,
+        month,
+        category: e.category || 'Relief Camp',
+        title: e.title,
+        location: e.location || 'HRSJM Community Center',
+        image: e.coverImageUrl || '/assets/images/about-hero-community.png',
+      };
+    });
+  }, [eventsSnapshot.events]);
+
+  const seekerNews = useMemo(() => {
+    const authorized = filterNewsForRole(newsSnapshot.news, 'SEEKER');
+    if (!authorized || authorized.length === 0) return LATEST_NEWS;
+    return authorized.slice(0, 2).map((n) => ({
+      id: n.id,
+      category: (n.category || 'RELIEF INITIATIVE').toUpperCase(),
+      title: n.title,
+      date: n.date || 'Recent',
+      image: n.thumbnailUrl || '/assets/images/contact-hero-building.jpg',
+    }));
+  }, [newsSnapshot.news]);
 
   const activeAidRequest = requests.find((r) => Number(r.requested_amount) > 0);
   const latestRequest = activeAidRequest || (requests.length > 0 ? requests[0] : null);
@@ -444,7 +487,7 @@ export const SeekerHomePage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {UPCOMING_EVENTS.map((evt) => (
+          {seekerEvents.map((evt) => (
             <div
               key={evt.id}
               onClick={() => navigate('/seeker/events')}
@@ -491,14 +534,14 @@ export const SeekerHomePage: React.FC = () => {
       {/* 9. STORIES OF HOPE & NEWS (Exact NewsCard component from APK) */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52]">
+          <h2 className="text-base sm:lg font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52]">
             Stories of Hope & News
           </h2>
           <span className="text-xs font-semibold text-[#718096]">Recent Impact Updates</span>
         </div>
 
         <div className="space-y-2.5">
-          {LATEST_NEWS.map((news) => (
+          {seekerNews.map((news) => (
             <div
               key={news.id}
               className="bg-white rounded-2xl border border-[#E2E8F0] p-3 shadow-xs flex items-center justify-between gap-3 hover:border-[#FAD465] transition"

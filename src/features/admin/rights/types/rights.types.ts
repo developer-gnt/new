@@ -30,6 +30,7 @@ export interface RightsArticle extends RightsListItem {
   tags?: string[];
   featured?: boolean;
   allowComments?: boolean;
+  targetAudience?: string;
 }
 
 export interface RightsStatsSummary {
@@ -62,6 +63,7 @@ export interface RightsArticleFormState {
   allowComments: boolean;
   featured: boolean;
   tags: string[];
+  targetAudience?: string;
 }
 
 export type RightsArticleFieldErrors = Partial<Record<keyof RightsArticleFormState, string>>;

@@ -4,7 +4,6 @@ import type {
   ApplicationStatus,
   ApplicationFilterOptions,
 } from '../types/applications.types';
-import { INITIAL_APPLICATION_SEEDS } from '../data/applicationsFixtures';
 import { applicationsService } from '../services/applicationsService';
 
 const STORAGE_KEY = 'hrsjm_local_membership_applications';
@@ -246,7 +245,7 @@ class ApplicationsStore {
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             return parsed;
           }
         }
@@ -254,7 +253,7 @@ class ApplicationsStore {
     } catch {
       // Ignore storage errors
     }
-    return [...INITIAL_APPLICATION_SEEDS];
+    return [];
   }
 
   private persist(): void {
@@ -382,10 +381,12 @@ class ApplicationsStore {
 
       if (membershipsRes.status === 'fulfilled') {
         const raw = membershipsRes.value;
-        const items = Array.isArray(raw?.data)
-          ? raw.data
+        const items = Array.isArray(raw?.items)
+          ? raw.items
           : Array.isArray(raw?.data?.items)
           ? raw.data.items
+          : Array.isArray(raw?.data)
+          ? raw.data
           : Array.isArray(raw)
           ? raw
           : [];
@@ -394,34 +395,22 @@ class ApplicationsStore {
 
       if (assistanceRes.status === 'fulfilled') {
         const raw = assistanceRes.value;
-        const aItems = Array.isArray(raw?.data)
-          ? raw.data
+        const aItems = Array.isArray(raw?.items)
+          ? raw.items
           : Array.isArray(raw?.data?.items)
           ? raw.data.items
+          : Array.isArray(raw?.data)
+          ? raw.data
           : Array.isArray(raw)
           ? raw
           : [];
         mapped.push(...aItems.map(mapAssistanceRequestToApplicationItem));
       }
 
-      if (mapped.length > 0) {
-        let changed = false;
-        for (const nu of mapped) {
-          const idx = this.applications.findIndex(
-            a => a.id === nu.id || a.applicationId === nu.applicationId
-          );
-          if (idx >= 0) {
-            this.applications[idx] = { ...this.applications[idx], ...nu };
-            changed = true;
-          } else {
-            this.applications.push(nu);
-            changed = true;
-          }
-        }
-        if (changed) {
-          this.sortInternal();
-          this.notify();
-        }
+      if (membershipsRes.status === 'fulfilled' || assistanceRes.status === 'fulfilled') {
+        this.applications = mapped;
+        this.sortInternal();
+        this.notify();
       }
     } catch {
       // Gracefully maintain offline/fixtures state
@@ -491,7 +480,7 @@ class ApplicationsStore {
     const isSeeker = current.accountType === 'seeker';
     const backendStatus =
       newStatus === 'approved'
-        ? 'ACTIVE'
+        ? (isSeeker ? 'APPROVED' : 'APPROVED')
         : newStatus === 'rejected'
         ? 'REJECTED'
         : newStatus === 'under_review'
@@ -509,8 +498,14 @@ class ApplicationsStore {
           notes
         );
       }
-    } catch {
-      // Local fallback handled
+      // Re-fetch in background to synchronize any backend-generated IDs or transitions
+      this.fetchApplications().catch(() => {});
+    } catch (err) {
+      console.error('Failed to update application status on backend:', err);
+      // Revert optimistic update
+      this.applications[idx] = current;
+      this.notify();
+      throw err;
     }
 
     return true;

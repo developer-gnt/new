@@ -321,7 +321,7 @@ export const printMemberCardHtml = (member: MemberProfile): void => {
         <title>HRSJM Official ID Card - ${member.fullName} (${member.membershipNumber})</title>
         <style>
           @page { size: A4 portrait; margin: 15mm; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background-color: #F8FAFC; color: #0F172A; text-align: center; }
+          body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 20px; background-color: #FAF7F0; color: #011F39; text-align: center; }
           .title { font-size: 18px; font-weight: 800; color: #06294D; margin-bottom: 6px; text-transform: uppercase; }
           .sub { font-size: 13px; color: #64748B; margin-bottom: 24px; }
           .cards-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }

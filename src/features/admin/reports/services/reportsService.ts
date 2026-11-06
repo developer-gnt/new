@@ -348,7 +348,7 @@ export const reportsService = {
         <meta charset="utf-8" />
         <style>
           @page { size: A4 portrait; margin: 15mm; }
-          body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; color: #0f172a; margin: 0; padding: 20px; font-size: 12px; }
+          body { font-family: 'Inter', Arial, sans-serif; color: #011F39; margin: 0; padding: 20px; font-size: 12px; }
           .header { text-align: center; border-bottom: 2px solid #011F39; padding-bottom: 12px; margin-bottom: 20px; }
           .org-title { font-size: 20px; font-weight: 800; color: #011F39; letter-spacing: 0.5px; }
           .org-sub { font-size: 11px; color: #64748b; margin-top: 4px; }

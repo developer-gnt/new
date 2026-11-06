@@ -7,6 +7,7 @@ import {
 import { ProfileService } from '../../admin/profile/services/profileService';
 import type { AdminProfile } from '../../admin/profile/types/profile.types';
 import { useUserAuth } from '../store/userAuthStore';
+import { authService } from '@/features/auth/services/authService';
 
 export const UserProfilePage: React.FC = () => {
   const { user, setUser } = useUserAuth();
@@ -26,9 +27,21 @@ export const UserProfilePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    try {
+      await authService.updateMe({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        state: stateName.trim(),
+        city: city.trim(),
+        address: address.trim(),
+      });
+    } catch (err) {
+      console.warn('Backend updateMe:', err);
+    }
 
     const updated = ProfileService.getInstance().updatePersonalInfo({
       fullName: fullName.trim(),
@@ -66,7 +79,7 @@ export const UserProfilePage: React.FC = () => {
     .join('') || 'U';
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">

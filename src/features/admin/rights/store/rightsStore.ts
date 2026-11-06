@@ -88,6 +88,10 @@ class RightsStore {
     return { total, published, drafts, archived };
   }
 
+  public async fetchRights(): Promise<void> {
+    return this.syncFromBackend();
+  }
+
   public async syncFromBackend(): Promise<void> {
     try {
       const { items } = await rightsService.list();
@@ -139,6 +143,7 @@ class RightsStore {
       tags: form.tags ?? existing.tags,
       featured: form.featured !== undefined ? form.featured : existing.featured,
       allowComments: form.allowComments !== undefined ? form.allowComments : existing.allowComments,
+      targetAudience: form.targetAudience !== undefined ? form.targetAudience : existing.targetAudience,
       lastUpdatedDate: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       lastUpdatedTime: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
     };

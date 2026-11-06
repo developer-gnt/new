@@ -53,6 +53,7 @@ export const EditRightPage: React.FC = () => {
         allowComments: true,
         featured: false,
         tags: [],
+        targetAudience: 'ALL',
       };
     }
     return {
@@ -66,6 +67,7 @@ export const EditRightPage: React.FC = () => {
       allowComments: article.allowComments !== false,
       featured: Boolean(article.featured),
       tags: [...(article.tags ?? [])],
+      targetAudience: article.targetAudience ?? 'ALL',
     };
   }, [article]);
 
@@ -471,6 +473,23 @@ export const EditRightPage: React.FC = () => {
               >
                 <option value="DRAFT">Draft (Unpublished)</option>
                 <option value="PUBLISHED">Published (Live)</option>
+              </select>
+            </div>
+
+            {/* Target Portal Visibility */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Target Portal Visibility <span style={styles.required}>*</span>
+              </label>
+              <select
+                value={form.targetAudience || 'ALL'}
+                onChange={(e) => setForm((p) => ({ ...p, targetAudience: e.target.value }))}
+                style={styles.select}
+              >
+                <option value="ALL">All Portals (Public & All Roles)</option>
+                <option value="MEMBERS">Members Portal Only</option>
+                <option value="SEEKERS">Donation Seekers Portal Only</option>
+                <option value="USERS">General Users / Public Only</option>
               </select>
             </div>
 

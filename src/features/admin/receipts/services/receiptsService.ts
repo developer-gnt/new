@@ -1,3 +1,4 @@
+import { apiClient } from '@/api';
 import type {
   ReceiptEntryItem,
   ReceiptEntryDetail,
@@ -11,7 +12,7 @@ import {
 } from '../data/receiptsFixtures';
 
 const STORAGE_KEY = 'hrsjm_local_receipts_v1';
-const API_BASE = '/api/v1/receipt-entries';
+const API_BASE = '/receipt-entries';
 
 function getStoredReceipts(): ReceiptEntryItem[] {
   try {
@@ -48,26 +49,24 @@ export const receiptsService = {
     page?: number;
     limit?: number;
   }): Promise<{ items: ReceiptEntryItem[]; total: number; page: number; limit: number; totalPages: number }> {
-    const query = new URLSearchParams();
-    if (params?.status && params.status !== 'ALL') query.set('status', params.status);
-    if (params?.payment_method && params.payment_method !== 'ALL') query.set('payment_method', params.payment_method);
-    if (params?.search) query.set('search', params.search);
-    if (params?.page) query.set('page', String(params.page));
-    if (params?.limit) query.set('limit', String(params.limit));
+    const queryParams: Record<string, any> = {};
+    if (params?.status && params.status !== 'ALL') queryParams.status = params.status;
+    if (params?.payment_method && params.payment_method !== 'ALL') queryParams.payment_method = params.payment_method;
+    if (params?.search) queryParams.search = params.search;
+    if (params?.page) queryParams.page = params.page;
+    if (params?.limit) queryParams.limit = params.limit;
 
     try {
-      const res = await fetch(`${API_BASE}?${query.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.items)) {
-          return {
-            items: data.items,
-            total: data.meta?.total ?? data.total ?? data.items.length,
-            page: data.meta?.page ?? data.page ?? 1,
-            limit: data.meta?.limit ?? data.limit ?? 25,
-            totalPages: data.meta?.totalPages ?? data.total_pages ?? 1,
-          };
-        }
+      const res: any = await apiClient.get<any>(API_BASE, queryParams);
+      const data = res?.data ?? res;
+      if (data && Array.isArray(data.items)) {
+        return {
+          items: data.items,
+          total: data.meta?.total ?? data.total ?? data.items.length,
+          page: data.meta?.page ?? data.page ?? 1,
+          limit: data.meta?.limit ?? data.limit ?? 25,
+          totalPages: data.meta?.totalPages ?? data.total_pages ?? 1,
+        };
       }
     } catch {
       // Backend offline or errored, fall through to local cache
@@ -113,12 +112,10 @@ export const receiptsService = {
    */
   async getReceiptById(id: string): Promise<ReceiptEntryDetail | null> {
     try {
-      const res = await fetch(`${API_BASE}/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.id) {
-          return data;
-        }
+      const res: any = await apiClient.get<any>(`${API_BASE}/${id}`);
+      const data = res?.data ?? res;
+      if (data && data.id) {
+        return data;
       }
     } catch {
       // Backend offline, fallback to local cache
@@ -133,20 +130,14 @@ export const receiptsService = {
    */
   async createReceipt(payload: CreateReceiptPayload): Promise<ReceiptEntryItem> {
     try {
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const created = await res.json();
-        if (created && created.id) {
-          // Sync with local storage
-          const list = getStoredReceipts();
-          list.unshift(created);
-          saveStoredReceipts(list);
-          return created;
-        }
+      const res: any = await apiClient.post<any>(API_BASE, payload);
+      const created = res?.data ?? res;
+      if (created && created.id) {
+        // Sync with local storage
+        const list = getStoredReceipts();
+        list.unshift(created);
+        saveStoredReceipts(list);
+        return created;
       }
     } catch {
       // Backend offline, create locally
@@ -226,22 +217,16 @@ export const receiptsService = {
    */
   async updateReceipt(id: string, payload: UpdateReceiptPayload): Promise<ReceiptEntryItem> {
     try {
-      const res = await fetch(`${API_BASE}/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        if (updated && updated.id) {
-          const list = getStoredReceipts();
-          const idx = list.findIndex((r) => r.id === id);
-          if (idx !== -1) {
-            list[idx] = updated;
-            saveStoredReceipts(list);
-          }
-          return updated;
+      const res: any = await apiClient.patch<any>(`${API_BASE}/${id}`, payload);
+      const updated = res?.data ?? res;
+      if (updated && updated.id) {
+        const list = getStoredReceipts();
+        const idx = list.findIndex((r) => r.id === id);
+        if (idx !== -1) {
+          list[idx] = updated;
+          saveStoredReceipts(list);
         }
+        return updated;
       }
     } catch {
       // Backend offline, fallback to local update
@@ -291,22 +276,16 @@ export const receiptsService = {
     cancellation_reason?: string
   ): Promise<ReceiptEntryItem> {
     try {
-      const res = await fetch(`${API_BASE}/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, cancellation_reason }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        if (updated && updated.id) {
-          const list = getStoredReceipts();
-          const idx = list.findIndex((r) => r.id === id);
-          if (idx !== -1) {
-            list[idx] = updated;
-            saveStoredReceipts(list);
-          }
-          return updated;
+      const res: any = await apiClient.patch<any>(`${API_BASE}/${id}/status`, { status, cancellation_reason });
+      const updated = res?.data ?? res;
+      if (updated && updated.id) {
+        const list = getStoredReceipts();
+        const idx = list.findIndex((r) => r.id === id);
+        if (idx !== -1) {
+          list[idx] = updated;
+          saveStoredReceipts(list);
         }
+        return updated;
       }
     } catch {
       // Backend offline, fallback to local

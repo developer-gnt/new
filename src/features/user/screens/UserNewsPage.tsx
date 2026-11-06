@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   MessageSquare,
   Search,
@@ -8,9 +8,9 @@ import {
   ArrowRight,
   Share2,
 } from 'lucide-react';
-import { newsService } from '../../admin/news/services/newsService';
+import { newsStore } from '../../admin/news/store/newsStore';
 import type { NewsListItem } from '../../admin/news/types/news.types';
-import { INITIAL_NEWS_FIXTURES } from '../../admin/news/data/newsFixtures';
+import { filterNewsForRole } from '@/features/content';
 
 const NEWS_CATEGORIES = [
   'All',
@@ -76,7 +76,11 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
 };
 
 export const UserNewsPage: React.FC = () => {
-  const [newsList, setNewsList] = useState<NewsListItem[]>(INITIAL_NEWS_FIXTURES);
+  const snapshot = useSyncExternalStore(newsStore.subscribe, newsStore.getSnapshot);
+  const newsList = useMemo(() => {
+    return filterNewsForRole(snapshot.news, 'USER');
+  }, [snapshot.news]);
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -84,26 +88,13 @@ export const UserNewsPage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchNews = async () => {
-      try {
-        setLoading(true);
-        const res = await newsService.list({ status: 'PUBLISHED' });
-        if (isMounted) {
-          if (res.news && res.news.length > 0) {
-            setNewsList(res.news);
-          } else {
-            setNewsList(INITIAL_NEWS_FIXTURES);
-          }
-        }
-      } catch {
-        if (isMounted) {
-          setNewsList(INITIAL_NEWS_FIXTURES);
-        }
-      } finally {
+    setLoading(true);
+    newsStore
+      .fetchNews()
+      .catch(() => {})
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-    fetchNews();
+      });
     return () => {
       isMounted = false;
     };
@@ -122,7 +113,7 @@ export const UserNewsPage: React.FC = () => {
   }, [newsList, selectedCategory, search]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">

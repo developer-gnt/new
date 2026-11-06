@@ -90,6 +90,30 @@ export interface CreateTicketBody {
   attachments?: TicketAttachment[];
 }
 
+export interface CreatePublicComplaintBody {
+  fullName: string;
+  phone: string;
+  email?: string;
+  state: string;
+  policeStation: string;
+  complaintType: string;
+  details: string;
+  aadhaarFileName?: string;
+  aadhaarFileUri?: string;
+  handwrittenFileName?: string;
+  handwrittenFileUri?: string;
+  reportedToOtherDept?: boolean;
+  otherDeptName?: string;
+}
+
+export interface CreateContactInquiryBody {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+}
+
 export interface UpdateTicketStatusBody {
   status: TicketStatus;
   note?: string;

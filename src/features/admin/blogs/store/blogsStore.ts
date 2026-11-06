@@ -164,6 +164,7 @@ class BlogsStore {
       tags: parsedTags,
       featured: form.featured,
       allowComments: form.allowComments,
+      targetAudience: form.targetAudience || 'ALL',
     };
 
     // Attempt backend first
@@ -210,6 +211,8 @@ class BlogsStore {
       featured: form.featured !== undefined ? form.featured : current.featured,
       allowComments:
         form.allowComments !== undefined ? form.allowComments : current.allowComments,
+      targetAudience:
+        form.targetAudience !== undefined ? form.targetAudience : current.targetAudience,
     };
 
     this.blogs[idx] = updated;

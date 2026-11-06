@@ -431,9 +431,7 @@ export const MemberRegistrationPage: React.FC = () => {
     if (!documents.addressProof?.isUploaded) {
       errors.address = 'Please upload your address proof (Electricity Bill / Ration Card / Aadhaar)';
     }
-    if (!documents.qualificationProof?.isUploaded) {
-      errors.qualification = 'Please upload your qualification proof (Degree / 10th / 12th Certificate)';
-    }
+    // Qualification Proof is optional
     if (!documents.photograph?.isUploaded && !personal.profilePhotoUri) {
       errors.photo = 'Please upload your passport-sized photograph';
     }
@@ -1721,7 +1719,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Briefcase size={18} className={documents.qualificationProof ? 'text-emerald-600' : 'text-slate-400'} />
                       <span className="text-xs font-bold text-[#011F39]">
-                        3. Qualification Proof <span className="text-rose-500">*</span>
+                        3. Qualification Proof <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">Degree, 10th / 12th Certificate</span>

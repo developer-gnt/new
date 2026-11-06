@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   Scale,
   Search,
@@ -9,9 +9,10 @@ import {
   Eye,
   CheckCircle,
 } from 'lucide-react';
-import { rightsService } from '../../admin/rights/services/rightsService';
+import { rightsStore } from '../../admin/rights/store/rightsStore';
 import type { RightsArticle } from '../../admin/rights/types/rights.types';
 import { USER_RIGHTS_ARTICLES } from '../data/userRightsData';
+import { filterRightsForRole } from '@/features/content';
 
 const RIGHTS_CATEGORIES = [
   'ALL',
@@ -63,7 +64,14 @@ const deduplicateByTitle = (list: RightsArticle[]): RightsArticle[] => {
 };
 
 export const UserRightsPage: React.FC = () => {
-  const [articles, setArticles] = useState<RightsArticle[]>(USER_RIGHTS_ARTICLES);
+  const snapshot = useSyncExternalStore(rightsStore.subscribe, rightsStore.getSnapshot);
+
+  const articles = useMemo(() => {
+    const authorized = filterRightsForRole(snapshot.articles, 'USER');
+    // Deduplicate between dynamic rights and user rights fixture baseline
+    return deduplicateByTitle([...USER_RIGHTS_ARTICLES, ...authorized]);
+  }, [snapshot.articles]);
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -71,28 +79,13 @@ export const UserRightsPage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchArticles = async () => {
-      try {
-        setLoading(true);
-        const res = await rightsService.list({ status: 'PUBLISHED' });
-        if (isMounted) {
-          // Filter out legacy admin mock items (r-01 to r-08) to prevent duplicates,
-          // while preserving any newly published backend rights.
-          const serverItems = (res.items || []).filter(
-            item => !item.id.startsWith('r-0')
-          );
-          const combined = deduplicateByTitle([...USER_RIGHTS_ARTICLES, ...serverItems]);
-          setArticles(combined);
-        }
-      } catch {
-        if (isMounted) {
-          setArticles(USER_RIGHTS_ARTICLES);
-        }
-      } finally {
+    setLoading(true);
+    rightsStore
+      .fetchRights()
+      .catch(() => {})
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-    fetchArticles();
+      });
     return () => {
       isMounted = false;
     };
@@ -114,7 +107,7 @@ export const UserRightsPage: React.FC = () => {
   }, [articles, selectedCategory, search]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Top Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">

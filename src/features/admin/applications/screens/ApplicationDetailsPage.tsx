@@ -34,10 +34,41 @@ export const ApplicationDetailsPage: React.FC = () => {
   useSyncExternalStore(applicationsStore.subscribe, applicationsStore.getSnapshot);
 
   const application = id ? applicationsStore.getApplicationById(id) : undefined;
+  const [loading, setLoading] = useState<boolean>(!application);
 
   const [activeTab, setActiveTab] = useState<DetailsTabKey>('details');
   const [confirmationType, setConfirmationType] = useState<ConfirmationType | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!application && id) {
+      applicationsStore.fetchApplications().finally(() => {
+        setLoading(false);
+      });
+    }
+  }, [id, application]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          maxWidth: '600px',
+          margin: '80px auto',
+          textAlign: 'center',
+          backgroundColor: '#FFFFFF',
+          padding: '40px 30px',
+          borderRadius: '16px',
+          border: '1px solid #EDF2F7',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        }}
+      >
+        <div className="w-8 h-8 border-3 border-[#011F39] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#011F39' }}>Loading Application Details...</h3>
+        <p style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Connecting to official HRSJM registry</p>
+      </div>
+    );
+  }
 
   if (!application) {
     return (
@@ -90,17 +121,23 @@ export const ApplicationDetailsPage: React.FC = () => {
   const handleStatusChange = async (newStatus: ApplicationStatus, reason?: string) => {
     if (!application.id && !application.applicationId) return;
     const targetId = application.id || application.applicationId;
-    await applicationsStore.updateStatus(targetId, newStatus, reason);
+    setActionError(null);
 
-    if (newStatus === 'approved') {
-      setActionSuccess(`Application for ${application.applicantName} approved successfully!`);
-    } else if (newStatus === 'rejected') {
-      setActionSuccess(`Application for ${application.applicantName} rejected.`);
-    } else if (newStatus === 'under_review') {
-      setActionSuccess(`Application marked under active review.`);
+    try {
+      await applicationsStore.updateStatus(targetId, newStatus, reason);
+
+      if (newStatus === 'approved') {
+        setActionSuccess(`Application for ${application.applicantName} approved successfully!`);
+      } else if (newStatus === 'rejected') {
+        setActionSuccess(`Application for ${application.applicantName} rejected.`);
+      } else if (newStatus === 'under_review') {
+        setActionSuccess(`Application marked under active review.`);
+      }
+      setTimeout(() => setActionSuccess(null), 3000);
+    } catch (err: any) {
+      setActionError(err?.message || 'Failed to update application status on server. Please try again.');
+      setTimeout(() => setActionError(null), 4000);
     }
-
-    setTimeout(() => setActionSuccess(null), 3000);
   };
 
   const tabs: { key: DetailsTabKey; label: string; icon: any }[] = [
@@ -188,6 +225,27 @@ export const ApplicationDetailsPage: React.FC = () => {
         >
           <CheckCircle2 size={18} />
           <span>{actionSuccess}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backgroundColor: '#FEF2F2',
+            border: '1px solid #FECACA',
+            color: '#DC2626',
+            padding: '12px 18px',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: 600,
+            marginBottom: '20px',
+          }}
+        >
+          <AlertCircle size={18} />
+          <span>{actionError}</span>
         </div>
       )}
 

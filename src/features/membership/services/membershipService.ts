@@ -10,17 +10,35 @@ const SUBMITTED_STORAGE_KEY = 'hrsjm_submitted_memberships';
 
 export const membershipService = {
   /**
+   * Fetches the current authenticated user's membership profile from GET /memberships/my
+   */
+  async getMyMembership(): Promise<any | null> {
+    try {
+      const res = await apiClient.get<any>('/memberships/my');
+      const payload = res?.data !== undefined ? res.data : res;
+      if (payload && (payload.id || payload.membership_number || payload.status)) {
+        return payload;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
    * Fetches official categories from backend or falls back to local fixtures.
    */
   async getCategories(): Promise<MembershipPostData[]> {
     try {
-      const res = await apiClient.get<any[]>('/membership-categories');
-      if (Array.isArray(res) && res.length > 0) {
+      const res = await apiClient.get<any>('/membership-categories');
+      const rawList = Array.isArray(res) ? res : res?.data?.items || res?.data || res?.items || [];
+      if (Array.isArray(rawList) && rawList.length > 0) {
         // Map backend category records to frontend post data
         return ALL_MEMBERSHIP_POSTS.map(post => {
-          const matched = res.find(c =>
+          const matched = rawList.find((c: any) =>
             c.name?.toLowerCase().includes(post.postName.toLowerCase()) ||
-            post.postName.toLowerCase().includes(c.name?.toLowerCase())
+            post.postName.toLowerCase().includes(c.name?.toLowerCase()) ||
+            (c.code && post.id && c.code.toLowerCase().replace(/_/g, '') === post.id.toLowerCase().replace(/-/g, ''))
           );
           if (matched) {
             return {
@@ -89,7 +107,7 @@ export const membershipService = {
       const response = await apiClient.post<any>('/memberships/apply', payload);
       const appRecord: SubmittedMembershipRecord = {
         id: response?.id || `mem-${Date.now()}`,
-        applicationId: response?.application_number || response?.applicationNumber || defaultAppId,
+        applicationId: response?.membership_number || response?.application_number || response?.applicationNumber || defaultAppId,
         applicantName: payload.full_name,
         email: payload.email,
         mobileNumber: payload.mobile_number,

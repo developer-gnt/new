@@ -391,6 +391,23 @@ html, body {
   background-color: #FAF7F0;
 }
 
+/* Member Portal Sidebar Links & Sign Out */
+.member-sidebar-nav-link {
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.member-sidebar-nav-link:hover:not(.active) {
+  background-color: rgba(18, 63, 104, 0.6) !important;
+}
+
+.member-sidebar-signout {
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.member-sidebar-signout:hover {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -402,4 +419,91 @@ html, body {
 
 .spin {
   animation: spin 1s linear infinite;
+}
+
+/* ==========================================================================
+   HRSJM Global Spacing & Layout Consistency System (docs/design.md Section 4)
+   ========================================================================== */
+
+/* 1. Portal Responsive Content Inners */
+.admin-content-inner {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+.member-content-inner {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+@media (min-width: 640px) {
+  .admin-content-inner {
+    padding: 20px 24px;
+  }
+  .member-content-inner {
+    padding: 20px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-content-inner {
+    padding: 24px 32px;
+  }
+  .member-content-inner {
+    padding: 24px 32px;
+  }
+}
+
+/* 2. Responsive Hero Grid for Member Dashboard */
+.member-hero-grid {
+  position: relative;
+  z-index: 1;
+  padding: 20px 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .member-hero-grid {
+    padding: 28px 24px;
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .member-hero-grid {
+    padding: 32px 36px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+  }
+}
+
+/* 3. Form Field Rhythm & Uniform Typography Reset */
+.form-group-spacing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label-consistent {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #06294D;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
 }

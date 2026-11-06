@@ -13,6 +13,7 @@ import {
   INITIAL_JOURNAL_ENTRIES,
   INITIAL_LEDGER_TRANSACTIONS,
 } from '../data/accountingFixtures';
+import { apiClient } from '@/api/client';
 
 const ACCOUNTS_STORAGE_KEY = 'hrsjm_local_accounts_v1';
 const JOURNALS_STORAGE_KEY = 'hrsjm_local_journals_v1';
@@ -88,12 +89,10 @@ export const accountingService = {
   // ================= Chart of Accounts =================
   async listAccounts(category?: AccountCategory): Promise<AccountItem[]> {
     try {
-      const query = category && category !== 'ALL' ? `?account_type=${category}` : '';
-      const res = await fetch(`/api/v1/accounts${query}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) return data;
-      }
+      const res = await apiClient.get<AccountItem[]>('/accounts', {
+        params: category && category !== 'ALL' ? { account_type: category } : undefined,
+      });
+      if (Array.isArray(res)) return res;
     } catch {
       // Offline fallback
     }
@@ -105,11 +104,8 @@ export const accountingService = {
 
   async getAccountById(id: string): Promise<AccountItem | null> {
     try {
-      const res = await fetch(`/api/v1/accounts/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.id) return data;
-      }
+      const data = await apiClient.get<AccountItem>(`/accounts/${id}`);
+      if (data && data.id) return data;
     } catch {
       // Offline fallback
     }
@@ -120,19 +116,12 @@ export const accountingService = {
 
   async createAccount(payload: CreateAccountPayload): Promise<AccountItem> {
     try {
-      const res = await fetch('/api/v1/accounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const created = await res.json();
-        if (created && created.id) {
-          const all = getStoredAccounts();
-          all.push(created);
-          saveStoredAccounts(all);
-          return created;
-        }
+      const created = await apiClient.post<AccountItem>('/accounts', payload);
+      if (created && created.id) {
+        const all = getStoredAccounts();
+        all.push(created);
+        saveStoredAccounts(all);
+        return created;
       }
     } catch {
       // Offline fallback
@@ -162,22 +151,15 @@ export const accountingService = {
 
   async updateAccount(id: string, payload: UpdateAccountPayload): Promise<AccountItem> {
     try {
-      const res = await fetch(`/api/v1/accounts/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        if (updated && updated.id) {
-          const all = getStoredAccounts();
-          const idx = all.findIndex((a) => a.id === id);
-          if (idx !== -1) {
-            all[idx] = updated;
-            saveStoredAccounts(all);
-          }
-          return updated;
+      const updated = await apiClient.patch<AccountItem>(`/accounts/${id}`, payload);
+      if (updated && updated.id) {
+        const all = getStoredAccounts();
+        const idx = all.findIndex((a) => a.id === id);
+        if (idx !== -1) {
+          all[idx] = updated;
+          saveStoredAccounts(all);
         }
+        return updated;
       }
     } catch {
       // Offline fallback
@@ -202,22 +184,15 @@ export const accountingService = {
 
   async updateAccountStatus(id: string, is_active: boolean): Promise<AccountItem> {
     try {
-      const res = await fetch(`/api/v1/accounts/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        if (updated && updated.id) {
-          const all = getStoredAccounts();
-          const idx = all.findIndex((a) => a.id === id);
-          if (idx !== -1) {
-            all[idx] = updated;
-            saveStoredAccounts(all);
-          }
-          return updated;
+      const updated = await apiClient.patch<AccountItem>(`/accounts/${id}/status`, { is_active });
+      if (updated && updated.id) {
+        const all = getStoredAccounts();
+        const idx = all.findIndex((a) => a.id === id);
+        if (idx !== -1) {
+          all[idx] = updated;
+          saveStoredAccounts(all);
         }
+        return updated;
       }
     } catch {
       // Offline fallback
@@ -241,15 +216,20 @@ export const accountingService = {
     limit?: number;
   }): Promise<{ items: JournalEntryItem[]; total: number }> {
     try {
-      const query = new URLSearchParams();
-      if (params?.status && params.status !== 'ALL') query.set('status', params.status);
-      if (params?.search) query.set('search', params.search);
-      const res = await fetch(`/api/v1/accounting/entries?${query.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.items)) {
-          return { items: data.items, total: data.total || data.items.length };
-        }
+      const queryParams: Record<string, string | number> = {};
+      if (params?.status && params.status !== 'ALL') queryParams.status = params.status;
+      if (params?.search) queryParams.search = params.search;
+      if (params?.page) queryParams.page = params.page;
+      if (params?.limit) queryParams.limit = params.limit;
+
+      const res = await apiClient.get<any>('/accounting/entries', {
+        params: queryParams,
+      });
+
+      if (res && Array.isArray(res.items)) {
+        return { items: res.items, total: res.total || res.items.length };
+      } else if (Array.isArray(res)) {
+        return { items: res, total: res.length };
       }
     } catch {
       // Offline fallback
@@ -278,11 +258,8 @@ export const accountingService = {
 
   async getEntryById(id: string): Promise<JournalEntryItem | null> {
     try {
-      const res = await fetch(`/api/v1/accounting/entries/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.id) return data;
-      }
+      const data = await apiClient.get<JournalEntryItem>(`/accounting/entries/${id}`);
+      if (data && data.id) return data;
     } catch {
       // Offline fallback
     }
@@ -374,15 +351,8 @@ export const accountingService = {
 
   async reverseEntry(id: string, reason: string): Promise<JournalEntryItem> {
     try {
-      const res = await fetch(`/api/v1/accounting/entries/${id}/reverse`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.id) return data;
-      }
+      const data = await apiClient.post<JournalEntryItem>(`/accounting/entries/${id}/reverse`, { reason });
+      if (data && data.id) return data;
     } catch {
       // Offline fallback
     }
@@ -439,6 +409,38 @@ export const accountingService = {
     transactions: LedgerTransaction[];
     summary: LedgerSummary;
   }> {
+    try {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const queryParams: Record<string, string> = {
+        from_date: params?.from_date || `${currentYear}-01-01`,
+        to_date: params?.to_date || now.toISOString().slice(0, 10),
+      };
+      if (params?.search) queryParams.search = params.search;
+
+      const remote = await apiClient.get<any>(
+        '/accounting/ledger',
+        { params: queryParams }
+      );
+      if (remote) {
+        const transactions = Array.isArray(remote.items) ? remote.items : Array.isArray(remote.transactions) ? remote.transactions : [];
+        if (Array.isArray(transactions)) {
+          return {
+            transactions,
+            summary: remote.summary || {
+              opening_balance: 0,
+              total_debit: 0,
+              total_credit: 0,
+              closing_balance: 0,
+              net_change: 0,
+            },
+          };
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+
     const ledger = getStoredLedger();
     let filtered = [...ledger];
 
@@ -490,6 +492,23 @@ export const accountingService = {
     transactions: LedgerTransaction[];
     summary: LedgerSummary;
   }> {
+    try {
+      const queryParams: Record<string, string> = {};
+      if (params?.from_date) queryParams.from_date = params.from_date;
+      if (params?.to_date) queryParams.to_date = params.to_date;
+
+      const remote = await apiClient.get<{
+        account: AccountItem | null;
+        transactions: LedgerTransaction[];
+        summary: LedgerSummary;
+      }>(`/accounts/${accountId}/ledger`, { params: queryParams });
+      if (remote && Array.isArray(remote.transactions)) {
+        return remote;
+      }
+    } catch {
+      // Offline fallback
+    }
+
     const accounts = getStoredAccounts();
     const account = accounts.find((a) => a.id === accountId) || null;
     const ledger = getStoredLedger();

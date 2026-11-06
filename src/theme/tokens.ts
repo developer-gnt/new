@@ -48,8 +48,8 @@ export const DesignTokens = {
   // Typography (docs/design.md Section 3)
   fonts: {
     display: '"Playfair Display", Georgia, serif',
-    sans: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    body: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    sans: 'Inter, Arial, sans-serif',
+    body: 'Inter, Arial, sans-serif',
     quote: '"Caveat", cursive',
     mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   },

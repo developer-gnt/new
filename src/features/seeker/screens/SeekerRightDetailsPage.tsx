@@ -2,12 +2,48 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, ShieldCheck, FileText } from 'lucide-react';
 import { RIGHTS_ARTICLES } from '../data/seekerData';
+import { rightsStore } from '@/features/admin/rights/store/rightsStore';
+import type { RightsArticle as SeekerRightsItem } from '../types/seeker.types';
 
 export const SeekerRightDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const article = RIGHTS_ARTICLES.find((a) => a.id === id) || RIGHTS_ARTICLES[0];
+  const aliasMap: Record<string, string> = {
+    'human-rights': 'fundamental-rights',
+    'childrens-rights': 'right-to-education',
+  };
+  const targetId = (id && aliasMap[id]) || id;
+
+  // First check admin rightsStore for centrally managed article
+  const adminArticle = targetId ? rightsStore.getById(targetId) : undefined;
+
+  let article: SeekerRightsItem;
+  if (adminArticle) {
+    article = {
+      id: adminArticle.id,
+      title: adminArticle.title,
+      category: 'CIVIL_JUSTICE',
+      categoryLabel: adminArticle.category || 'Constitutional & Legal Aid',
+      legalReference:
+        adminArticle.tags && adminArticle.tags.length > 0
+          ? adminArticle.tags[0]
+          : 'Statutory Civil Protection',
+      summary:
+        adminArticle.description ||
+        (Array.isArray(adminArticle.content) ? adminArticle.content.join(' ') : ''),
+      fullContent: Array.isArray(adminArticle.content)
+        ? adminArticle.content.join('\n\n')
+        : adminArticle.description || '',
+      highlights:
+        adminArticle.highlights && adminArticle.highlights.length > 0
+          ? adminArticle.highlights.map((h) => h.title || h.description || String(h))
+          : ['Legal Entitlement', 'Statutory Redress', 'Free Legal Aid Available'],
+      helpline: 'HRSJM Legal Helpline: 1800-HRSJM-AID',
+    };
+  } else {
+    article = RIGHTS_ARTICLES.find((a) => a.id === targetId) || RIGHTS_ARTICLES[0];
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

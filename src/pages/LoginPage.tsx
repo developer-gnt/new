@@ -57,20 +57,30 @@ export const LoginPage: React.FC = () => {
   const [forgotError, setForgotError] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
-  // If already authenticated with a valid token, route directly according to actual role
+  // If already authenticated with a valid token, verify with /auth/me and route according to actual role
   useEffect(() => {
     const existingToken = authService.getAuthToken();
     if (existingToken) {
-      const user = authService.getCurrentUser();
-      const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect');
-      if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, user)) {
-        navigate(redirect, { replace: true });
-        return;
-      }
+      authService
+        .fetchMe()
+        .then((user) => {
+          if (user) {
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, user)) {
+              navigate(redirect, { replace: true });
+              return;
+            }
 
-      const destination = resolveUserDestination(user);
-      navigate(destination, { replace: true });
+            const destination = resolveUserDestination(user);
+            navigate(destination, { replace: true });
+          } else {
+            authService.clearSession();
+          }
+        })
+        .catch(() => {
+          authService.clearSession();
+        });
     }
   }, [navigate]);
 
@@ -125,8 +135,20 @@ export const LoginPage: React.FC = () => {
       });
 
       authService.setSession(session, rememberMe);
-      authStore.setUserDirectly(session.user, session.access_token);
+      authStore.setUserDirectly(session.user, session.access_token, session.refresh_token);
       userAuthStore.setUser(session.user as any);
+
+      // Verify and hydrate current user profile from /auth/me
+      try {
+        const freshUser = await authService.fetchMe();
+        if (freshUser) {
+          session.user = freshUser;
+          authStore.setUserDirectly(freshUser, session.access_token, session.refresh_token);
+          userAuthStore.setUser(freshUser as any);
+        }
+      } catch {
+        // Continue with validated session.user
+      }
 
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');
@@ -157,76 +179,6 @@ export const LoginPage: React.FC = () => {
       const destination = resolveUserDestination(session.user);
       navigate(destination, { replace: true });
     } catch (err: any) {
-      // Offline fallback mock session if in local testing environment
-      if (password.length >= 6) {
-        const idLower = identifier.toLowerCase();
-        const isSeeker =
-          roleParam === 'seeker' ||
-          idLower.includes('seeker') ||
-          idLower === '9888880004';
-        const isMember =
-          roleParam === 'member' ||
-          idLower.includes('member') ||
-          idLower === '9888880002';
-        const isAdmin =
-          roleParam === 'admin' ||
-          idLower.includes('admin') ||
-          idLower === '9888880001';
-        const mockRole = isAdmin
-          ? 'ADMIN'
-          : isMember
-          ? 'MEMBER'
-          : isSeeker
-          ? 'DONATION_SEEKER'
-          : 'USER';
-        const mockAccountType: 'admin' | 'member' | 'seeker' | 'general' = isAdmin
-          ? 'admin'
-          : isMember
-          ? 'member'
-          : isSeeker
-          ? 'seeker'
-          : 'general';
-
-        const mockUser = {
-          id: `usr_${Date.now()}`,
-          full_name: identifier.includes('@')
-            ? identifier.split('@')[0]
-            : isAdmin
-            ? 'Central Administrator'
-            : isMember
-            ? 'Adv. Rajeshwar Sharma'
-            : isSeeker
-            ? 'Pooja Verma (Applicant)'
-            : 'General Citizen',
-          email: identifier.includes('@') ? identifier : `${mockRole.toLowerCase()}@hrsjm.org`,
-          mobile_number: '+91 98765 43210',
-          status: 'ACTIVE',
-          account_type: mockAccountType,
-          membership_status: isMember ? 'ACTIVE' : undefined,
-          assistance_status: isSeeker ? 'APPROVED' : undefined,
-          roles: [{ id: 'role-1', name: mockRole }],
-        };
-        const mockSession = {
-          access_token: 'mock_hrsjm_jwt_session_token_' + Date.now(),
-          refresh_token: 'mock_hrsjm_refresh_token_' + Date.now(),
-          user: mockUser,
-        };
-        authService.setSession(mockSession, rememberMe);
-        authStore.setUserDirectly(mockUser as any, mockSession.access_token);
-        userAuthStore.setUser(mockUser as any);
-
-        const params = new URLSearchParams(window.location.search);
-        const redirect = params.get('redirect');
-        if (redirect && redirect.startsWith('/') && isPathAllowedForUser(redirect, mockUser as any)) {
-          navigate(redirect, { replace: true });
-          return;
-        }
-
-        const destination = resolveUserDestination(mockUser as any);
-        navigate(destination, { replace: true });
-        return;
-      }
-
       setFormError(resolveLoginError(err));
     } finally {
       setSubmitting(false);
@@ -245,9 +197,8 @@ export const LoginPage: React.FC = () => {
     try {
       await authService.forgotPassword(forgotIdentifier.trim());
       setForgotSuccess(true);
-    } catch {
-      // Mock success for offline resilience
-      setForgotSuccess(true);
+    } catch (err: any) {
+      setForgotError(err?.message || 'Password reset request failed. Please verify your email address.');
     } finally {
       setForgotSubmitting(false);
     }
@@ -261,19 +212,19 @@ export const LoginPage: React.FC = () => {
     setFieldErrors({});
     if (type === 'member') {
       setIdentifier('member@hrsjm.org');
-      setPassword('MemberPass#2026');
+      setPassword('MemberPass#1');
       setSearchParams({ role: 'member' });
     } else if (type === 'seeker') {
       setIdentifier('seeker@hrsjm.org');
-      setPassword('SeekerPass#2026');
+      setPassword('SeekerPass#1');
       setSearchParams({ role: 'seeker' });
     } else if (type === 'admin') {
       setIdentifier('admin@hrsjm.org');
-      setPassword('AdminPass#2026');
+      setPassword('AdminPass#1');
       setSearchParams({ role: 'admin' });
     } else {
       setIdentifier('user@hrsjm.org');
-      setPassword('UserPass#2026');
+      setPassword('UserPass#1');
       setSearchParams({ role: 'general' });
     }
   };
@@ -482,9 +433,9 @@ export const LoginPage: React.FC = () => {
 
           {/* Form Error Alert */}
           {formError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 animate-in fade-in duration-200">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700 animate-in fade-in duration-200">
               <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
-              <span>{formError}</span>
+              <div className="flex-1 font-semibold">{formError}</div>
             </div>
           )}
 
@@ -497,13 +448,12 @@ export const LoginPage: React.FC = () => {
               </label>
 
               <div
-                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${
-                  focusedField === 'identifier'
+                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${focusedField === 'identifier'
                     ? 'border-[#06294D] bg-white ring-2 ring-[#FAD465]/40'
                     : fieldErrors.identifier
-                    ? 'border-rose-400 bg-rose-50/50'
-                    : 'border-[#DCE4EC] hover:border-slate-300'
-                }`}
+                      ? 'border-rose-400 bg-rose-50/50'
+                      : 'border-[#DCE4EC] hover:border-slate-300'
+                  }`}
               >
                 <div className="w-5 flex items-center justify-center text-slate-400 mr-2.5">
                   <Mail
@@ -539,13 +489,12 @@ export const LoginPage: React.FC = () => {
               </label>
 
               <div
-                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${
-                  focusedField === 'password'
+                className={`flex items-center bg-[#FAF7F0] border rounded-xl px-3.5 h-[50px] transition-all shadow-xs ${focusedField === 'password'
                     ? 'border-[#06294D] bg-white ring-2 ring-[#FAD465]/40'
                     : fieldErrors.password
-                    ? 'border-rose-400 bg-rose-50/50'
-                    : 'border-[#DCE4EC] hover:border-slate-300'
-                }`}
+                      ? 'border-rose-400 bg-rose-50/50'
+                      : 'border-[#DCE4EC] hover:border-slate-300'
+                  }`}
               >
                 <div className="w-5 flex items-center justify-center text-slate-400 mr-2.5">
                   <Lock
@@ -587,9 +536,8 @@ export const LoginPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setRememberMe((p) => !p)}
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${
-                    rememberMe ? 'bg-[#06294D] border-[#06294D] text-[#FAD465]' : 'bg-white border-[#DCE4EC]'
-                  }`}
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${rememberMe ? 'bg-[#06294D] border-[#06294D] text-[#FAD465]' : 'bg-white border-[#DCE4EC]'
+                    }`}
                   aria-checked={rememberMe}
                   role="checkbox"
                 >
@@ -625,34 +573,23 @@ export const LoginPage: React.FC = () => {
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2">
-                  <span>Sign In to Mission Portal</span>
+                  <span>Sign In </span>
                   <ArrowRight size={16} />
                 </span>
               )}
             </button>
           </form>
 
-          {/* Membership & Aid Quick Links */}
-          <div className="pt-4 border-t border-slate-100 space-y-2 text-center text-xs text-[#718096]">
-            <div>
-              <span>New to HRSJM? </span>
-              <Link
-                to="/membership/categories"
-                className="font-bold text-[#06294D] hover:underline inline-flex items-center gap-1"
-              >
-                Apply for Official Membership
-                <ArrowRight size={12} />
-              </Link>
-            </div>
-            <div>
-              <span>Seeking Legal or Financial Aid? </span>
-              <Link
-                to="/assistance/apply"
-                className="font-bold text-[#174A78] hover:underline"
-              >
-                File an Assistance Application
-              </Link>
-            </div>
+          {/* Sign Up / Registration Link */}
+          <div className="pt-4 border-t border-slate-100 text-center text-xs text-[#718096]">
+            <span>New to HRSJM? </span>
+            <Link
+              to="/signup"
+              className="font-bold text-[#06294D] hover:text-[#0B2F52] hover:underline inline-flex items-center gap-1 group"
+            >
+              <span>Create an Account / Sign Up</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
         </div>
 

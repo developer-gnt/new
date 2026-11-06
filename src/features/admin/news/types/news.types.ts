@@ -39,6 +39,8 @@ export interface NewsListItem {
   slug?: string;
   /** Public comments enabled */
   allowComments?: boolean;
+  /** Role visibility target */
+  targetAudience?: string;
 }
 
 export interface NewsStatsSummary {
@@ -72,6 +74,7 @@ export interface CreateNewsFormState {
   publishTime: string | null;
   status: NewsStatus;
   allowComments: boolean;
+  targetAudience?: string;
 }
 
 export type CreateNewsFieldErrors = Partial<Record<keyof CreateNewsFormState, string>>;

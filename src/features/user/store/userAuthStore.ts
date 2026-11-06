@@ -4,21 +4,7 @@ import { usersStore } from '../../admin/users/store/usersStore';
 import { applicationsStore } from '../../admin/applications/store/applicationsStore';
 
 const STORAGE_KEY = 'hrsjm_user_profile';
-
-const DEFAULT_DEMO_USER: UserProfile = {
-  id: 'usr-demo-001',
-  full_name: 'Mohd. Ayaan Shaikh',
-  email: 'ayaan.shaikh@hrsjm.org',
-  mobile_number: '+91 98765 43210',
-  status: 'ACTIVE',
-  roles: [{ id: 'role-user', name: 'USER' }],
-  created_at: '2026-01-15T10:00:00Z',
-  updated_at: '2026-10-20T10:00:00Z',
-  account_type: 'general',
-  membership_status: null, // change to 'PENDING' to test pending membership banner
-  assistance_status: null, // change to 'PENDING', 'APPROVED', or 'REJECTED' to test seeker banner
-  assistance_application_number: 'HRSJM-SEK-2026-0042',
-};
+const TOKEN_KEY = 'hrsjm_auth_token';
 
 interface UserAuthState {
   user: UserProfile | null;
@@ -42,6 +28,12 @@ class UserAuthStore {
   private loadPersistedUser(): UserProfile | null {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
+        const token = window.localStorage.getItem(TOKEN_KEY) || window.localStorage.getItem('auth_token');
+        if (!token) {
+          // Strictly reject user session hydration without valid auth token
+          window.localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (raw) {
           return JSON.parse(raw);
@@ -92,10 +84,6 @@ class UserAuthStore {
 
   public signOut = (): void => {
     this.setUser(null);
-  };
-
-  public restoreDemoSession = (): void => {
-    this.setUser(DEFAULT_DEMO_USER);
   };
 
   public updateAssistanceStatus = (status: 'PENDING' | 'APPROVED' | 'REJECTED' | null): void => {
@@ -183,7 +171,6 @@ export const useUserAuth = () => {
     ...state,
     setUser: userAuthStore.setUser,
     signOut: userAuthStore.signOut,
-    restoreDemoSession: userAuthStore.restoreDemoSession,
     updateAssistanceStatus: userAuthStore.updateAssistanceStatus,
     updateMembershipStatus: userAuthStore.updateMembershipStatus,
     getMatchedSeekerApplication: userAuthStore.getMatchedSeekerApplication,

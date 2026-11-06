@@ -22,94 +22,6 @@ const LAST_APP_NO_KEY = 'hrsjm_seeker_application_number';
 const LOCAL_SEEKER_REQUESTS_KEY = 'hrsjm_seeker_requests_store_v1';
 const LOCAL_SEEKER_TICKETS_KEY = 'hrsjm_seeker_tickets_store_v1';
 
-const INITIAL_LOCAL_REQUESTS: AssistanceRequest[] = [
-  {
-    id: 'asst-8241901a',
-    full_name: 'HRSJM Test Seeker',
-    mobile: '9888880004',
-    email: 'seeker@hrsjm.org',
-    requested_amount: 35000,
-    reason: 'Medical Emergency',
-    description:
-      'Urgent financial assistance required for immediate hospital admission and cardiology procedures for parent at City Civil Hospital.',
-    status: 'UNDER_REVIEW',
-    admin_remark: 'Initial identity and Aadhaar card verified. Field assessment scheduled for community report.',
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [
-      {
-        id: 'doc-1',
-        document_name: 'Aadhaar / ID Proof',
-        fileName: 'Aadhaar_Card_Seeker.pdf',
-        fileSize: '1.2 MB',
-        verification_status: 'VERIFIED',
-      },
-      {
-        id: 'doc-2',
-        document_name: 'Medical Report / Hospital Bill',
-        fileName: 'Hospital_Cardiology_Estimate.pdf',
-        fileSize: '2.4 MB',
-        verification_status: 'PENDING',
-      },
-    ],
-  },
-  {
-    id: 'asst-6581290b',
-    full_name: 'HRSJM Test Seeker',
-    mobile: '9888880004',
-    email: 'seeker@hrsjm.org',
-    requested_amount: 15000,
-    reason: 'Education Support',
-    description: 'School tuition fee and textbooks assistance for two high school children.',
-    status: 'APPROVED',
-    admin_remark: 'Approved by Social Welfare Committee. Direct school payment sanctioned.',
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [
-      {
-        id: 'doc-3',
-        document_name: 'Tuition / School Fee Slip',
-        fileName: 'School_Fee_Challan_2026.pdf',
-        fileSize: '890 KB',
-        verification_status: 'VERIFIED',
-      },
-    ],
-  },
-];
-
-const INITIAL_LOCAL_TICKETS: SupportTicket[] = [
-  {
-    id: 'tkt-4011',
-    ticket_number: 'HRSJM-TKT-4011',
-    user_id: 'seeker-test-uuid-0004',
-    user_name: 'HRSJM Test Seeker',
-    category: 'Application Status',
-    subject: 'Status inquiry for Medical Aid ASST-8241901A',
-    description: 'Could you please confirm if the hospital estimate document has been verified by the welfare officer?',
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    messages: [
-      {
-        id: 'msg-1',
-        ticket_id: 'tkt-4011',
-        sender_user_id: 'seeker-test-uuid-0004',
-        sender_name: 'HRSJM Test Seeker',
-        is_admin: false,
-        message: 'Could you please confirm if the hospital estimate document has been verified by the welfare officer?',
-        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 'msg-2',
-        ticket_id: 'tkt-4011',
-        sender_user_id: 'admin-uuid',
-        sender_name: 'HRSJM Support Desk',
-        is_admin: true,
-        message: 'Hello! Your document is under review with Dr. Sharma on the field assessment panel. Verification update expected within 24 hours.',
-        created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-  },
-];
-
 export const seekerService = {
   /**
    * Check if mobile number or email is already in use
@@ -489,12 +401,12 @@ export const seekerService = {
       const raw = localStorage.getItem(LOCAL_SEEKER_REQUESTS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {
       // Fallback
     }
-    return INITIAL_LOCAL_REQUESTS;
+    return [];
   },
 
   saveLocalRequests(requests: AssistanceRequest[]): void {
@@ -510,12 +422,12 @@ export const seekerService = {
       const raw = localStorage.getItem(LOCAL_SEEKER_TICKETS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {
       // Fallback
     }
-    return INITIAL_LOCAL_TICKETS;
+    return [];
   },
 
   saveLocalTickets(tickets: SupportTicket[]): void {
@@ -531,7 +443,7 @@ export const seekerService = {
       const res = await apiClient.get<any>('/assistance-requests');
       const data = res?.data || res;
       const items: AssistanceRequest[] = data?.items || (Array.isArray(data) ? data : []);
-      if (items.length > 0) {
+      if (Array.isArray(items)) {
         this.saveLocalRequests(items);
         return items;
       }
@@ -556,17 +468,33 @@ export const seekerService = {
   },
 
   async createRequest(payload: CreateAssistancePayload): Promise<AssistanceRequest> {
-    const { documents, ...body } = payload;
+    const { documents } = payload;
     let created: AssistanceRequest | null = null;
 
+    const cleanBody: any = {
+      full_name: payload.full_name?.trim(),
+      mobile: payload.mobile?.replace(/\D/g, ''),
+      requested_amount:
+        typeof payload.requested_amount === 'string'
+          ? parseFloat((payload.requested_amount as string).replace(/,/g, ''))
+          : Number(payload.requested_amount),
+      reason: payload.reason?.trim(),
+      status: payload.status || 'UNDER_REVIEW',
+    };
+
+    if (payload.email && payload.email.trim()) {
+      cleanBody.email = payload.email.trim();
+    }
+    if (payload.description && payload.description.trim()) {
+      cleanBody.description = payload.description.trim();
+    }
+
     try {
-      const res = await apiClient.post<any>('/assistance-requests', {
-        ...body,
-        status: payload.status || 'UNDER_REVIEW',
-      });
+      const res = await apiClient.post<any>('/assistance-requests', cleanBody);
       created = res?.data || res;
-    } catch {
-      // Offline fallback
+    } catch (err) {
+      console.error('Failed to submit assistance request to backend:', err);
+      throw err;
     }
 
     if (!created || !created.id) {
@@ -630,19 +558,10 @@ export const seekerService = {
       formData.append('document_name', docData.document_name);
       formData.append('description', `Supporting doc for ${docData.document_name}`);
 
-      const token = localStorage.getItem('hrsjm_auth_token');
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch(`/api/v1/assistance-requests/${requestId}/documents`, {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        return json?.data || json;
+      const res = await apiClient.upload<any>(`/assistance-requests/${requestId}/documents`, formData);
+      const data = res?.data || res;
+      if (data) {
+        return data;
       }
     } catch {
       // Fallback
@@ -677,7 +596,7 @@ export const seekerService = {
       const res = await apiClient.get<any>('/support-tickets');
       const data = res?.data || res;
       const items: SupportTicket[] = data?.items || (Array.isArray(data) ? data : []);
-      if (items.length > 0) {
+      if (Array.isArray(items)) {
         this.saveLocalTickets(items);
         return items;
       }

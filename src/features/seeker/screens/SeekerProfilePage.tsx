@@ -328,7 +328,7 @@ export const SeekerProfilePage: React.FC = () => {
 
             <div className="flex items-center gap-2 text-[#06294D]">
               <Lock size={18} />
-              <h3 className="font-bold text-base text-[#0B2F52]">Change Account Password</h3>
+              <h3 className="font-bold font-['Playfair_Display',Georgia,serif] text-base text-[#0B2F52]">Change Account Password</h3>
             </div>
 
             {pwMessage && (

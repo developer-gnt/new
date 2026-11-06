@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Scale,
@@ -8,6 +8,9 @@ import {
   FileText,
 } from 'lucide-react';
 import { RIGHTS_ARTICLES } from '../data/seekerData';
+import type { RightsArticle as SeekerRightsItem } from '../types/seeker.types';
+import { rightsStore } from '@/features/admin/rights/store/rightsStore';
+import { filterRightsForRole } from '@/features/content';
 
 type CategoryFilter = 'ALL' | 'CONSTITUTIONAL' | 'WOMEN_CHILD' | 'CIVIL_JUSTICE' | 'LABOUR_WELFARE';
 
@@ -24,6 +27,18 @@ const CATEGORY_TABS: CategoryFilterTab[] = [
   { key: 'LABOUR_WELFARE', label: 'Labour & Welfare' },
 ];
 
+type SeekerArticleCategory = 'CONSTITUTIONAL' | 'WOMEN_CHILD' | 'CIVIL_JUSTICE' | 'LABOUR_WELFARE';
+
+const mapCategoryToSeeker = (rawCat: string): { key: SeekerArticleCategory; label: string } => {
+  const c = (rawCat || '').toLowerCase();
+  if (c.includes('constitut')) return { key: 'CONSTITUTIONAL', label: 'Constitutional' };
+  if (c.includes('women') || c.includes('child')) return { key: 'WOMEN_CHILD', label: 'Women & Child' };
+  if (c.includes('labour') || c.includes('labor') || c.includes('welfare') || c.includes('worker')) {
+    return { key: 'LABOUR_WELFARE', label: 'Labour & Welfare' };
+  }
+  return { key: 'CIVIL_JUSTICE', label: 'Civil & Justice' };
+};
+
 /**
  * Exact replication of MemberRightsScreen.tsx from the HRSJM React Native APK:
  * - Header: "Know Your Rights & Free Legal Aid" with "File a Legal Grievance" button
@@ -35,8 +50,60 @@ export const SeekerRightsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    rightsStore.fetchRights().catch(() => {});
+  }, []);
+
+  const snapshot = useSyncExternalStore(rightsStore.subscribe, rightsStore.getSnapshot);
+
+  const mergedArticles = useMemo(() => {
+    const authorized = filterRightsForRole(snapshot.articles, 'SEEKER');
+    const dynamicSeekerItems: SeekerRightsItem[] = authorized.map((a) => {
+      const catMeta = mapCategoryToSeeker(a.category);
+      return {
+        id: a.id,
+        title: a.title,
+        category: catMeta.key,
+        categoryLabel: catMeta.label,
+        legalReference: a.tags && a.tags.length > 0 ? a.tags[0] : 'Statutory Civil Protection',
+        summary:
+          a.description ||
+          (Array.isArray(a.content) ? a.content.join(' ').slice(0, 180) + '...' : 'Verified human rights guide.'),
+        fullContent: Array.isArray(a.content) ? a.content.join('\n\n') : a.description,
+        highlights:
+          a.highlights && a.highlights.length > 0
+            ? a.highlights.map((h) => h.title || h.description || String(h))
+            : ['Fundamental Guarantee', 'Legal Aid Available', 'Right to Redress'],
+        helpline: 'HRSJM Legal Cell: 1800-HRSJM-AID',
+      };
+    });
+
+    const seenTitles = new Set<string>();
+    const combined: SeekerRightsItem[] = [];
+
+    // Prioritize centrally managed dynamic items from admin
+    for (const item of dynamicSeekerItems) {
+      const norm = item.title.trim().toLowerCase();
+      if (!seenTitles.has(norm)) {
+        seenTitles.add(norm);
+        combined.push(item);
+      }
+    }
+
+    // Merge baseline static fixtures if not already present
+    for (const item of RIGHTS_ARTICLES) {
+      const norm = item.title.trim().toLowerCase();
+      if (!seenTitles.has(norm)) {
+        seenTitles.add(norm);
+        combined.push(item);
+      }
+    }
+
+    return combined;
+  }, [snapshot.articles]);
+
   const filteredArticles = useMemo(() => {
-    return RIGHTS_ARTICLES.filter((item) => {
+    return mergedArticles.filter((item) => {
       if (activeCategory !== 'ALL' && item.category !== activeCategory) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -47,7 +114,7 @@ export const SeekerRightsPage: React.FC = () => {
       }
       return true;
     });
-  }, [activeCategory, searchQuery]);
+  }, [mergedArticles, activeCategory, searchQuery]);
 
   return (
     <div className="space-y-4">

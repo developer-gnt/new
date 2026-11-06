@@ -160,6 +160,7 @@ class NewsStore {
       author: form.author || 'HRSJM Team',
       tags: form.tags,
       allowComments: form.allowComments,
+      targetAudience: form.targetAudience || 'ALL',
     };
 
     // Attempt backend first
@@ -202,6 +203,8 @@ class NewsStore {
       tags: form.tags !== undefined ? form.tags : current.tags,
       allowComments:
         form.allowComments !== undefined ? form.allowComments : current.allowComments,
+      targetAudience:
+        form.targetAudience !== undefined ? form.targetAudience : current.targetAudience,
     };
 
     this.news[idx] = updated;

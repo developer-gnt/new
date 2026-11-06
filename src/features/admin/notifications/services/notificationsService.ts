@@ -1,3 +1,4 @@
+import { apiClient } from '@/services/apiClient';
 import type {
   AdminBroadcastItem,
   CreateBroadcastInput,
@@ -19,6 +20,49 @@ export class NotificationsService {
       NotificationsService.instance = new NotificationsService();
     }
     return NotificationsService.instance;
+  }
+
+  /**
+   * Fetches the current user's live notification inbox from backend GET /notifications/me
+   */
+  public async fetchMyNotifications(page = 1, limit = 50): Promise<NotificationItem[]> {
+    try {
+      const res = await apiClient.get<any>('/notifications/me', {
+        params: { page, limit },
+      });
+      const data = (res as any)?.data || res;
+      if (Array.isArray(data?.items)) {
+        this.saveNotifications(data.items);
+        return data.items;
+      }
+    } catch (err) {
+      console.warn('Could not fetch notifications from /notifications/me:', err);
+    }
+    return this.getNotifications();
+  }
+
+  /**
+   * Marks a single notification as read on the backend PATCH /notifications/recipients/:recipientId/read
+   */
+  public async markReadApi(recipientId: string): Promise<NotificationItem[]> {
+    try {
+      await apiClient.patch(`/notifications/recipients/${encodeURIComponent(recipientId)}/read`);
+    } catch (err) {
+      console.warn('Backend markReadApi call failed:', err);
+    }
+    return this.markRead(recipientId);
+  }
+
+  /**
+   * Marks all notifications as read on the backend PATCH /notifications/me/read-all
+   */
+  public async markAllReadApi(): Promise<NotificationItem[]> {
+    try {
+      await apiClient.patch('/notifications/me/read-all');
+    } catch (err) {
+      console.warn('Backend markAllReadApi call failed:', err);
+    }
+    return this.markAllRead();
   }
 
   public getNotifications(): NotificationItem[] {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   BookOpen,
   Search,
@@ -9,9 +9,9 @@ import {
   ArrowRight,
   Share2,
 } from 'lucide-react';
-import { blogsService } from '../../admin/blogs/services/blogsService';
+import { blogsStore } from '../../admin/blogs/store/blogsStore';
 import type { BlogListItem } from '../../admin/blogs/types/blog.types';
-import { INITIAL_BLOGS_FIXTURES } from '../../admin/blogs/data/blogsFixtures';
+import { filterBlogsForRole } from '@/features/content';
 
 const BLOG_CATEGORIES = [
   'All Articles',
@@ -78,7 +78,11 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
 };
 
 export const UserBlogsPage: React.FC = () => {
-  const [blogs, setBlogs] = useState<BlogListItem[]>(INITIAL_BLOGS_FIXTURES);
+  const snapshot = useSyncExternalStore(blogsStore.subscribe, blogsStore.getSnapshot);
+  const blogs = useMemo(() => {
+    return filterBlogsForRole(snapshot.blogs, 'USER');
+  }, [snapshot.blogs]);
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Articles');
@@ -86,26 +90,13 @@ export const UserBlogsPage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchBlogs = async () => {
-      try {
-        setLoading(true);
-        const res = await blogsService.list({ status: 'PUBLISHED' });
-        if (isMounted) {
-          if (res.blogs && res.blogs.length > 0) {
-            setBlogs(res.blogs);
-          } else {
-            setBlogs(INITIAL_BLOGS_FIXTURES);
-          }
-        }
-      } catch {
-        if (isMounted) {
-          setBlogs(INITIAL_BLOGS_FIXTURES);
-        }
-      } finally {
+    setLoading(true);
+    blogsStore
+      .fetchBlogs()
+      .catch(() => {})
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-    fetchBlogs();
+      });
     return () => {
       isMounted = false;
     };
@@ -124,7 +115,7 @@ export const UserBlogsPage: React.FC = () => {
   }, [blogs, selectedCategory, search]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">

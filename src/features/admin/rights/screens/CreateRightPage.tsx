@@ -44,6 +44,7 @@ export const CreateRightPage: React.FC = () => {
     allowComments: true,
     featured: false,
     tags: ['Human Rights', 'Constitution', 'Rights'],
+    targetAudience: 'ALL',
   });
 
   const [newTagInput, setNewTagInput] = useState('');
@@ -424,6 +425,23 @@ export const CreateRightPage: React.FC = () => {
               >
                 <option value="DRAFT">Draft (Unpublished)</option>
                 <option value="PUBLISHED">Published (Live)</option>
+              </select>
+            </div>
+
+            {/* Target Portal Visibility */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Target Portal Visibility <span style={styles.required}>*</span>
+              </label>
+              <select
+                value={form.targetAudience || 'ALL'}
+                onChange={(e) => setForm((p) => ({ ...p, targetAudience: e.target.value }))}
+                style={styles.select}
+              >
+                <option value="ALL">All Portals (Public & All Roles)</option>
+                <option value="MEMBERS">Members Portal Only</option>
+                <option value="SEEKERS">Donation Seekers Portal Only</option>
+                <option value="USERS">General Users / Public Only</option>
               </select>
             </div>
 

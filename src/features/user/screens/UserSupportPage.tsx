@@ -50,6 +50,7 @@ export const UserSupportPage: React.FC = () => {
   // Validation Errors
   const [step1Errors, setStep1Errors] = useState<Record<string, string>>({});
   const [step2Errors, setStep2Errors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Tickets List & Chat State
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -160,6 +161,7 @@ export const UserSupportPage: React.FC = () => {
 
     try {
       setIsSubmitting(true);
+      setSubmitError(null);
 
       const helpCategories = selectedTopics.length > 0
         ? selectedTopics.map(t => t.title).join(', ')
@@ -189,23 +191,40 @@ Verified Document Attachments:
 - Aadhaar Card: ${aadhaarNames}
 - Handwritten Complaint: ${handwrittenNames}`;
 
-      const res = await supportService.create({
-        category: helpCategories,
-        subject: subject.trim(),
-        description: structuredDescription,
-        priority: 'HIGH',
-        source: 'web',
-      });
+      let assignedId = '';
 
-      const assignedId = res.id || `HRSJM-CMP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (user?.id) {
+        // Authenticated member / user endpoint
+        const res = await supportService.create({
+          category: helpCategories,
+          subject: subject.trim(),
+          description: structuredDescription,
+          priority: 'HIGH',
+          source: 'web',
+        });
+        assignedId = res.id;
+      } else {
+        // Public complaint endpoint (unauthenticated citizens)
+        const publicRes = await supportService.createPublic({
+          fullName: userForm.fullName.trim(),
+          phone: userForm.mobile.trim(),
+          email: userForm.email.trim() || undefined,
+          state: userForm.state,
+          policeStation: userForm.policeStation.trim(),
+          complaintType: helpCategories,
+          details: structuredDescription,
+          aadhaarFileName: aadhaarFiles[0]?.name,
+          handwrittenFileName: handwrittenFiles[0]?.name,
+        });
+        assignedId = publicRes.ticketNumber || publicRes.id || `HRSJM-CMP-${Date.now()}`;
+      }
+
       setSubmitSuccess(assignedId);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error('Error submitting complaint:', err);
-      // Fallback ticket reference if backend is offline or sandbox
-      const fallbackId = `HRSJM-CMP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmitSuccess(fallbackId);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const errMsg = err?.message || 'Unable to submit your complaint. Please verify your connection and form details, then try again.';
+      setSubmitError(errMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -214,6 +233,7 @@ Verified Document Attachments:
   const handleResetForm = () => {
     setStep(1);
     setSubmitSuccess(null);
+    setSubmitError(null);
     setSelectedTopics([]);
     setSubject('');
     setDescription('');
@@ -266,7 +286,7 @@ Verified Document Attachments:
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">
@@ -274,7 +294,7 @@ Verified Document Attachments:
             <Scale size={14} />
             <span>Official Grievance Redressal Mechanism</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Grievance &amp; Support Cell</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-['Playfair_Display',Georgia,serif] text-white">Grievance &amp; Support Cell</h1>
           <p className="text-xs sm:text-sm text-slate-200 mt-1">
             File human rights complaints, report custodial violations, or access free legal counsel from our dedicated legal cell officers.
           </p>
@@ -321,7 +341,7 @@ Verified Document Attachments:
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-6">
               {/* Screen Top Header (matches APK reference) */}
               <div className="text-center space-y-1 border-b border-slate-100 pb-4">
-                <h2 className="text-xl sm:text-2xl font-black text-[#06294D] tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D] tracking-tight">
                   File a Complaint / Get Help
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
@@ -380,6 +400,7 @@ Verified Document Attachments:
                   onBack={() => setStep(2)}
                   onSubmit={handleSubmitComplaint}
                   isSubmitting={isSubmitting}
+                  errorMessage={submitError}
                 />
               )}
             </div>

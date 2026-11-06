@@ -5,6 +5,7 @@ import { USER_NAV_GROUPS } from './userNavItems';
 import { useUserAuth } from '../store/userAuthStore';
 import { executeSignOut } from '@/features/auth/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 interface UserSidebarProps {
   collapsed: boolean;
@@ -45,11 +46,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
         {/* Top Header / Brand Logo Section */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#123F68] shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <img
-              src="/assets/logo/logo.png"
-              alt="HRSJM Logo"
-              className="w-9 h-9 object-contain shrink-0"
-            />
+            <HrsjmLogo size="sm" variant="light" showWordmark={false} />
             {(!collapsed || mobileOpen) && (
               <div className="flex flex-col truncate">
                 <span className="text-base font-black tracking-tight text-white leading-tight">

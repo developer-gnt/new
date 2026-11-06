@@ -80,6 +80,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress, onDelete }
             {statusStyle.label}
           </span>
 
+          {event.targetAudience && event.targetAudience !== 'ALL' && event.targetAudience !== 'Open to All' && (
+            <span
+              style={{
+                ...styles.categoryBadge,
+                backgroundColor: 'rgba(250, 212, 101, 0.95)',
+                color: '#011F39',
+                fontWeight: 700,
+              }}
+            >
+              {event.targetAudience === 'MEMBERS' ? 'Members' : event.targetAudience === 'SEEKERS' ? 'Seekers' : event.targetAudience}
+            </span>
+          )}
+
           <span style={styles.categoryBadge}>{event.category}</span>
         </div>
       </div>

@@ -235,6 +235,35 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               </div>
             </div>
 
+            {/* Target Portal Visibility & Publication Status */}
+            <div style={styles.row}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Target Portal Visibility</label>
+                <select
+                  value={formData.targetAudience}
+                  onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                  style={styles.select}
+                >
+                  <option value="ALL">All Portals (Public & All Roles)</option>
+                  <option value="MEMBERS">Members Portal Only</option>
+                  <option value="SEEKERS">Donation Seekers Portal Only</option>
+                  <option value="USERS">General Users / Public Only</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Publication Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  style={styles.select}
+                >
+                  <option value="PUBLISH">Publish Immediately (Upcoming)</option>
+                  <option value="DRAFT">Save as Draft (Admin Only)</option>
+                </select>
+              </div>
+            </div>
+
             {/* Short Info */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Short Summary</label>

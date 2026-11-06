@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import {
   BookOpenCheck,
   Calendar,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { blogsStore } from '@/features/admin/blogs/store/blogsStore';
 import type { BlogListItem } from '@/features/admin/blogs/types/blog.types';
+import { filterBlogsForRole } from '@/features/content';
 
 export const MemberBlogsPage: React.FC = () => {
   const snapshot = useSyncExternalStore<{ blogs: BlogListItem[]; version: number }>(blogsStore.subscribe, blogsStore.getSnapshot);
@@ -20,9 +21,15 @@ export const MemberBlogsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeBlog, setActiveBlog] = useState<BlogListItem | null>(null);
 
+  useEffect(() => {
+    blogsStore.fetchBlogs().catch(() => {});
+  }, []);
+
   const categories = ['ALL', 'Know Your Rights', 'Social Justice', 'Human Rights'];
 
-  const filteredBlogs = blogs.filter((item: BlogListItem) => {
+  const roleAuthorizedBlogs = filterBlogsForRole(blogs, 'MEMBER');
+
+  const filteredBlogs = roleAuthorizedBlogs.filter((item: BlogListItem) => {
     if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
       return false;
     }

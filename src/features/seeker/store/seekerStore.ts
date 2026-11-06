@@ -67,8 +67,8 @@ class SeekerStore {
         seekerService.getMyRequests(),
         seekerService.getMyTickets(),
       ]);
-      this.requests = Array.isArray(reqs) && reqs.length > 0 ? reqs : seekerService.getLocalRequests();
-      this.tickets = Array.isArray(tkts) && tkts.length > 0 ? tkts : seekerService.getLocalTickets();
+      this.requests = Array.isArray(reqs) ? reqs : seekerService.getLocalRequests();
+      this.tickets = Array.isArray(tkts) ? tkts : seekerService.getLocalTickets();
       this.notifications = seekerService.getNotifications(this.requests);
     } catch {
       // Keep cached
@@ -109,20 +109,19 @@ class SeekerStore {
 
 export const seekerStore = new SeekerStore();
 
-export function useSeekerStore(): SeekerStoreState & {
-  loadAll: () => Promise<void>;
-  createRequest: (payload: CreateAssistancePayload) => Promise<AssistanceRequest>;
-  createTicket: (payload: CreateSupportTicketPayload) => Promise<SupportTicket>;
-  addTicketMessage: (ticketId: string, message: string) => Promise<void>;
-} {
+const storeActions = {
+  loadAll: () => seekerStore.loadAll(),
+  createRequest: (payload: CreateAssistancePayload) => seekerStore.createRequest(payload),
+  createTicket: (payload: CreateSupportTicketPayload) => seekerStore.createTicket(payload),
+  addTicketMessage: (ticketId: string, message: string) => seekerStore.addTicketMessage(ticketId, message),
+};
+
+export function useSeekerStore(): SeekerStoreState & typeof storeActions {
   const snapshot = useSyncExternalStore(seekerStore.subscribe, seekerStore.getSnapshot);
 
   return {
     ...snapshot,
-    loadAll: () => seekerStore.loadAll(),
-    createRequest: (p) => seekerStore.createRequest(p),
-    createTicket: (p) => seekerStore.createTicket(p),
-    addTicketMessage: (tId, msg) => seekerStore.addTicketMessage(tId, msg),
+    ...storeActions,
   };
 }
 

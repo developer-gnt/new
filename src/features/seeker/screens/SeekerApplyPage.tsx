@@ -195,21 +195,21 @@ export const SeekerApplyPage: React.FC = () => {
         <button
           type="button"
           onClick={handleGoBack}
-          className="w-9 h-9 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] flex items-center justify-center text-[#0F2C59] transition cursor-pointer"
+          className="w-9 h-9 rounded-full bg-[#EDF2F7] hover:bg-[#DBE5EE] flex items-center justify-center text-[#06294D] transition cursor-pointer"
           aria-label="Go back"
         >
           <ChevronLeft size={20} strokeWidth={2.5} />
         </button>
 
         <div className="flex-1 flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-[#EEF2F6] text-[#0F2C59] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-[#EDF2F7] text-[#06294D] flex items-center justify-center shrink-0">
             <Heart size={18} strokeWidth={2.2} />
           </div>
           <div className="truncate">
-            <h1 className="text-base font-bold text-[#0F2C59] tracking-tight truncate">
+            <h1 className="text-base font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D] tracking-tight truncate">
               Add Donation Seeker
             </h1>
-            <p className="text-[11px] text-[#64748B] truncate">
+            <p className="text-[11px] text-[#718096] truncate">
               Submit an assistance application for verification
             </p>
           </div>
@@ -218,7 +218,7 @@ export const SeekerApplyPage: React.FC = () => {
         <button
           type="button"
           onClick={handleGoBack}
-          className="w-9 h-9 rounded-full bg-[#F8FAFC] hover:bg-[#F1F5F9] flex items-center justify-center text-[#64748B] transition cursor-pointer"
+          className="w-9 h-9 rounded-full bg-[#FAF7F0] hover:bg-[#EDF2F7] flex items-center justify-center text-[#718096] transition cursor-pointer"
           aria-label="Close"
         >
           <X size={18} />
@@ -235,8 +235,8 @@ export const SeekerApplyPage: React.FC = () => {
         )}
 
         {/* SECTION 1: APPLICANT INFORMATION */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0F2C59] uppercase tracking-wider pb-2 border-b border-[#F1F5F9]">
+        <div className="bg-white rounded-2xl border border-[#DCE4EC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#06294D] uppercase tracking-wider pb-2 border-b border-[#EDF2F7]">
             <User size={15} className="text-[#06294D]" />
             <span>1. Applicant Information</span>
           </div>
@@ -251,7 +251,7 @@ export const SeekerApplyPage: React.FC = () => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Applicant's full legal name"
-                className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
               {errors.fullName && <p className="text-[11px] text-red-600 mt-1">{errors.fullName}</p>}
             </div>
@@ -265,7 +265,7 @@ export const SeekerApplyPage: React.FC = () => {
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 placeholder="10-digit mobile number"
-                className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
               {errors.mobile && <p className="text-[11px] text-red-600 mt-1">{errors.mobile}</p>}
             </div>
@@ -279,7 +279,7 @@ export const SeekerApplyPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
-                className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
               {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
             </div>
@@ -293,15 +293,15 @@ export const SeekerApplyPage: React.FC = () => {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="City, District, State"
-                className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
             </div>
           </div>
         </div>
 
         {/* SECTION 2: CAUSE & ASSISTANCE TYPE */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0F2C59] uppercase tracking-wider pb-2 border-b border-[#F1F5F9]">
+        <div className="bg-white rounded-2xl border border-[#DCE4EC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#06294D] uppercase tracking-wider pb-2 border-b border-[#EDF2F7]">
             <Heart size={15} className="text-[#06294D]" />
             <span>2. Cause & Assistance Type <span className="text-red-500">*</span></span>
           </div>
@@ -315,7 +315,7 @@ export const SeekerApplyPage: React.FC = () => {
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
                   selectedCause === c
                     ? 'bg-[#06294D] text-[#FAD465] border-[#06294D] shadow-xs'
-                    : 'bg-[#F8FAFC] text-[#34516D] border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                    : 'bg-[#FAF7F0] text-[#34516D] border-[#DCE4EC] hover:bg-[#EDF2F7]'
                 }`}
               >
                 {c}
@@ -333,7 +333,7 @@ export const SeekerApplyPage: React.FC = () => {
                 value={customCause}
                 onChange={(e) => setCustomCause(e.target.value)}
                 placeholder="Please describe the specific aid reason"
-                className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
               {errors.customCause && <p className="text-[11px] text-red-600 mt-1">{errors.customCause}</p>}
             </div>
@@ -341,8 +341,8 @@ export const SeekerApplyPage: React.FC = () => {
         </div>
 
         {/* SECTION 3: REQUESTED AMOUNT & URGENCY */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0F2C59] uppercase tracking-wider pb-2 border-b border-[#F1F5F9]">
+        <div className="bg-white rounded-2xl border border-[#DCE4EC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#06294D] uppercase tracking-wider pb-2 border-b border-[#EDF2F7]">
             <span>3. Requested Amount & Urgency Level</span>
           </div>
 
@@ -357,14 +357,14 @@ export const SeekerApplyPage: React.FC = () => {
                 value={requestedAmount}
                 onChange={(e) => setRequestedAmount(e.target.value.replace(/\D/g, ''))}
                 placeholder="e.g. 25000"
-                className="w-full pl-8 pr-4 py-2 text-sm font-bold bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+                className="w-full pl-8 pr-4 py-2 text-sm font-bold bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
               />
             </div>
             {errors.requestedAmount && <p className="text-[11px] text-red-600 mt-1">{errors.requestedAmount}</p>}
 
-            {/* Quick Amount Presets (Exact APK) */}
+            {/* Quick Amount Presets */}
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-[11px] text-gray-500">Presets:</span>
+              <span className="text-[11px] text-[#718096]">Presets:</span>
               {PRESET_AMOUNTS.map((amt) => (
                 <button
                   key={amt}
@@ -373,7 +373,7 @@ export const SeekerApplyPage: React.FC = () => {
                   className={`px-2.5 py-1 text-xs rounded-lg font-semibold border transition cursor-pointer ${
                     requestedAmount === String(amt)
                       ? 'bg-[#06294D] text-[#FAD465] border-[#06294D]'
-                      : 'bg-[#F1F5F9] text-[#34516D] border-[#E2E8F0] hover:bg-[#E2E8F0]'
+                      : 'bg-[#FAF7F0] text-[#34516D] border-[#DCE4EC] hover:bg-[#EDF2F7]'
                   }`}
                 >
                   ₹{amt.toLocaleString('en-IN')}
@@ -395,7 +395,7 @@ export const SeekerApplyPage: React.FC = () => {
                   className={`py-2 text-xs font-bold rounded-xl border transition cursor-pointer text-center ${
                     urgency === u.key
                       ? 'border-[#06294D] ring-2 ring-[#06294D]/20 shadow-xs'
-                      : 'border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                      : 'border-[#DCE4EC] hover:bg-[#FAF7F0]'
                   }`}
                   style={{
                     backgroundColor: urgency === u.key ? u.bg : '#FFFFFF',
@@ -410,8 +410,8 @@ export const SeekerApplyPage: React.FC = () => {
         </div>
 
         {/* SECTION 4: SITUATION DESCRIPTION */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0F2C59] uppercase tracking-wider pb-2 border-b border-[#F1F5F9]">
+        <div className="bg-white rounded-2xl border border-[#DCE4EC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#06294D] uppercase tracking-wider pb-2 border-b border-[#EDF2F7]">
             <span>4. Circumstances & Ground Situation</span>
           </div>
 
@@ -424,14 +424,14 @@ export const SeekerApplyPage: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Please provide details regarding the patient, family hardship, or specific welfare need..."
-              className="w-full px-3.5 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
+              className="w-full px-3.5 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none focus:ring-2 focus:ring-[#FAD465]"
             />
           </div>
         </div>
 
         {/* SECTION 5: SUPPORTING DOCUMENTS */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0F2C59] uppercase tracking-wider pb-2 border-b border-[#F1F5F9]">
+        <div className="bg-white rounded-2xl border border-[#DCE4EC] p-5 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#06294D] uppercase tracking-wider pb-2 border-b border-[#EDF2F7]">
             <UploadCloud size={15} className="text-[#06294D]" />
             <span>5. Supporting Verification Documents <span className="text-red-500">*</span></span>
           </div>
@@ -445,7 +445,7 @@ export const SeekerApplyPage: React.FC = () => {
                 <select
                   value={docCategory}
                   onChange={(e) => setDocCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52] focus:bg-white"
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52] focus:outline-none"
                 >
                   {SEEKER_DOC_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -465,14 +465,14 @@ export const SeekerApplyPage: React.FC = () => {
                     value={customDocName}
                     onChange={(e) => setCustomDocName(e.target.value)}
                     placeholder="e.g. Village Sarpanch Letter"
-                    className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-[#0B2F52]"
+                    className="w-full px-3 py-2 text-xs bg-white border border-[#DCE4EC] rounded-xl text-[#0B2F52]"
                   />
                 </div>
               )}
             </div>
 
             {/* Upload Drag/Click Zone */}
-            <label className="border-2 border-dashed border-[#CBD5E1] rounded-2xl p-5 flex flex-col items-center justify-center text-center hover:border-[#06294D] bg-[#F8FAFC] cursor-pointer transition">
+            <label className="border-2 border-dashed border-[#DCE4EC] rounded-2xl p-5 flex flex-col items-center justify-center text-center hover:border-[#06294D] bg-[#FAF7F0] cursor-pointer transition">
               <UploadCloud size={24} className="text-[#06294D] mb-1" />
               <span className="text-xs font-bold text-[#0B2F52]">
                 Upload Document or Photo (PDF, JPG, PNG)

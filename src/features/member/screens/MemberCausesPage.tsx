@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Heart,
   Users,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useCurrentMember } from '../store/memberStore';
 import { GlobalPaymentModal } from '../../payments';
+import { assistanceService } from '../../admin/assistance/services/assistanceService';
 
 interface CauseItem {
   id: string;
@@ -74,6 +75,32 @@ export const MemberCausesPage: React.FC = () => {
   const { member, processDonation } = useCurrentMember();
   const [causesList, setCausesList] = useState<CauseItem[]>(CAUSES);
   const [activeCause, setActiveCause] = useState<CauseItem | null>(null);
+
+  useEffect(() => {
+    const fetchApproved = async () => {
+      try {
+        const approved = await assistanceService.listApproved();
+        if (approved && approved.length > 0) {
+          const mapped: CauseItem[] = approved.map((item: any, idx: number) => ({
+            id: item.id || `approved-cause-${idx}`,
+            title: item.title || item.purpose || 'Emergency Humanitarian Aid',
+            tagline: item.description || item.reason_for_aid || 'Statutory verified citizen assistance initiative.',
+            category: (item.category as any) || 'Human Rights',
+            targetAmount: Number(item.amount_requested) || 100000,
+            raisedAmount: Number(item.amount_disbursed) || 0,
+            donorCount: 12,
+            daysLeft: 20,
+            imageUrl: CAUSES[idx % CAUSES.length].imageUrl,
+            urgent: item.priority === 'URGENT' || item.urgency === 'HIGH',
+          }));
+          setCausesList([...mapped, ...CAUSES]);
+        }
+      } catch {
+        // preserve standard CAUSES list
+      }
+    };
+    fetchApproved();
+  }, []);
 
   const handleOpenDonateModal = (cause: CauseItem) => {
     setActiveCause(cause);

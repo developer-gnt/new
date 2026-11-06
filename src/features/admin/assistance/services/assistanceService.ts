@@ -117,6 +117,22 @@ export const assistanceService = {
   },
 
   /**
+   * List approved assistance requests as verified public causes via GET /assistance-requests/approved
+   */
+  async listApproved(query: AssistanceQuery = {}): Promise<AssistanceRequest[]> {
+    try {
+      const res = await apiClient.get<any>('/assistance-requests/approved', {
+        params: query as any,
+        skipAuth: true,
+      });
+      const data = res?.data || res;
+      return Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  },
+
+  /**
    * List uploaded documents for assistance request
    */
   async listDocuments(requestId: string): Promise<AssistanceDocumentItem[]> {

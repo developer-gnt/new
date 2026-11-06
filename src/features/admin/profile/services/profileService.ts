@@ -116,7 +116,7 @@ export class ProfileService {
               margin: 15mm;
             }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              font-family: 'Inter', Arial, sans-serif;
               margin: 0;
               padding: 20px;
               background-color: #F8FAFC;

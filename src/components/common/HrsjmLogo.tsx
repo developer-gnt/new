@@ -1,5 +1,7 @@
 import type React from 'react';
-import hrsjmLogo from '../../assets/hrsjm_logo.png';
+import { useState } from 'react';
+import hrsjmLogo from '@/assets/hrsjm_logo.png';
+import { HRSJM_LOGO_DATA_URI } from '@/assets/logoBase64';
 
 export interface HrsjmLogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
@@ -38,6 +40,23 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
   const isLight = variant === 'light';
   const isVertical = layout === 'vertical';
 
+  // Fallback cascade: imported asset -> public static file -> WebP -> Base64 URI -> inline SVG emblem
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const sources = [
+    hrsjmLogo,
+    '/logo.png',
+    '/assets/logo/logo.png',
+    '/logo.webp',
+    HRSJM_LOGO_DATA_URI,
+  ];
+
+  const currentSrc = sources[sourceIndex];
+  const allImagesFailed = sourceIndex >= sources.length;
+
+  const handleImgError = () => {
+    setSourceIndex((prev) => prev + 1);
+  };
+
   return (
     <div
       style={style}
@@ -45,14 +64,44 @@ export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
         isVertical ? 'flex-col text-center' : 'flex-row text-left'
       } items-center gap-2.5 ${className}`}
     >
-      <img
-        src={hrsjmLogo}
-        alt="HRSJM Logo"
-        width={dim}
-        height={Math.round(dim * (825 / 813))}
-        className={`object-contain shrink-0 drop-shadow-sm ${imgClassName}`}
-        style={{ width: `${dim}px`, height: 'auto' }}
-      />
+      {allImagesFailed ? (
+        <svg
+          width={dim}
+          height={dim}
+          viewBox="0 0 100 100"
+          className={`shrink-0 drop-shadow-sm ${imgClassName}`}
+          aria-label="HRSJM Official Seal"
+        >
+          <circle cx="50" cy="50" r="48" fill="#06294D" stroke="#E9B82E" strokeWidth="3" />
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#E9B82E" strokeWidth="1" strokeDasharray="2 2" />
+          {/* Scales of Justice Icon */}
+          <path
+            d="M50 22 v38 M36 28 h28 M36 28 l-8 16 h16 z M64 28 l-8 16 h16 z M42 60 h16"
+            fill="none"
+            stroke="#FAD465"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text x="50" y="78" textAnchor="middle" fill="#FFFFFF" fontSize="12" fontWeight="bold" fontFamily="serif">
+            HRSJM
+          </text>
+          <text x="50" y="88" textAnchor="middle" fill="#FAD465" fontSize="7" fontWeight="bold">
+            मानव अधिकार
+          </text>
+        </svg>
+      ) : (
+        <img
+          src={currentSrc}
+          alt="HRSJM Logo"
+          width={dim}
+          height={Math.round(dim * (825 / 813))}
+          className={`object-contain shrink-0 drop-shadow-sm ${imgClassName}`}
+          style={{ width: `${dim}px`, height: 'auto' }}
+          onError={handleImgError}
+        />
+      )}
+
       {showWordmark && (
         <div
           className={`flex flex-col ${

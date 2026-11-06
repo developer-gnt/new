@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import {
   Newspaper,
   Calendar,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { newsStore } from '@/features/admin/news/store/newsStore';
 import type { NewsListItem } from '@/features/admin/news/types/news.types';
+import { filterNewsForRole } from '@/features/content';
 
 export const MemberNewsPage: React.FC = () => {
   const snapshot = useSyncExternalStore<{ news: NewsListItem[]; version: number }>(newsStore.subscribe, newsStore.getSnapshot);
@@ -19,9 +20,15 @@ export const MemberNewsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeArticle, setActiveArticle] = useState<NewsListItem | null>(null);
 
+  useEffect(() => {
+    newsStore.fetchNews().catch(() => {});
+  }, []);
+
   const categories = ['ALL', 'Legal', 'Events', 'National', 'Relief'];
 
-  const filteredNews = news.filter((item: NewsListItem) => {
+  const roleAuthorizedNews = filterNewsForRole(news, 'MEMBER');
+
+  const filteredNews = roleAuthorizedNews.filter((item: NewsListItem) => {
     if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
       return false;
     }

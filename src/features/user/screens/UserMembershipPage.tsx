@@ -7,9 +7,10 @@ import {
   AlertCircle,
   Award,
   Filter,
+  ArrowRight,
 } from 'lucide-react';
 import { useUserAuth } from '../store/userAuthStore';
-import { applicationsService } from '../../admin/applications/services/applicationsService';
+import { membershipService } from '@/features/membership/services/membershipService';
 import {
   DISTRICT_STATE_POSTS,
   LETTER_PAD_POSTS,
@@ -24,21 +25,37 @@ import { MembershipStep2, type Step2FormData } from '../components/membership/Me
 import { MembershipStep3, type Step3SubmitPayload } from '../components/membership/MembershipStep3';
 import { MembershipSubmitted } from '../components/membership/MembershipSubmitted';
 import { GlobalPaymentModal } from '../../payments';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 export const UserMembershipPage: React.FC = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { user } = useUserAuth();
+  const { user, updateMembershipStatus } = useUserAuth();
 
-  const initialTab = searchParams.get('tab') === 'status' || location.pathname.includes('status') ? 'status' : 'categories';
+  const [membershipData, setMembershipData] = useState<any | null>(null);
+  const [loadingMembership, setLoadingMembership] = useState<boolean>(true);
+  const [allPosts, setAllPosts] = useState<MembershipPostData[]>(ALL_MEMBERSHIP_POSTS);
+
+  const [submittedAppId, setSubmittedAppId] = useState<string>('');
+  const [justSubmitted, setJustSubmitted] = useState<boolean>(false);
+
+  // hasApplied is strictly based on backend membership profile or an immediate submission in this session
+  const hasApplied = Boolean(
+    (membershipData && (membershipData.id || membershipData.membership_number)) ||
+    (justSubmitted && submittedAppId)
+  );
+
+  const initialTab =
+    searchParams.get('tab') === 'status' || location.pathname.includes('status')
+      ? 'status'
+      : 'categories';
   const [activeTab, setActiveTab] = useState<'categories' | 'status'>(initialTab);
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'district_state' | 'letter_pad' | 'national'>('all');
 
   // Wizard state
   const [viewMode, setViewMode] = useState<'categories' | 'wizard' | 'submitted'>('categories');
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [selectedPost, setSelectedPost] = useState<MembershipPostData>(DISTRICT_STATE_POSTS[0]);
-  const [submittedAppId, setSubmittedAppId] = useState<string>('');
+  const [selectedPost, setSelectedPost] = useState<MembershipPostData>(ALL_MEMBERSHIP_POSTS[0] || DISTRICT_STATE_POSTS[0]);
   const [submitting, setSubmitting] = useState(false);
 
   // Payment modal state
@@ -68,23 +85,70 @@ export const UserMembershipPage: React.FC = () => {
     aadhaarNumber: '',
   });
 
-  // Live status
-  const currentStatus = user?.membership_status || 'UNDER_REVIEW';
+  // Live status derived from backend
+  const currentStatus =
+    membershipData?.status ||
+    (justSubmitted ? 'UNDER_REVIEW' : 'NOT_APPLIED');
   const isApproved = currentStatus === 'ACTIVE' || currentStatus === 'APPROVED';
   const isPending = currentStatus === 'UNDER_REVIEW' || currentStatus === 'PENDING';
 
+  // Synchronize authenticated user's real membership record & categories
   useEffect(() => {
-    const loadApps = async () => {
+    let isMounted = true;
+
+    const loadMembershipAndCategories = async () => {
+      setLoadingMembership(true);
       try {
-        if (user?.id) {
-          await applicationsService.listMemberships({ user_id: user.id });
+        const [mem, categories] = await Promise.all([
+          membershipService.getMyMembership(),
+          membershipService.getCategories(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (categories && categories.length > 0) {
+          const updated: MembershipPostData[] = ALL_MEMBERSHIP_POSTS.map(p => {
+            const match = (categories as any[]).find((c: any) =>
+              c.name?.toLowerCase().includes(p.postName.toLowerCase()) ||
+              p.postName.toLowerCase().includes(c.name?.toLowerCase()) ||
+              c.id === p.id
+            );
+            return match ? { ...p, id: match.id, feeAmount: match.feeAmount || p.feeAmount, fee: match.fee || p.fee } : p;
+          });
+          setAllPosts(updated);
+          setSelectedPost(updated[0]);
+        }
+
+        if (mem && (mem.id || mem.membership_number)) {
+          setMembershipData(mem);
+          setSubmittedAppId(mem.membership_number || mem.id);
+        } else {
+          setMembershipData(null);
+          setSubmittedAppId('');
+          setJustSubmitted(false);
+          // If no membership exists on backend, clear any stale mock or local session tracking IDs
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('hrsjm_user_membership_app_id');
+          }
         }
       } catch {
-        // use fallback store state
+        if (isMounted) {
+          setMembershipData(null);
+          setSubmittedAppId('');
+          setJustSubmitted(false);
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingMembership(false);
+        }
       }
     };
-    loadApps();
-  }, [user]);
+
+    void loadMembershipAndCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   // Handle post selection -> initiates 3-step verification wizard
   const handleSelectPostToApply = (post: MembershipPostData) => {
@@ -115,12 +179,12 @@ export const UserMembershipPage: React.FC = () => {
   };
 
   const filteredPosts = () => {
-    if (categoryFilter === 'all') return ALL_MEMBERSHIP_POSTS;
-    return ALL_MEMBERSHIP_POSTS.filter(p => p.categoryGroup === categoryFilter);
+    if (categoryFilter === 'all') return allPosts;
+    return allPosts.filter(p => p.categoryGroup === categoryFilter);
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">
@@ -163,113 +227,169 @@ export const UserMembershipPage: React.FC = () => {
       {activeTab === 'status' ? (
         /* Status Tab */
         <div className="space-y-6">
-          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-6">
-            <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-slate-100">
-              <div>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Application Tracking Number
-                </span>
-                <span className="text-lg font-black text-[#06294D] font-mono">
-                  {submittedAppId}
-                </span>
+          {loadingMembership ? (
+            <div className="p-12 rounded-3xl bg-white border border-slate-200/90 shadow-xs text-center space-y-3 max-w-xl mx-auto">
+              <div className="w-10 h-10 border-3 border-[#06294D] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm font-semibold text-slate-600">Verifying membership records with National Council...</p>
+            </div>
+          ) : !hasApplied ? (
+            /* Empty State: User has not applied yet */
+            <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 shadow-xs text-center space-y-5 max-w-2xl mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-[#06294D]/5 text-[#06294D] flex items-center justify-center mx-auto">
+                <CreditCard size={32} className="text-[#06294D]" />
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-semibold">Verification Status:</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
-                    isApproved
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                      : isPending
-                      ? 'bg-amber-50 text-amber-800 border-amber-300'
-                      : 'bg-rose-50 text-rose-800 border-rose-300'
-                  }`}
+              <div className="space-y-2">
+                <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#EDF2F7] text-[#06294D]">
+                  Application Status: Not Applied
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D]">
+                  No Active Membership Application Found
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                  You have not submitted an application for any National or State Council membership post yet. Select a designated post from our categories to begin the 3-step statutory verification.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('categories');
+                    setViewMode('categories');
+                  }}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer"
                 >
-                  {currentStatus}
-                </span>
+                  <span>Browse Membership Categories</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+                <div className="p-3 bg-[#FAF7F0] rounded-xl border border-[#EDF2F7]">
+                  <span className="text-[10px] font-bold text-[#C9971A] uppercase tracking-wider block">Official Post</span>
+                  <p className="text-xs text-[#06294D] font-medium mt-0.5">District, State &amp; National Appointments</p>
+                </div>
+                <div className="p-3 bg-[#FAF7F0] rounded-xl border border-[#EDF2F7]">
+                  <span className="text-[10px] font-bold text-[#C9971A] uppercase tracking-wider block">Credentials</span>
+                  <p className="text-xs text-[#06294D] font-medium mt-0.5">National ID Card &amp; Appointment Letter</p>
+                </div>
+                <div className="p-3 bg-[#FAF7F0] rounded-xl border border-[#EDF2F7]">
+                  <span className="text-[10px] font-bold text-[#C9971A] uppercase tracking-wider block">Statutory</span>
+                  <p className="text-xs text-[#06294D] font-medium mt-0.5">3-Step Verified Mission Council Membership</p>
+                </div>
               </div>
             </div>
-
-            {/* Stepper Flow */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
-                  <CheckCircle size={16} />
-                  <span>1. Application Submitted</span>
-                </div>
-                <p className="text-[11px] text-slate-600">Documents and credentials successfully received by Central Mission Desk.</p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1">
-                <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
-                  <Clock size={16} className="text-amber-600" />
-                  <span>2. State Council Verification</span>
-                </div>
-                <p className="text-[11px] text-slate-600">
-                  {isApproved
-                    ? 'State Chapter verification completed and verified.'
-                    : 'Currently being reviewed by District Verification Officers.'}
-                </p>
-              </div>
-
-              <div className={`p-4 rounded-2xl border space-y-1 ${isApproved ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
-                <div className={`flex items-center gap-2 font-bold text-xs ${isApproved ? 'text-emerald-800' : 'text-slate-400'}`}>
-                  <Award size={16} />
-                  <span>3. Council Approval</span>
-                </div>
-                <p className="text-[11px] text-slate-600">
-                  {isApproved
-                    ? 'Official National Member credentials activated.'
-                    : 'Credentials activate upon final state council review.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Credentials Preview / Notice */}
-            {isApproved ? (
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-[#06294D] to-[#011F39] text-white space-y-4 max-w-lg mx-auto shadow-xl border border-amber-400/40">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2.5">
-                    <img src="/assets/logo/logo.png" alt="HRSJM Logo" className="w-10 h-10 object-contain" />
-                    <div>
-                      <h4 className="font-black text-sm text-white">HRSJM NATIONAL COUNCIL</h4>
-                      <span className="text-[9.5px] text-[#FAD465] font-bold uppercase tracking-wider">Official Member Credentials</span>
-                    </div>
-                  </div>
-                  <Award className="text-[#FAD465]" size={24} />
+          ) : (
+            /* Active Application Card */
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-6">
+              <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Application Tracking Number
+                  </span>
+                  <span className="text-lg font-black text-[#06294D] font-mono">
+                    {submittedAppId || membershipData?.membership_number || membershipData?.id || (user?.id ? `HRSJM-MEM-2026-${user.id.slice(-4).toUpperCase()}` : 'HRSJM-MEM-2026-PENDING')}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-white/20">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Member Name</span>
-                    <span className="font-bold text-white">{step1Data.fullName || user?.full_name}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Member ID Code</span>
-                    <span className="font-bold text-[#FAD465] font-mono">HRSJM-ACT-2026-9042</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">State Chapter</span>
-                    <span className="font-bold text-white">{step2Data.state} / {step2Data.city}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block">Validity</span>
-                    <span className="font-bold text-emerald-400">Valid Till DEC 2027</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 font-semibold">Verification Status:</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
+                      isApproved
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                        : isPending
+                        ? 'bg-amber-50 text-amber-800 border-amber-300'
+                        : 'bg-rose-50 text-rose-800 border-rose-300'
+                    }`}
+                  >
+                    {currentStatus}
+                  </span>
                 </div>
               </div>
-            ) : (
-              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-[#06294D] flex items-start gap-2.5">
-                <AlertCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <span className="font-bold block">Application is Under Administrative Review</span>
-                  <p className="text-slate-600 leading-relaxed">
-                    Member credentials and verified status are activated after administrative scrutiny by the regional credentials committee. You can expedite verification by contacting your local chapter.
+
+              {/* Stepper Flow */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+                    <CheckCircle size={16} />
+                    <span>1. Application Submitted</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">Documents and credentials successfully received by Central Mission Desk.</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1">
+                  <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+                    <Clock size={16} className="text-amber-600" />
+                    <span>2. State Council Verification</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    {isApproved
+                      ? 'State Chapter verification completed and verified.'
+                      : 'Currently being reviewed by District Verification Officers.'}
+                  </p>
+                </div>
+
+                <div className={`p-4 rounded-2xl border space-y-1 ${isApproved ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`flex items-center gap-2 font-bold text-xs ${isApproved ? 'text-emerald-800' : 'text-slate-400'}`}>
+                    <Award size={16} />
+                    <span>3. Council Approval</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    {isApproved
+                      ? 'Official National Member credentials activated.'
+                      : 'Credentials activate upon final state council review.'}
                   </p>
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Credentials Preview / Notice */}
+              {isApproved ? (
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-[#06294D] to-[#011F39] text-white space-y-4 max-w-lg mx-auto shadow-xl border border-amber-400/40">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2.5">
+                      <HrsjmLogo size="sm" variant="light" showWordmark={false} />
+                      <div>
+                        <h4 className="font-black text-sm text-white">HRSJM NATIONAL COUNCIL</h4>
+                        <span className="text-[9.5px] text-[#FAD465] font-bold uppercase tracking-wider">Official Member Credentials</span>
+                      </div>
+                    </div>
+                    <Award className="text-[#FAD465]" size={24} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-white/20">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Member Name</span>
+                      <span className="font-bold text-white">{step1Data.fullName || user?.full_name}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Member ID Code</span>
+                      <span className="font-bold text-[#FAD465] font-mono">HRSJM-ACT-2026-9042</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">State Chapter</span>
+                      <span className="font-bold text-white">{step2Data.state} / {step2Data.city}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Validity</span>
+                      <span className="font-bold text-emerald-400">Valid Till DEC 2027</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-[#06294D] flex items-start gap-2.5">
+                  <AlertCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <span className="font-bold block">Application is Under Administrative Review</span>
+                    <p className="text-slate-600 leading-relaxed">
+                      Member credentials and verified status are activated after administrative scrutiny by the regional credentials committee. You can expedite verification by contacting your local chapter.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : viewMode === 'wizard' ? (
         /* 3-Step Verification Wizard */
@@ -548,26 +668,77 @@ export const UserMembershipPage: React.FC = () => {
           donorMobile: step1Data.mobile,
           donorEmail: step1Data.email,
         }}
-        onSuccess={(receipt) => {
+        onSuccess={async (receipt) => {
           setIsPaymentModalOpen(false);
           setSubmitting(false);
-          const year = new Date().getFullYear();
-          const seq = Math.floor(1000 + Math.random() * 9000);
-          const newAppId =
-            receipt.applicationId ||
-            receipt.membershipNumber ||
-            `HRSJM-MEM-${year}-${seq}`;
-          // Log documents tagged to the application ID for future backend sync
-          if (pendingDocuments) {
-            console.info('[HRSJM] Application documents ready for upload', {
-              applicationId: newAppId,
-              userId: user?.id,
-              documents: Object.keys(pendingDocuments.documents).filter(
-                k => pendingDocuments.documents[k as keyof typeof pendingDocuments.documents],
-              ),
+
+          let newAppId = receipt.applicationId || receipt.membershipNumber;
+
+          try {
+            const result = await membershipService.submitApplication({
+              category_id: selectedPost.id,
+              full_name: step1Data.fullName,
+              mobile_number: step1Data.mobile,
+              email: step1Data.email,
+              password: step1Data.password || 'MemberPass#1',
+              police_station: step1Data.policeStation,
+              avatar: step1Data.photoUrl,
+              personal_details: {
+                dob: step1Data.dob,
+                dateOfBirth: step1Data.dob,
+                gender: step1Data.gender,
+                addressLine1: step2Data.addressLine1,
+                addressLine2: step2Data.addressLine2,
+                city: step2Data.city,
+                state: step2Data.state,
+                country: step2Data.country,
+                pincode: step2Data.pincode,
+              },
+              application_data: {
+                appliedPostName: selectedPost.postName,
+                feeAmount: selectedPost.feeAmount,
+                fee: selectedPost.fee,
+                validity: selectedPost.validity,
+                qualification: selectedPost.qualification,
+                documents: pendingDocuments
+                  ? Object.entries(pendingDocuments.documents)
+                      .filter(([_, file]) => Boolean(file))
+                      .map(([key, file]) => ({
+                        type: key,
+                        title: (file as File).name,
+                        fileName: (file as File).name,
+                        fileSize: `${Math.round((file as File).size / 1024)} KB`,
+                      }))
+                  : [],
+                consents: {
+                  agreeTerms: true,
+                  agreePrivacy: true,
+                  agreePledge: true,
+                },
+              },
             });
+
+            if (result?.applicationId) {
+              newAppId = result.applicationId;
+            }
+            setMembershipData(result);
+          } catch (err) {
+            console.error('Failed to submit membership application to backend:', err);
           }
+
+          if (!newAppId) {
+            const year = new Date().getFullYear();
+            const seq = Math.floor(1000 + Math.random() * 9000);
+            newAppId = `HRSJM-MEM-${year}-${seq}`;
+          }
+
+          localStorage.setItem('hrsjm_user_membership_app_id', newAppId);
+          if (updateMembershipStatus) {
+            updateMembershipStatus('PENDING');
+          }
+
           setSubmittedAppId(newAppId);
+          setJustSubmitted(true);
           setPendingDocuments(null);
           setViewMode('submitted');
           window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -87,6 +87,9 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                       onClick={() => {
                         if (mobileOpen) onCloseMobile();
                       }}
+                      className={({ isActive }) =>
+                        `member-sidebar-nav-link ${isActive ? 'active' : ''}`
+                      }
                       style={({ isActive }) => ({
                         ...styles.navLink,
                         ...(isActive ? styles.navLinkActive : {}),
@@ -138,51 +141,62 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
               </div>
             </div>
           ))}
-
-          {/* Bottom Action Area: Sign Out */}
-          <div style={styles.groupContainer}>
-            {collapsed && <div style={styles.collapsedDivider} />}
-            <button
-              type="button"
-              onClick={handleSignOut}
-              style={{
-                ...styles.navLink,
-                backgroundColor: 'transparent',
-                border: 'none',
-                width: '100%',
-                cursor: 'pointer',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                padding: collapsed ? '10px 0' : '10px 14px',
-              }}
-              title={collapsed ? 'Sign Out' : undefined}
-            >
-              <LogOut
-                size={18}
-                color="#EF4444"
-                strokeWidth={1.8}
-                style={{ flexShrink: 0 }}
-              />
-              {!collapsed && (
-                <span
-                  style={{
-                    ...styles.linkText,
-                    color: '#EF4444',
-                    fontWeight: 500,
-                  }}
-                >
-                  Sign Out
-                </span>
-              )}
-            </button>
-          </div>
         </div>
 
-        {/* Desktop Collapse Toggle Footer */}
-        <div style={styles.footer}>
+        {/* Bottom Pinned Footer: Sign Out Action & Desktop Collapse Toggle */}
+        <div
+          style={{
+            ...styles.footer,
+            padding: collapsed ? '10px 8px' : '12px 14px',
+          }}
+        >
+          {/* Sign Out Action Button */}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="member-sidebar-signout"
+            style={{
+              ...styles.navLink,
+              backgroundColor: 'transparent',
+              border: 'none',
+              width: '100%',
+              cursor: 'pointer',
+              textAlign: 'left',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '10px 0' : '10px 12px',
+              borderRadius: '8px',
+            }}
+            title={collapsed ? 'Sign Out' : undefined}
+          >
+            <LogOut
+              size={18}
+              color="#EF4444"
+              strokeWidth={1.8}
+              style={{ flexShrink: 0 }}
+            />
+            {!collapsed && (
+              <span
+                style={{
+                  ...styles.linkText,
+                  color: '#EF4444',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  textAlign: 'left',
+                }}
+              >
+                Sign Out
+              </span>
+            )}
+          </button>
+
+          {/* Desktop Collapse Toggle Button */}
           <button
             type="button"
             onClick={onToggleCollapse}
-            style={styles.collapseBtn}
+            style={{
+              ...styles.collapseBtn,
+              marginTop: '8px',
+            }}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? (
@@ -279,6 +293,7 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: 'none',
     transition: 'background-color 0.16s, color 0.16s',
     userSelect: 'none',
+    textAlign: 'left',
   },
   navLinkActive: {
     backgroundColor: '#123F68',
@@ -298,6 +313,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     flex: 1,
+    textAlign: 'left',
   },
   badge: {
     fontSize: '11px',
@@ -310,6 +326,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '12px 14px',
     borderTop: '1px solid #123F68',
     backgroundColor: '#011F39',
+    marginTop: 'auto',
+    flexShrink: 0,
   },
   collapseBtn: {
     display: 'flex',

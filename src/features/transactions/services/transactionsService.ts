@@ -180,14 +180,19 @@ export const transactionsService = {
 
       const payload = res?.data || res;
       if (Array.isArray(payload?.items) && payload.items.length > 0) {
+        const calculatedTax80G = payload.items
+          .filter((i: any) => (i.status === 'Success' || i.status_code === 'SUCCESS') && (i.category_code === 'DONATION' || i.related_info?.tax_exemption_eligible))
+          .reduce((acc: number, i: any) => acc + (Number(i.amount) || 0), 0);
+
         return {
-          summary: payload.summary || {
-            total_amount_paid: payload.items.reduce((acc: number, i: any) => acc + (Number(i.amount) || 0), 0),
-            total_transactions: payload.items.length,
-            successful_count: payload.items.filter((i: any) => i.status === 'Success' || i.status_code === 'SUCCESS').length,
-            pending_count: payload.items.filter((i: any) => i.status === 'Pending' || i.status_code === 'PENDING').length,
-            failed_count: payload.items.filter((i: any) => i.status === 'Failed' || i.status_code === 'FAILED').length,
-            refunded_count: payload.items.filter((i: any) => i.status === 'Refunded' || i.status_code === 'REFUNDED').length,
+          summary: {
+            total_amount_paid: payload.summary?.total_amount_paid ?? payload.items.reduce((acc: number, i: any) => acc + (Number(i.amount) || 0), 0),
+            total_transactions: payload.summary?.total_transactions ?? payload.items.length,
+            successful_count: payload.summary?.successful_count ?? payload.items.filter((i: any) => i.status === 'Success' || i.status_code === 'SUCCESS').length,
+            pending_count: payload.summary?.pending_count ?? payload.items.filter((i: any) => i.status === 'Pending' || i.status_code === 'PENDING').length,
+            failed_count: payload.summary?.failed_count ?? payload.items.filter((i: any) => i.status === 'Failed' || i.status_code === 'FAILED').length,
+            refunded_count: payload.summary?.refunded_count ?? payload.items.filter((i: any) => i.status === 'Refunded' || i.status_code === 'REFUNDED').length,
+            tax_exemption_total: payload.summary?.tax_exemption_total ?? calculatedTax80G,
           },
           items: payload.items,
           meta: payload.meta || {
@@ -430,35 +435,69 @@ export const transactionsService = {
     doc.setTextColor(4, 120, 87);
     doc.text(`INR ${transaction.amount.toLocaleString('en-IN')}/-`, W - 25, 200, { align: 'right' });
 
-    // Section 80G Statutory Notice
-    doc.setFillColor(254, 243, 199); // Amber-50
-    doc.rect(20, 212, W - 40, 24, 'F');
-    doc.setDrawColor(217, 119, 6);
-    doc.rect(20, 212, W - 40, 24);
+    const is80G = transaction.category_code === 'DONATION' || Boolean(transaction.related_info?.tax_exemption_eligible);
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(146, 64, 14);
-    doc.text('STATUTORY 80G TAX BENEFIT CERTIFICATION', 25, 218);
+    // Section 80G Statutory Notice or General Membership Receipt Notice
+    if (is80G) {
+      doc.setFillColor(254, 243, 199); // Amber-50
+      doc.rect(20, 212, W - 40, 24, 'F');
+      doc.setDrawColor(217, 119, 6);
+      doc.rect(20, 212, W - 40, 24);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(120, 53, 15);
-    doc.text(
-      'Donations made to Human Rights Sanrakshan Jan Manch are eligible for 50% income tax exemption under',
-      25,
-      223
-    );
-    doc.text(
-      'Section 80G(5)(vi) of the Income Tax Act 1961. This computer-generated receipt carries legal validity without manual signature.',
-      25,
-      228
-    );
-    doc.text(
-      `Central Unique Reference (URN): AABTH4589KF20214 • Date of Effect: 01-04-2021 to Indefinite`,
-      25,
-      233
-    );
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(146, 64, 14);
+      doc.text('STATUTORY 80G TAX BENEFIT CERTIFICATION', 25, 218);
+
+      const deductionAmt = Math.round(transaction.amount * 0.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(120, 53, 15);
+      doc.text(
+        `Donation of INR ${transaction.amount.toLocaleString('en-IN')}/- qualifies for 50% income tax deduction (INR ${deductionAmt.toLocaleString('en-IN')}/-)`,
+        25,
+        223
+      );
+      doc.text(
+        'under Section 80G(5)(vi) of the Income Tax Act 1961. This computer-generated receipt carries legal validity without manual signature.',
+        25,
+        228
+      );
+      doc.text(
+        'Central Unique Reference (URN): AABTH4589KF20214 • Date of Effect: 01-04-2021 to Indefinite',
+        25,
+        233
+      );
+    } else {
+      doc.setFillColor(241, 245, 249); // Slate-50
+      doc.rect(20, 212, W - 40, 24, 'F');
+      doc.setDrawColor(203, 213, 225);
+      doc.rect(20, 212, W - 40, 24);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(30, 41, 59);
+      doc.text('STATUTORY ENROLLMENT / MEMBERSHIP RECEIPT', 25, 218);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(
+        'Official record of payment for membership enrollment / statutory affiliation fees.',
+        25,
+        223
+      );
+      doc.text(
+        'Membership fees and event passes are not eligible for Section 80G donation tax exemptions.',
+        25,
+        228
+      );
+      doc.text(
+        'For verified donation tax receipts, please refer to the donation contributions section.',
+        25,
+        233
+      );
+    }
 
     // Official Stamp & Verification Box
     doc.setFillColor(248, 250, 252);

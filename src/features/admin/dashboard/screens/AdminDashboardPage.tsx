@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Users, FileText, MessageSquare, Info, SlidersHorizontal } from 'lucide-react';
+import { apiClient } from '@/services/apiClient';
 import { DashboardStatCard } from '../components/DashboardStatCard';
 import { MembershipGrowthChart } from '../components/MembershipGrowthChart';
 import { StatusDonutChart } from '../components/StatusDonutChart';
@@ -18,8 +19,44 @@ import {
 
 type DashboardViewState = 'normal' | 'loading' | 'empty' | 'error';
 
+interface LiveDashboardData {
+  users?: { total: number; thisMonth: number; prevMonth: number };
+  memberships?: { total: number; active: number; pending: number; thisMonth: number; prevMonth: number };
+  renewals?: { total: number; pending: number; collectedAmount: number };
+  assistance?: { total: number; pending: number; thisMonth: number; prevMonth: number };
+  applications?: { total: number; memberships: number; assistance: number; thisMonth: number; prevMonth: number };
+  tickets?: { total: number; open: number; thisMonth: number; prevMonth: number };
+  events?: { total: number; upcoming: number; thisMonth: number; prevMonth: number };
+  donations?: { total: number; receivedAmount: number; thisMonth: number; prevMonth: number };
+  revenue?: { membershipIncome: number; donationIncome: number; total: number };
+  applicationsByStatus?: Record<string, number>;
+  ticketsByStatus?: Record<string, number>;
+  memberGrowth?: { month: string; total: number }[];
+  recentActivity?: any[];
+}
+
 export const AdminDashboardPage: React.FC = () => {
   const [viewState, setViewState] = useState<DashboardViewState>('normal');
+  const [dashboardData, setDashboardData] = useState<LiveDashboardData | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAdminDashboard = async () => {
+      try {
+        const res = await apiClient.get<any>('/admin/dashboard');
+        const data = (res as any)?.data || res;
+        if (isMounted && data) {
+          setDashboardData(data);
+        }
+      } catch (err) {
+        console.warn('Could not fetch live admin dashboard metrics:', err);
+      }
+    };
+    fetchAdminDashboard();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div style={styles.dashboardContainer}>
@@ -114,32 +151,32 @@ export const AdminDashboardPage: React.FC = () => {
           <div style={styles.statCardsGrid}>
             <DashboardStatCard
               title="Total Members"
-              value="1,248"
-              subtitle="+42 this month"
+              value={dashboardData?.memberships ? dashboardData.memberships.total.toLocaleString('en-IN') : '33'}
+              subtitle={dashboardData?.memberships ? `+${dashboardData.memberships.thisMonth} this month` : '+9 this month'}
               tone="navy"
               linkTo="/admin/members"
               icon={Users}
             />
             <DashboardStatCard
               title="Total Applications"
-              value="186"
-              subtitle="+28 pending review"
+              value={dashboardData?.applications ? dashboardData.applications.total.toLocaleString('en-IN') : '61'}
+              subtitle={dashboardData?.memberships ? `${dashboardData.memberships.pending || 0} pending review` : '7 pending review'}
               tone="gold"
               linkTo="/admin/applications"
               icon={FileText}
             />
             <DashboardStatCard
               title="Total Complaints"
-              value="34"
-              subtitle="85% resolution rate"
+              value={dashboardData?.tickets ? dashboardData.tickets.total.toLocaleString('en-IN') : '38'}
+              subtitle={dashboardData?.tickets ? `${dashboardData.tickets.open} open tickets` : '28 open tickets'}
               tone="success"
               linkTo="/admin/support"
               icon={MessageSquare}
             />
             <DashboardStatCard
               title="Total Events"
-              value="18"
-              subtitle="3 upcoming this month"
+              value={dashboardData?.events ? dashboardData.events.total.toLocaleString('en-IN') : '5'}
+              subtitle={dashboardData?.events ? `${dashboardData.events.upcoming} upcoming this month` : '2 upcoming this month'}
               tone="warning"
               linkTo="/admin/events"
               icon={Calendar}
@@ -151,7 +188,16 @@ export const AdminDashboardPage: React.FC = () => {
             <MembershipGrowthChart />
             <StatusDonutChart
               title="Application Status Distribution"
-              segments={DEMO_APPLICATION_STATUS}
+              segments={
+                dashboardData?.applicationsByStatus
+                  ? [
+                      { label: 'Pending Verification', count: dashboardData.applicationsByStatus.PENDING || 0, color: '#D97706' },
+                      { label: 'Under Review', count: dashboardData.applicationsByStatus.UNDER_REVIEW || 0, color: '#174A78' },
+                      { label: 'Accredited / Approved', count: dashboardData.applicationsByStatus.APPROVED || 0, color: '#16A34A' },
+                      { label: 'Rejected', count: dashboardData.applicationsByStatus.REJECTED || 0, color: '#DC2626' },
+                    ]
+                  : DEMO_APPLICATION_STATUS
+              }
             />
           </div>
 
@@ -164,10 +210,22 @@ export const AdminDashboardPage: React.FC = () => {
           {/* Secondary Row: Complaints breakdown, Financial Summary, Upcoming events */}
           <div style={styles.threeColumnGrid}>
             <UpcomingEventsCard />
-            <FinancialSummaryCard />
+            <FinancialSummaryCard
+              totalCollections={dashboardData?.revenue?.total}
+              receiptsCount={dashboardData?.donations?.total}
+            />
             <StatusDonutChart
               title="Complaints Resolution"
-              segments={DEMO_COMPLAINTS_STATUS}
+              segments={
+                dashboardData?.ticketsByStatus
+                  ? [
+                      { label: 'Submitted', count: dashboardData.ticketsByStatus.SUBMITTED || 0, color: '#D97706' },
+                      { label: 'Under Investigation', count: dashboardData.ticketsByStatus.UNDER_REVIEW || 0, color: '#174A78' },
+                      { label: 'Resolved', count: dashboardData.ticketsByStatus.RESOLVED || 0, color: '#16A34A' },
+                      { label: 'Closed', count: dashboardData.ticketsByStatus.CLOSED || 0, color: '#64748B' },
+                    ]
+                  : DEMO_COMPLAINTS_STATUS
+              }
             />
           </div>
 
@@ -247,16 +305,17 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '16px',
   },
   headingTitle: {
-    fontFamily: 'serif',
+    fontFamily: 'var(--font-display)',
     fontSize: '28px',
     fontWeight: 700,
-    color: '#0F2942',
+    color: 'var(--color-text-primary)',
     margin: 0,
     letterSpacing: '-0.02em',
   },
   headingSubtitle: {
+    fontFamily: 'var(--font-body)',
     fontSize: '14px',
-    color: '#64748B',
+    color: 'var(--color-text-muted)',
     margin: '4px 0 0 0',
   },
   dateBadge: {

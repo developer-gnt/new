@@ -291,9 +291,7 @@ class MemberStore {
       paymentMethod,
       transactionId: txnId,
       status: 'SUCCESS',
-      has80GReceipt: true,
-      donorPan: 'ABCDE1234F',
-      section80GRef: `AAATH1234F${currentYear}${randomSuffix}`,
+      has80GReceipt: false,
     };
 
     this.passbook.unshift(newReceipt);

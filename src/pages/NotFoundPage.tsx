@@ -6,7 +6,7 @@ export const NotFoundPage: React.FC = () => {
     <div style={styles.container}>
       <h1 style={styles.code}>404</h1>
       <h2 style={styles.title}>Page Not Found</h2>
-      <p style={styles.text}>The page you are looking for does not exist.</p>
+      <p style={styles.text}>The page you are looking for does not exist or has been relocated.</p>
       <Link to="/" style={styles.link}>
         Back to Home
       </Link>
@@ -22,31 +22,41 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     minHeight: '70vh',
     textAlign: 'center',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: 'var(--font-body)',
+    backgroundColor: 'var(--color-ivory-50)',
+    padding: '24px',
   },
   code: {
-    fontSize: '64px',
-    fontWeight: 800,
-    color: '#ef4444',
+    fontFamily: 'var(--font-display)',
+    fontSize: '72px',
+    fontWeight: 700,
+    color: 'var(--color-navy-950)',
     margin: 0,
+    lineHeight: 1.1,
   },
   title: {
-    fontSize: '24px',
-    color: '#1f2937',
-    margin: '12px 0',
+    fontFamily: 'var(--font-display)',
+    fontSize: '28px',
+    fontWeight: 700,
+    color: 'var(--color-text-primary)',
+    margin: '12px 0 8px 0',
   },
   text: {
+    fontFamily: 'var(--font-body)',
     fontSize: '15px',
-    color: '#6b7280',
-    marginBottom: '20px',
+    color: 'var(--color-text-body)',
+    marginBottom: '24px',
+    maxWidth: '440px',
   },
   link: {
-    padding: '10px 20px',
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
+    padding: '12px 24px',
+    backgroundColor: 'var(--color-gold-500)',
+    color: 'var(--color-navy-950)',
     textDecoration: 'none',
-    borderRadius: '6px',
-    fontWeight: 600,
+    borderRadius: 'var(--radius-button)',
+    fontWeight: 700,
     fontSize: '14px',
+    boxShadow: '0 2px 4px rgba(1, 31, 57, 0.08)',
+    transition: 'background-color 0.15s ease',
   },
 };

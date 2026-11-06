@@ -524,6 +524,25 @@ export const CreateNewsPage: React.FC = () => {
               </label>
             </div>
           </div>
+
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>
+              Target Portal Visibility <span style={styles.requiredStar}>*</span>
+            </label>
+            <select
+              value={form.targetAudience || 'ALL'}
+              onChange={(e) => setForm((prev) => ({ ...prev, targetAudience: e.target.value }))}
+              style={styles.select}
+            >
+              <option value="ALL">All Portals (Public & All Roles)</option>
+              <option value="MEMBERS">Members Portal Only</option>
+              <option value="SEEKERS">Donation Seekers Portal Only</option>
+              <option value="USERS">General Users / Public Only</option>
+            </select>
+            <span style={styles.helpText}>
+              Controls which user roles are authorized to view this article once published.
+            </span>
+          </div>
         </div>
 
         {/* Section 6: Additional Options */}

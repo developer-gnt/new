@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Scale,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { rightsStore } from '@/features/admin/rights/store/rightsStore';
 import type { RightsArticle } from '@/features/admin/rights/types/rights.types';
+import { filterRightsForRole } from '@/features/content';
 
 export const MemberRightsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,9 +24,15 @@ export const MemberRightsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeArticle, setActiveArticle] = useState<RightsArticle | null>(null);
 
+  useEffect(() => {
+    rightsStore.fetchRights().catch(() => {});
+  }, []);
+
   const categories = ['ALL', 'Constitution', "Women's Rights", 'Police', 'RTI', 'Consumer'];
 
-  const filteredArticles = articles.filter((art: RightsArticle) => {
+  const roleAuthorizedArticles = filterRightsForRole(articles, 'MEMBER');
+
+  const filteredArticles = roleAuthorizedArticles.filter((art: RightsArticle) => {
     if (selectedCategory !== 'ALL' && !art.category.toLowerCase().includes(selectedCategory.toLowerCase())) {
       return false;
     }

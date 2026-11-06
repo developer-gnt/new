@@ -191,10 +191,10 @@ export const EditUserPage: React.FC = () => {
       <div
         style={{
           backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #EDF2F7',
-          padding: '28px 32px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          borderRadius: '12px',
+          border: '1px solid #DCE4EC',
+          padding: '24px',
+          boxShadow: '0 1px 3px rgba(1, 31, 57, 0.04)',
         }}
       >
         <div style={{ marginBottom: '24px', borderBottom: '1px solid #EDF2F7', paddingBottom: '16px' }}>
@@ -623,12 +623,12 @@ export const EditUserPage: React.FC = () => {
               onClick={() => navigate(`/admin/users/${user.id}`)}
               style={{
                 padding: '10px 20px',
-                fontSize: '14px',
+                fontSize: '13.5px',
                 fontWeight: 600,
-                color: '#34516D',
+                color: '#06294D',
                 backgroundColor: '#EDF2F7',
-                border: 'none',
-                borderRadius: '8px',
+                border: '1px solid #DCE4EC',
+                borderRadius: '12px',
                 cursor: 'pointer',
               }}
             >
@@ -644,10 +644,10 @@ export const EditUserPage: React.FC = () => {
                 color: '#011F39',
                 backgroundColor: '#FAD465',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 opacity: isSubmitting ? 0.7 : 1,
-                boxShadow: '0 2px 6px rgba(250, 212, 101, 0.4)',
+                boxShadow: '0 2px 4px rgba(1, 31, 57, 0.08)',
               }}
             >
               {isSubmitting ? 'Saving Changes...' : 'Save Changes'}

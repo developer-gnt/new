@@ -158,7 +158,7 @@ export const MemberDashboardPage: React.FC = () => {
         />
         <div style={styles.heroOverlay} />
 
-        <div style={styles.heroGrid}>
+        <div className="member-hero-grid">
           {/* Left Column: Greeting, Credentials & CTA Actions */}
           <div style={styles.heroLeftCol}>
             {/* Capsule Badges */}

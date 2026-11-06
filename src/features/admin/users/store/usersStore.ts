@@ -7,7 +7,6 @@ import type {
   UserType,
   UserStatus,
 } from '../types/user.types';
-import { INITIAL_DEV_USERS } from '../data/userFixtures';
 import { usersService } from '../services/usersService';
 
 const STORAGE_KEY = 'hrsjm_registered_users';
@@ -46,7 +45,7 @@ class UsersStore {
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             return parsed;
           }
         }
@@ -54,7 +53,7 @@ class UsersStore {
     } catch {
       // Ignore localStorage errors
     }
-    return [...INITIAL_DEV_USERS];
+    return [];
   }
 
   private persistUsers(): void {
@@ -172,23 +171,12 @@ class UsersStore {
           });
         }
 
-        // Merge API users with existing local state
-        let changed = false;
-        for (const nu of mappedUsers) {
-          const existingIdx = this.users.findIndex(u => u.id === nu.id);
-          if (existingIdx >= 0) {
-            this.users[existingIdx] = { ...this.users[existingIdx], ...nu };
-            changed = true;
-          } else {
-            this.users.push(nu);
-            changed = true;
-          }
-        }
-
-        if (changed) {
-          this.sortUsersInternal();
-          this.notify();
-        }
+        this.users = mappedUsers;
+        this.sortUsersInternal();
+        this.notify();
+      } else if (items && items.length === 0) {
+        this.users = [];
+        this.notify();
       }
     } catch {
       // Gracefully maintain offline/fixtures state

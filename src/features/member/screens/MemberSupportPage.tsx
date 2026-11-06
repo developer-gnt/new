@@ -263,7 +263,7 @@ export const MemberSupportPage: React.FC = () => {
               <LifeBuoy className="w-3.5 h-3.5" />
               National Member Grievance & Rapid Response Desk
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold font-serif tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold font-['Playfair_Display',Georgia,serif] tracking-tight">
               Help & Support Desk
             </h1>
             <p className="text-xs md:text-sm text-slate-200 max-w-2xl">
@@ -637,7 +637,7 @@ export const MemberSupportPage: React.FC = () => {
               <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
                 Official Incident Reporting
               </span>
-              <h2 className="text-xl font-black text-[#06294D] pt-1">
+              <h2 className="text-xl font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D] pt-1">
                 Lodge Grievance or Violation Report
               </h2>
               <p className="text-xs text-slate-500">
@@ -660,7 +660,7 @@ export const MemberSupportPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1">
                     Category *
@@ -747,7 +747,7 @@ export const MemberSupportPage: React.FC = () => {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#06294D] hover:bg-[#083a6b] text-white font-bold text-xs tracking-wide transition-colors shadow-md cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs tracking-wide transition-colors shadow-md cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Submit Grievance to Legal Cell

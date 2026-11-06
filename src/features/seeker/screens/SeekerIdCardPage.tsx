@@ -24,7 +24,7 @@ export const SeekerIdCardPage: React.FC = () => {
           <title>HRSJM Seeker ID Card - ${user?.full_name || 'Seeker'}</title>
           <style>
             @page { size: A4 portrait; margin: 15mm; }
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #FAF7F0; color: #06294D; text-align: center; }
+            body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 24px; background: #FAF7F0; color: #06294D; text-align: center; }
             .card-wrapper { max-width: 480px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; border: 2px solid #06294D; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
             .c-header { background: #06294D; padding: 18px; color: #FFFFFF; border-bottom: 3px solid #FAD465; text-align: left; }
             .c-org { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #FAD465; text-transform: uppercase; }

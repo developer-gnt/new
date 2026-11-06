@@ -205,9 +205,7 @@ export const INITIAL_MEMBER_PASSBOOK: MemberPassbookEntry[] = [
     paymentMethod: 'UPI',
     transactionId: 'CF_UPI_2026010198124',
     status: 'SUCCESS',
-    has80GReceipt: true,
-    donorPan: 'ABCDE1234F',
-    section80GRef: 'AAATH1234F20260842',
+    has80GReceipt: false,
   },
   {
     id: 'tx-002',

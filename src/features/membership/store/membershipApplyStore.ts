@@ -3,6 +3,7 @@ import type {
   MembershipApplicationFormData,
   MembershipCategoryOption,
   SubmittedApplicationRecord,
+  ApplicationStatus,
   PersonalInfoForm,
   AddressInfoForm,
   DocumentsInfoForm,
@@ -10,6 +11,7 @@ import type {
 import type { PaymentReceiptDetails } from '../../payments/types/payment.types';
 import { MEMBERSHIP_CATEGORIES } from '../data/membershipCategoriesData';
 import { membershipApplicationService } from '../services/membershipApplicationService';
+import { apiClient } from '@/api';
 
 const FORM_STORAGE_KEY = 'hrsjm_membership_apply_draft';
 const APPS_STORAGE_KEY = 'hrsjm_submitted_applications';
@@ -307,6 +309,9 @@ class MembershipApplyStore {
     const q = query.trim().toLowerCase();
     if (!q) return false;
 
+    // Trigger backend query to sync live database status
+    this.trackApplicationBackend(query).catch(() => {});
+
     const found = this.submittedApps.find(
       (app) =>
         app.applicationId.toLowerCase().includes(q) ||
@@ -318,6 +323,62 @@ class MembershipApplyStore {
       this.activeTrackRecord = found;
       this.notify();
       return true;
+    }
+    return false;
+  }
+
+  public async trackApplicationBackend(query: string): Promise<boolean> {
+    const q = query.trim();
+    if (!q) return false;
+    try {
+      const res = await apiClient.get<any>(`/memberships?search=${encodeURIComponent(q)}`);
+      const items = res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+      if (Array.isArray(items) && items.length > 0) {
+        const item = items[0];
+        const appData = item.application_data || {};
+        const personal = appData.personal_details || {};
+        const rawStatus = (item.status || '').toUpperCase();
+        let status: ApplicationStatus = 'APPLIED';
+        let currentStage = 1;
+        if (rawStatus === 'ACTIVE' || rawStatus === 'APPROVED') {
+          status = 'APPROVED';
+          currentStage = 4;
+        } else if (rawStatus === 'REJECTED') {
+          status = 'REJECTED';
+          currentStage = 2;
+        } else if (rawStatus === 'UNDER_REVIEW') {
+          status = 'UNDER_REVIEW';
+          currentStage = 2;
+        }
+
+        const backendRecord: SubmittedApplicationRecord = {
+          applicationId: item.membership_number || item.id,
+          postName: item.category?.name || appData.appliedPostName || 'Membership',
+          categoryFee: item.payment?.amount || item.amount || 800,
+          validity: '1 Year',
+          fullName: item.user?.full_name || personal.full_name || 'Applicant',
+          phone: item.user?.mobile_number || personal.mobile_number || '—',
+          email: item.user?.email || personal.email || '—',
+          submittedAt: item.applied_at || item.created_at || new Date().toISOString(),
+          status,
+          currentStage,
+          reviewerRemarks: item.admin_notes || item.rejection_reason || undefined,
+          assignedChapter: 'National Directorate',
+          documents: {
+            photo: { name: 'Passport Photo', status: 'VERIFIED' },
+            idProof: { name: 'Identity Proof', type: 'Official ID', status: 'VERIFIED' },
+            signature: { name: 'Signature', status: 'VERIFIED' },
+          },
+          generatedMemberId: item.membership_number,
+          paymentStatus: 'PAID',
+        };
+
+        this.activeTrackRecord = backendRecord;
+        this.notify();
+        return true;
+      }
+    } catch {
+      // Ignore network errors in tracking
     }
     return false;
   }

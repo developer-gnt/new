@@ -75,7 +75,7 @@ export const donationsService = {
         ? res
         : null;
 
-      if (items && items.length > 0) {
+      if (Array.isArray(items)) {
         return items;
       }
     } catch (e) {
@@ -284,7 +284,7 @@ export const donationsService = {
         <meta charset="utf-8" />
         <style>
           @page { size: A4 portrait; margin: 15mm; }
-          body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; color: #011F39; margin: 0; padding: 25px; font-size: 13px; line-height: 1.5; }
+          body { font-family: 'Inter', Arial, sans-serif; color: #011F39; margin: 0; padding: 25px; font-size: 13px; line-height: 1.5; }
           .receipt-border { border: 3px double #011F39; padding: 25px; border-radius: 8px; position: relative; }
           .header { text-align: center; border-bottom: 2px solid #011F39; padding-bottom: 15px; margin-bottom: 20px; }
           .org-title { font-size: 22px; font-weight: 800; color: #011F39; letter-spacing: 0.5px; }

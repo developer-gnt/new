@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, CheckCircle2, Clock, AlertCircle, ArrowRight } from 'lucide-react';
 import { useSeekerStore } from '../store/seekerStore';
+import type { SeekerNotification } from '../types/seeker.types';
+import { notificationsService } from '@/features/admin/notifications/services/notificationsService';
+import { filterBroadcastsForRole } from '@/features/content';
 
 /**
  * Exact replication of NotificationsScreen.tsx from the HRSJM React Native APK:
@@ -11,7 +14,60 @@ import { useSeekerStore } from '../store/seekerStore';
  */
 export const SeekerNotificationsPage: React.FC = () => {
   const { notifications } = useSeekerStore();
+  const [liveNotifs, setLiveNotifs] = useState<SeekerNotification[]>([]);
   const [filterView, setFilterView] = useState<'ALL' | 'UNREAD'>('ALL');
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLive = async () => {
+      try {
+        const items = await notificationsService.fetchMyNotifications();
+        if (isMounted && Array.isArray(items) && items.length > 0) {
+          const mapped: SeekerNotification[] = items.map((i) => ({
+            id: i.recipient_id || i.notification.id,
+            title: i.notification.title,
+            message: i.notification.body,
+            type: i.notification.category === 'DONATION' ? 'DISBURSEMENT' : 'GENERAL',
+            read: i.is_read,
+            created_at: i.created_at || new Date().toISOString(),
+            action_url: i.notification.deepLinkUrl || '/seeker/home',
+          }));
+          setLiveNotifs(mapped);
+        }
+      } catch {
+        // fallback to store
+      }
+    };
+    fetchLive();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const broadcastNotifs = useMemo<SeekerNotification[]>(() => {
+    try {
+      const raw = notificationsService.getBroadcasts();
+      const authorized = filterBroadcastsForRole(raw, 'SEEKER');
+      return authorized.map((b) => ({
+        id: b.id,
+        title: b.title,
+        message: b.body,
+        type: 'GENERAL',
+        read: false,
+        created_at: b.sent_at || b.created_at || new Date().toISOString(),
+        action_url: '/seeker/home',
+      }));
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const combinedNotifications = useMemo<SeekerNotification[]>(() => {
+    if (liveNotifs.length > 0) {
+      return [...broadcastNotifs, ...liveNotifs];
+    }
+    return [...broadcastNotifs, ...notifications];
+  }, [broadcastNotifs, liveNotifs, notifications]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -26,7 +82,7 @@ export const SeekerNotificationsPage: React.FC = () => {
     }
   };
 
-  const filtered = notifications.filter((n) => {
+  const filtered = combinedNotifications.filter((n) => {
     if (filterView === 'UNREAD') return !n.read;
     return true;
   });

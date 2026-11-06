@@ -153,15 +153,28 @@ export const EventDetailsPage: React.FC = () => {
         <div className="flex items-center gap-2.5 flex-wrap">
           <div className="inline-flex rounded-lg shadow-sm border border-slate-300 overflow-hidden bg-white">
             <select
+              value={event.targetAudience === 'MEMBERS' || event.targetAudience === 'SEEKERS' || event.targetAudience === 'USERS' ? event.targetAudience : 'ALL'}
+              onChange={(e) => eventsStore.updateEvent(event.id, { targetAudience: e.target.value })}
+              className="px-3 py-2 text-xs font-semibold text-slate-700 bg-transparent focus:outline-none cursor-pointer"
+            >
+              <option value="ALL">Visibility: All Portals</option>
+              <option value="MEMBERS">Visibility: Members Only</option>
+              <option value="SEEKERS">Visibility: Seekers Only</option>
+              <option value="USERS">Visibility: General Users Only</option>
+            </select>
+          </div>
+
+          <div className="inline-flex rounded-lg shadow-sm border border-slate-300 overflow-hidden bg-white">
+            <select
               value={event.status}
               disabled={statusUpdating}
               onChange={(e) => handleStatusChange(e.target.value as EventUiStatus)}
               className="px-3 py-2 text-xs font-semibold text-slate-700 bg-transparent focus:outline-none cursor-pointer"
             >
-              <option value="UPCOMING">Status: Upcoming</option>
+              <option value="UPCOMING">Status: Upcoming (Published)</option>
               <option value="COMPLETED">Status: Completed</option>
               <option value="CANCELLED">Status: Cancelled</option>
-              <option value="DRAFT">Status: Draft</option>
+              <option value="DRAFT">Status: Draft (Admin Only)</option>
             </select>
           </div>
 

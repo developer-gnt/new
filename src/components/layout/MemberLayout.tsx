@@ -112,9 +112,9 @@ export const MemberLayout: React.FC = () => {
 
         {/* Dynamic Page Outlet with Responsive Container */}
         <main style={styles.contentArea}>
-          <div style={styles.contentInner}>
-            <AppErrorBoundary>
-              <Outlet />
+          <div style={styles.contentInner} className="member-content-inner">
+            <AppErrorBoundary key={location.pathname}>
+              <Outlet key={location.pathname} />
             </AppErrorBoundary>
           </div>
         </main>
@@ -141,7 +141,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   contentArea: {
     flex: 1,
-    padding: '24px',
     overflowY: 'auto',
   },
   contentInner: {

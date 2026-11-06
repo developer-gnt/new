@@ -2,7 +2,28 @@ import type React from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, ShieldCheck, ArrowRight, ReceiptText } from 'lucide-react';
 
-export const FinancialSummaryCard: React.FC = () => {
+export interface FinancialSummaryCardProps {
+  totalCollections?: number;
+  receiptsCount?: number;
+  averageDonation?: number;
+}
+
+export const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
+  totalCollections,
+  receiptsCount,
+  averageDonation,
+}) => {
+  const displayTotal = totalCollections !== undefined
+    ? `₹${totalCollections.toLocaleString('en-IN')}`
+    : '₹48,24,500';
+
+  const displayReceipts = receiptsCount !== undefined
+    ? receiptsCount.toLocaleString('en-IN')
+    : '1,418';
+
+  const displayAverage = averageDonation !== undefined
+    ? `₹${averageDonation.toLocaleString('en-IN')}`
+    : '₹3,402';
   return (
     <div style={styles.card}>
       <div style={styles.header}>
@@ -25,7 +46,7 @@ export const FinancialSummaryCard: React.FC = () => {
       <div style={styles.grid}>
         <div style={styles.metricBlock}>
           <span style={styles.metricLabel}>Total Collections (YTD)</span>
-          <span style={styles.metricValue}>₹48,24,500</span>
+          <span style={styles.metricValue}>{displayTotal}</span>
           <div style={styles.metricTag}>
             <span style={styles.greenDot} />
             <span>100% Tax Compliant</span>
@@ -34,7 +55,7 @@ export const FinancialSummaryCard: React.FC = () => {
 
         <div style={styles.metricBlock}>
           <span style={styles.metricLabel}>80G Receipts Issued</span>
-          <span style={styles.metricValue}>1,418</span>
+          <span style={styles.metricValue}>{displayReceipts}</span>
           <div style={styles.metricTag}>
             <ReceiptText size={12} color="#174A78" />
             <span>Digital Receipts</span>
@@ -43,7 +64,7 @@ export const FinancialSummaryCard: React.FC = () => {
 
         <div style={styles.metricBlock}>
           <span style={styles.metricLabel}>Average Donation</span>
-          <span style={styles.metricValue}>₹3,402</span>
+          <span style={styles.metricValue}>{displayAverage}</span>
           <div style={styles.metricTag}>
             <ShieldCheck size={12} color="#047857" />
             <span>Verified Donors</span>

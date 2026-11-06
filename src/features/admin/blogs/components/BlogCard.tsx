@@ -97,7 +97,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
               style={styles.menuBtn}
               title="Article Actions"
             >
-              <MoreVertical size={16} color="#64748B" />
+              <MoreVertical size={16} color="#718096" />
             </button>
 
             {menuOpen && (
@@ -353,7 +353,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   dropdownDivider: {
     height: '1px',
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#DBE5EE',
     margin: '4px 0',
   },
   title: {
@@ -371,7 +371,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   excerpt: {
     fontSize: '13px',
-    color: '#64748B',
+    color: '#34516D',
     lineHeight: 1.5,
     margin: '0 0 16px 0',
     display: '-webkit-box',
@@ -386,9 +386,9 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '12px',
     alignItems: 'center',
     paddingTop: '12px',
-    borderTop: '1px solid #F1F5F9',
+    borderTop: '1px solid #DBE5EE',
     fontSize: '12px',
-    color: '#64748B',
+    color: '#718096',
   },
   metaItem: {
     display: 'inline-flex',

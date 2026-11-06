@@ -62,7 +62,7 @@ export const UserAboutPage: React.FC = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 1. Hero Overview Header */}
       <div className="relative rounded-3xl overflow-hidden bg-[#06294D] text-white p-6 sm:p-10 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-[#011F39]/95 via-[#06294D]/85 to-transparent z-0" />

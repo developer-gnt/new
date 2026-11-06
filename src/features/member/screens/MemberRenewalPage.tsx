@@ -138,7 +138,7 @@ export const MemberRenewalPage: React.FC = () => {
               )}
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold font-['Playfair_Display',Georgia,serif] tracking-tight">
               Membership Renewal & Extension Center
             </h1>
 
@@ -188,7 +188,7 @@ export const MemberRenewalPage: React.FC = () => {
         {/* Left Column: Plan Options (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           <div>
-            <h2 className="text-lg font-bold font-serif text-[#06294D] tracking-tight">
+            <h2 className="text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D] tracking-tight">
               1. Select Renewal Term or Upgrade Package
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">

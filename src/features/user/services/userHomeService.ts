@@ -15,6 +15,10 @@ import {
   LATEST_NEWS,
   UPCOMING_EVENTS,
 } from '../data/userDashboardData';
+import { eventsStore } from '../../admin/events/store/eventsStore';
+import { newsStore } from '../../admin/news/store/newsStore';
+import { blogsStore } from '../../admin/blogs/store/blogsStore';
+import { filterEventsForRole, filterNewsForRole, filterBlogsForRole } from '@/features/content';
 
 export const userHomeService = {
   fetchUpcomingEvents: async (): Promise<HomeEvent[]> => {
@@ -50,6 +54,27 @@ export const userHomeService = {
     } catch {
       // Graceful fallback to rich defaults
     }
+
+    try {
+      const local = filterEventsForRole(eventsStore.getAllEvents(), 'USER');
+      if (local && local.length > 0) {
+        return local.slice(0, 4).map((item, idx) => {
+          const d = item.startAt ? new Date(item.startAt) : new Date();
+          return {
+            id: item.id || `event-${idx}`,
+            title: item.title,
+            day: String(d.getDate()).padStart(2, '0'),
+            month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+            location: item.location || 'HRSJM Community Center',
+            imageAssetName: 'home/events/rights-workshop.png',
+            imageUrl: item.coverImageUrl || '/assets/images/event-legal-awareness.jpg',
+          };
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     return UPCOMING_EVENTS;
   },
 
@@ -88,6 +113,24 @@ export const userHomeService = {
     } catch {
       // Graceful fallback
     }
+
+    try {
+      const local = filterNewsForRole(newsStore.getAllNews(), 'USER');
+      if (local && local.length > 0) {
+        return local.slice(0, 4).map((item, idx) => ({
+          id: item.id || `news-${idx}`,
+          category: (item.category || 'LEGAL RIGHTS').toUpperCase(),
+          title: item.title,
+          date: item.date || 'Recent',
+          imageAssetName: 'home/news/legal-awareness.png',
+          imageUrl: item.thumbnailUrl || '/assets/images/contact-hero-building.jpg',
+          article: item,
+        }));
+      }
+    } catch {
+      // ignore
+    }
+
     return LATEST_NEWS;
   },
 
@@ -127,6 +170,25 @@ export const userHomeService = {
     } catch {
       // Graceful fallback
     }
+
+    try {
+      const local = filterBlogsForRole(blogsStore.getAllBlogs(), 'USER');
+      if (local && local.length > 0) {
+        return local.slice(0, 4).map((item, idx) => ({
+          id: item.id || `blog-${idx}`,
+          title: item.title,
+          excerpt: item.excerpt || 'Empowering citizens with legal literacy and constitutional rights awareness.',
+          category: (item.category || 'ARTICLE').toUpperCase(),
+          date: item.date || 'Recent',
+          author: item.author || 'HRSJM Editorial',
+          thumbnailUrl: item.thumbnailUrl || '/assets/images/article-rights-book.jpg',
+          article: item,
+        }));
+      }
+    } catch {
+      // ignore
+    }
+
     return DEFAULT_HOME_BLOGS;
   },
 

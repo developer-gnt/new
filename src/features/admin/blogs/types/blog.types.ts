@@ -36,6 +36,8 @@ export interface BlogListItem {
   featured?: boolean;
   /** Allow public comments */
   allowComments?: boolean;
+  /** Role visibility target */
+  targetAudience?: string;
 }
 
 export interface BlogStatsSummary {
@@ -68,6 +70,7 @@ export interface CreateBlogFormState {
   allowComments: boolean;
   featured: boolean;
   tagsText: string;
+  targetAudience?: string;
 }
 
 export type CreateBlogFieldErrors = Partial<Record<keyof CreateBlogFormState, string>>;

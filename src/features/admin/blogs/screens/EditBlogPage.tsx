@@ -37,6 +37,7 @@ export const EditBlogPage: React.FC = () => {
     allowComments: existing ? existing.allowComments ?? true : true,
     featured: existing ? existing.featured ?? false : false,
     tagsText: existing && existing.tags ? existing.tags.join(', ') : '',
+    targetAudience: existing ? existing.targetAudience || 'ALL' : 'ALL',
   }));
 
   const [tagInput, setTagInput] = useState('');
@@ -496,6 +497,25 @@ export const EditBlogPage: React.FC = () => {
                 </div>
               </div>
             </label>
+          </div>
+
+          <div style={{ ...styles.fieldGroup, marginTop: '20px' }}>
+            <label style={styles.label}>
+              Target Portal Visibility <span style={styles.requiredStar}>*</span>
+            </label>
+            <select
+              value={form.targetAudience || 'ALL'}
+              onChange={(e) => setForm((prev) => ({ ...prev, targetAudience: e.target.value }))}
+              style={styles.select}
+            >
+              <option value="ALL">All Portals (Public & All Roles)</option>
+              <option value="MEMBERS">Members Portal Only</option>
+              <option value="SEEKERS">Donation Seekers Portal Only</option>
+              <option value="USERS">General Users / Public Only</option>
+            </select>
+            <span style={styles.helpText}>
+              Controls which user roles are authorized to view this blog article once published.
+            </span>
           </div>
         </div>
 

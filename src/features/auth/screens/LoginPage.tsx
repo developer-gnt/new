@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ShieldCheck, HeartHandshake, Lock, User, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../store/authStore';
+import { useAuth, resolveUserDestination } from '../store/authStore';
 import { HrsjmLogo } from '../../../components/common/HrsjmLogo';
 
 export const LoginPage: React.FC = () => {
@@ -29,20 +29,12 @@ export const LoginPage: React.FC = () => {
 
     try {
       const user = await login({ identifier, password, rememberMe });
-      const roleNames = (user.roles || []).map((r: any) =>
-        (typeof r === 'string' ? r : r.name || '').toUpperCase()
-      );
-      const isSeeker =
-        roleNames.includes('DONATION_SEEKER') ||
-        roleNames.includes('SEEKER') ||
-        (user as any).account_type === 'seeker';
 
       if (redirectUrl) {
         navigate(redirectUrl, { replace: true });
-      } else if (isSeeker) {
-        navigate('/seeker/home', { replace: true });
       } else {
-        navigate('/admin/dashboard', { replace: true });
+        const destination = resolveUserDestination(user);
+        navigate(destination, { replace: true });
       }
     } catch (err: any) {
       setError(err?.message || 'Invalid credentials or unable to connect to authentication server.');

@@ -107,7 +107,7 @@ export const MemberProfilePage: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold font-['Playfair_Display',Georgia,serif] tracking-tight">
               {member.fullName}
             </h1>
 

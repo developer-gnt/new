@@ -74,17 +74,17 @@ export const SeekerCreateTicketPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/seeker/support')}
-          className="w-9 h-9 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] flex items-center justify-center text-[#0F2C59] transition cursor-pointer"
+          className="w-9 h-9 rounded-full bg-[#EDF2F7] hover:bg-[#DBE5EE] flex items-center justify-center text-[#06294D] transition cursor-pointer"
           aria-label="Go back"
         >
           <ChevronLeft size={20} strokeWidth={2.5} />
         </button>
 
         <div className="flex-1 truncate">
-          <h1 className="text-base font-bold text-[#0F2C59] truncate">
+          <h1 className="text-base font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D] truncate">
             New Support Ticket / Grievance
           </h1>
-          <p className="text-[11px] text-[#64748B] truncate">
+          <p className="text-[11px] text-[#718096] truncate">
             Official inquiry to HRSJM assessment and legal desk
           </p>
         </div>
@@ -92,7 +92,7 @@ export const SeekerCreateTicketPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/seeker/support')}
-          className="w-9 h-9 rounded-full bg-[#F8FAFC] hover:bg-[#F1F5F9] flex items-center justify-center text-[#64748B] transition cursor-pointer"
+          className="w-9 h-9 rounded-full bg-[#FAF7F0] hover:bg-[#EDF2F7] flex items-center justify-center text-[#718096] transition cursor-pointer"
           aria-label="Close"
         >
           <X size={18} />

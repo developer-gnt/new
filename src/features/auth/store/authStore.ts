@@ -24,9 +24,46 @@ class AuthStore {
   private cachedSnapshot: AuthStoreState;
 
   constructor() {
-    this.user = authService.getStoredUser();
     this.token = authService.getStoredToken();
+    this.user = this.token ? authService.getStoredUser() : null;
     this.cachedSnapshot = this.buildSnapshot();
+
+    // Listen to global logout events
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hrsjm:auth:logout', () => {
+        this.user = null;
+        this.token = null;
+        this.notify();
+      });
+    }
+
+    // Validate existing session with backend /auth/me on mount
+    if (this.token) {
+      void this.validateSession();
+    }
+  }
+
+  public async validateSession(): Promise<boolean> {
+    if (!this.token) return false;
+    try {
+      const freshUser = await authService.fetchMe();
+      if (freshUser && freshUser.id) {
+        this.user = freshUser;
+        this.notify();
+        return true;
+      }
+      this.user = null;
+      this.token = null;
+      authService.clearSession();
+      this.notify();
+      return false;
+    } catch {
+      this.user = null;
+      this.token = null;
+      authService.clearSession();
+      this.notify();
+      return false;
+    }
   }
 
   private buildSnapshot(): AuthStoreState {
@@ -126,10 +163,15 @@ class AuthStore {
     }
   }
 
-  public setUserDirectly(user: UserProfile, token: string): void {
+  public setUserDirectly(user: UserProfile, token: string, refreshToken?: string): void {
     this.user = user;
     this.token = token;
-    authService.saveSession({ user, access_token: token, refresh_token: 'direct-token' });
+    const existingRefresh = authService.getStoredRefreshToken();
+    authService.saveSession({
+      user,
+      access_token: token,
+      refresh_token: refreshToken || existingRefresh || '',
+    });
     this.notify();
   }
 }
@@ -174,7 +216,7 @@ export function useAuth(): AuthStoreState & {
   logout: () => Promise<void>;
   refreshUser: () => Promise<UserProfile | null>;
   updateUserState: (data: Partial<UserProfile>) => void;
-  setUserDirectly: (user: UserProfile, token: string) => void;
+  setUserDirectly: (user: UserProfile, token: string, refreshToken?: string) => void;
 } {
   const snapshot = useSyncExternalStore(authStore.subscribe, authStore.getSnapshot);
 
@@ -185,6 +227,6 @@ export function useAuth(): AuthStoreState & {
     logout: () => authStore.logout(),
     refreshUser: () => authStore.refreshUser(),
     updateUserState: (d) => authStore.updateUserState(d),
-    setUserDirectly: (u, t) => authStore.setUserDirectly(u, t),
+    setUserDirectly: (u, t, r) => authStore.setUserDirectly(u, t, r),
   };
 }

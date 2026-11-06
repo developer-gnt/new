@@ -59,9 +59,9 @@ export const AdminLayout: React.FC = () => {
 
         {/* Dynamic Page Outlet with Responsive Container */}
         <main style={styles.contentArea}>
-          <div style={styles.contentInner}>
-            <AppErrorBoundary>
-              <Outlet />
+          <div style={styles.contentInner} className="admin-content-inner">
+            <AppErrorBoundary key={location.pathname}>
+              <Outlet key={location.pathname} />
             </AppErrorBoundary>
           </div>
         </main>
@@ -87,14 +87,13 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    minHeight: 'calc(100vh - 64px)',
+    minHeight: 'calc(100vh - 68px)',
   },
   contentInner: {
     flex: 1,
     maxWidth: '1600px',
     width: '100%',
     margin: '0 auto',
-    padding: '24px 32px',
     display: 'flex',
     flexDirection: 'column',
   },

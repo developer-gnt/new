@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { donationsService } from '../../admin/donations/services/donationsService';
+import { assistanceService } from '../../admin/assistance/services/assistanceService';
 import type { Donation } from '../../admin/donations/types/donations.types';
 import { useUserAuth } from '../store/userAuthStore';
 import { cashfreeService } from '../../payments';
@@ -31,8 +32,28 @@ export const UserDonationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'donate' | 'history'>('donate');
   const [selectedAmount, setSelectedAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
+  const [causes, setCauses] = useState<string[]>(CAUSES);
   const [selectedCause, setSelectedCause] = useState<string>(CAUSES[0]);
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'CARD' | 'NETBANKING'>('UPI');
+
+  useEffect(() => {
+    const loadApprovedCauses = async () => {
+      try {
+        const approved = await assistanceService.listApproved();
+        if (approved && approved.length > 0) {
+          const names = approved
+            .map((a: any) => a.title || a.purpose || a.reason_for_aid)
+            .filter(Boolean);
+          if (names.length > 0) {
+            setCauses([...new Set([...CAUSES, ...names])]);
+          }
+        }
+      } catch {
+        // keep default CAUSES
+      }
+    };
+    loadApprovedCauses();
+  }, []);
 
   // Form State
   const [donorName, setDonorName] = useState(user?.full_name || 'Mohd. Ayaan Shaikh');
@@ -117,7 +138,7 @@ export const UserDonationsPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">
@@ -245,7 +266,7 @@ export const UserDonationsPage: React.FC = () => {
                   1. Select Mission Cause
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {CAUSES.map(cause => (
+                  {causes.map(cause => (
                     <button
                       key={cause}
                       type="button"
@@ -375,7 +396,7 @@ export const UserDonationsPage: React.FC = () => {
                 <label className="text-xs font-bold text-[#06294D] uppercase tracking-wider block">
                   4. Payment Gateway Option
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('UPI')}

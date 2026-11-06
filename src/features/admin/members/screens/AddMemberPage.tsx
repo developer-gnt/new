@@ -410,10 +410,10 @@ export const AddMemberPage: React.FC = () => {
                 padding: '10px 20px',
                 fontSize: '13.5px',
                 fontWeight: 600,
-                color: '#4B5563',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #D1D5DB',
-                borderRadius: '8px',
+                color: '#06294D',
+                backgroundColor: '#EDF2F7',
+                border: '1px solid #DCE4EC',
+                borderRadius: '12px',
                 cursor: 'pointer',
               }}
             >
@@ -428,12 +428,13 @@ export const AddMemberPage: React.FC = () => {
                 gap: '6px',
                 padding: '10px 24px',
                 fontSize: '14px',
-                fontWeight: 600,
-                color: '#FFFFFF',
-                backgroundColor: '#011F39',
+                fontWeight: 700,
+                color: '#011F39',
+                backgroundColor: '#FAD465',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 2px 4px rgba(1, 31, 57, 0.08)',
               }}
             >
               <CheckCircle2 size={16} />
@@ -448,20 +449,20 @@ export const AddMemberPage: React.FC = () => {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '13px',
+  fontSize: '12.5px',
   fontWeight: 600,
-  color: '#374151',
+  color: '#06294D',
   marginBottom: '6px',
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '9px 12px',
+  padding: '10px 14px',
   fontSize: '13.5px',
-  borderRadius: '8px',
-  border: '1px solid #D1D5DB',
+  borderRadius: '12px',
+  border: '1px solid #DCE4EC',
   backgroundColor: '#FFFFFF',
-  color: '#1F2937',
+  color: '#011F39',
   outline: 'none',
   boxSizing: 'border-box',
 };

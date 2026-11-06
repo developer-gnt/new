@@ -214,7 +214,7 @@ export const SettingsPage: React.FC = () => {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    padding: '24px 32px 60px',
+    padding: '0 0 40px',
     maxWidth: '1440px',
     margin: '0 auto',
     boxSizing: 'border-box',

@@ -11,6 +11,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { useCurrentMember } from '../store/memberStore';
+import { authService } from '@/features/auth/services/authService';
 
 export const MemberSettingsPage: React.FC = () => {
   const { member } = useCurrentMember();
@@ -34,7 +35,7 @@ export const MemberSettingsPage: React.FC = () => {
   const [directoryVisibility, setDirectoryVisibility] = useState(true);
   const [maskPhone, setMaskPhone] = useState(false);
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError('Please fill in all password fields.');
@@ -49,12 +50,21 @@ export const MemberSettingsPage: React.FC = () => {
       return;
     }
 
-    setPasswordError('');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setSuccessToast('Account password updated securely.');
-    setTimeout(() => setSuccessToast(null), 4000);
+    try {
+      setPasswordError('');
+      await authService.changePassword({
+        old_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSuccessToast('Account password updated securely on server.');
+      setTimeout(() => setSuccessToast(null), 4000);
+    } catch (err: any) {
+      setPasswordError(err?.message || 'Failed to update password. Please check your current password.');
+    }
   };
 
   const handleSavePreferences = () => {

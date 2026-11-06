@@ -22,6 +22,7 @@ export interface ComplaintStep3Props {
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  errorMessage?: string | null;
 }
 
 export const ComplaintStep3Review: React.FC<ComplaintStep3Props> = ({
@@ -35,6 +36,7 @@ export const ComplaintStep3Review: React.FC<ComplaintStep3Props> = ({
   onBack,
   onSubmit,
   isSubmitting,
+  errorMessage,
 }) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -274,6 +276,14 @@ export const ComplaintStep3Review: React.FC<ComplaintStep3Props> = ({
           </label>
         </div>
       </div>
+
+      {/* Error Alert if Submission Fails */}
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2">
+          <span className="font-bold">Submission failed:</span>
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* Step 3 Action Buttons */}
       <div className="pt-2 flex items-center justify-between gap-3">
