@@ -1,5 +1,5 @@
 import { apiClient, ApiError } from '../../../services/apiClient';
-import { ALL_MEMBERSHIP_POSTS } from '../data/membershipCategoriesData';
+import { ALL_MEMBERSHIP_POSTS, CATEGORY_UUID_MAP } from '../data/membershipCategoriesData';
 import type {
   CreateMembershipApiPayload,
   MembershipPostData,
@@ -102,6 +102,12 @@ export const membershipService = {
    */
   async submitApplication(payload: CreateMembershipApiPayload): Promise<SubmittedMembershipRecord> {
     const defaultAppId = `HRSJM-MEM-${new Date().getFullYear()}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+
+    // Guarantee category_id is a valid UUID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.category_id);
+    if (!isUUID) {
+      payload.category_id = CATEGORY_UUID_MAP[payload.category_id] || '82f72f9c-b79e-470d-8160-f29b392e28b4';
+    }
 
     try {
       const response = await apiClient.post<any>('/memberships/apply', payload);

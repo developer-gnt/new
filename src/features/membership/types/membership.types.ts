@@ -6,6 +6,7 @@
 
 export interface MembershipPostData {
   id: string;
+  slug?: string;
   postName: string;
   level: 'district' | 'state' | 'executive' | 'national';
   qualification: string;

@@ -22,6 +22,7 @@ import type { Member, KitFulfillmentData } from '../types/members.types';
 import { MemberStatusBadge } from './MemberStatusBadge';
 import { MemberIdCardModal } from './MemberIdCardModal';
 import { membersStore } from '../store/membersStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface MemberProfileModalProps {
   visible: boolean;

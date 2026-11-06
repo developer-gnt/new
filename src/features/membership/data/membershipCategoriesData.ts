@@ -1,9 +1,37 @@
 import type { MembershipPostData } from '../types/membership.types';
 import type { MembershipCategoryOption } from '../types/membershipApplication.types';
 
+export const CATEGORY_UUID_MAP: Record<string, string> = {
+  // District Posts
+  'district-active-member': 'f91a6b5a-90d8-4c8b-ae72-3275c70d287d',
+  'district-unit-post': '340f622e-bae7-4ba6-b15f-33eeecb23851',
+  'district-unit': 'e33a2dd6-996d-4991-b2bc-88ecebd19aba',
+  // State Posts
+  'state-active-member': '917ff128-555c-40df-b9dc-e07d050b3c90',
+  'state-unit-post': 'c658b0ee-68bf-4648-b3d4-664a7c7010e3',
+  'state-unit': '4febe0bf-c03a-4217-b11b-a7fef8b6f11c',
+  // Letter Pad Dignitaries
+  'lion-of-state': '82f72f9c-b79e-470d-8160-f29b392e28b4',
+  'counselor-of-state': '8fc6d22b-24d3-4401-a750-cb9eec279c24',
+  'counsellor-of-state': '8fc6d22b-24d3-4401-a750-cb9eec279c24',
+  'ambassador-of-state': '025d6313-4b39-4c42-b91a-4811a0583dbb',
+  'honble-state-director': '812214df-9f5c-42d7-803f-64705ce53379',
+  // National Councils
+  'national-political-council': '269d6f50-775d-4085-b482-99a8924abb1d',
+  'national-woman-council': 'c126396a-7150-4eb5-a636-25bb5d33052a',
+  'national-women-council-cell': 'c126396a-7150-4eb5-a636-25bb5d33052a',
+  'national-minority-council': '8d790f0c-e145-4fc6-95e2-7b2f1e9e0244',
+  'national-minority-council-cell': '8d790f0c-e145-4fc6-95e2-7b2f1e9e0244',
+  'national-legal-council': '3085dbf3-f8fa-4c65-8999-ed203e8ad2ba',
+  'national-legal-council-cell': '3085dbf3-f8fa-4c65-8999-ed203e8ad2ba',
+  'national-executive-council': '269d6f50-775d-4085-b482-99a8924abb1d',
+  'national-council-cell': '01dd8a2c-f4fa-47f8-bd85-31c700640717',
+};
+
 export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
   {
-    id: 'district-active-member',
+    id: 'f91a6b5a-90d8-4c8b-ae72-3275c70d287d',
+    slug: 'district-active-member',
     level: 'district',
     postName: 'District Active Member',
     qualification: 'Minimum 8th Class',
@@ -25,7 +53,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'state-active-member',
+    id: '917ff128-555c-40df-b9dc-e07d050b3c90',
+    slug: 'state-active-member',
     level: 'state',
     postName: 'State Active Member',
     qualification: 'Minimum 8th Class',
@@ -47,7 +76,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'district-unit-post',
+    id: '340f622e-bae7-4ba6-b15f-33eeecb23851',
+    slug: 'district-unit-post',
     level: 'district',
     postName: 'District Unit Post',
     qualification: 'Minimum 10th Class',
@@ -69,7 +99,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'state-unit-post',
+    id: 'c658b0ee-68bf-4648-b3d4-664a7c7010e3',
+    slug: 'state-unit-post',
     level: 'state',
     postName: 'State Unit Post',
     qualification: 'Minimum 10th Class',
@@ -94,7 +125,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
 
 export const LETTER_PAD_POSTS: MembershipPostData[] = [
   {
-    id: 'lion-of-state',
+    id: '82f72f9c-b79e-470d-8160-f29b392e28b4',
+    slug: 'lion-of-state',
     level: 'executive',
     postName: 'Lion of State',
     qualification: 'Minimum 12th Pass',
@@ -118,7 +150,8 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'counselor-of-state',
+    id: '8fc6d22b-24d3-4401-a750-cb9eec279c24',
+    slug: 'counselor-of-state',
     level: 'executive',
     postName: 'Counsellor of State',
     qualification: 'Minimum 12th Pass',
@@ -142,7 +175,8 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'ambassador-of-state',
+    id: '025d6313-4b39-4c42-b91a-4811a0583dbb',
+    slug: 'ambassador-of-state',
     level: 'executive',
     postName: 'Ambassador of State',
     qualification: 'Minimum 12th Pass',
@@ -166,7 +200,8 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'honble-state-director',
+    id: '812214df-9f5c-42d7-803f-64705ce53379',
+    slug: 'honble-state-director',
     level: 'executive',
     postName: 'Hon’ble State Director',
     qualification: 'Minimum Graduate / Degree',
@@ -193,7 +228,8 @@ export const LETTER_PAD_POSTS: MembershipPostData[] = [
 
 export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   {
-    id: 'national-legal-council-cell',
+    id: '3085dbf3-f8fa-4c65-8999-ed203e8ad2ba',
+    slug: 'national-legal-council-cell',
     level: 'national',
     postName: 'National Legal Council Cell',
     qualification: 'Advocate / Law Graduate (LL.B)',
@@ -217,7 +253,8 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'national-minority-council-cell',
+    id: '8d790f0c-e145-4fc6-95e2-7b2f1e9e0244',
+    slug: 'national-minority-council-cell',
     level: 'national',
     postName: 'National Minority Council Cell',
     qualification: 'Minimum Graduate / Social Worker',
@@ -241,7 +278,8 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'national-women-council-cell',
+    id: 'c126396a-7150-4eb5-a636-25bb5d33052a',
+    slug: 'national-women-council-cell',
     level: 'national',
     postName: 'National Women Council Cell',
     qualification: 'Minimum Graduate / Social Worker',
@@ -265,7 +303,8 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     buttonVariant: 'gold',
   },
   {
-    id: 'national-executive-council',
+    id: '269d6f50-775d-4085-b482-99a8924abb1d',
+    slug: 'national-executive-council',
     level: 'national',
     postName: 'National Executive Council Member',
     qualification: 'Prominent Human Rights Activist / Graduate',

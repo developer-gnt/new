@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, Save, Edit3 } from 'lucide-react';
 import type { Member, MembershipCategoryItem } from '../types/members.types';
 import { membersStore } from '../store/membersStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface EditMemberModalProps {
   visible: boolean;
@@ -328,6 +329,8 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   categories,
   onSaved,
 }) => {
+  useLockBodyScroll(Boolean(visible && member));
+
   if (!visible || !member) return null;
 
   return (
@@ -342,6 +345,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
+        overscrollBehavior: 'contain',
       }}
       onClick={onClose}
     >

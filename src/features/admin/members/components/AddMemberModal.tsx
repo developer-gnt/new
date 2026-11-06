@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, UserPlus, CheckCircle2 } from 'lucide-react';
 import type { MembershipCategoryItem } from '../types/members.types';
 import { membersStore } from '../store/membersStore';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 interface AddMemberModalProps {
   visible: boolean;
@@ -34,6 +35,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useLockBodyScroll(visible);
 
   if (!visible) return null;
 

@@ -33,6 +33,7 @@ import {
   NATIONAL_LEVEL_POSTS,
   INDIAN_STATES,
   STATE_CITIES,
+  CATEGORY_UUID_MAP,
 } from '../features/membership/data/membershipCategoriesData';
 import { membershipService } from '../features/membership/services/membershipService';
 import {
@@ -64,11 +65,30 @@ export const MemberRegistrationPage: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<MembershipPostData>(() => {
     const postParam = searchParams.get('post');
     if (postParam) {
-      const found = ALL_MEMBERSHIP_POSTS.find(p => p.id === postParam || p.postName.toLowerCase() === postParam.toLowerCase());
+      const found = ALL_MEMBERSHIP_POSTS.find(
+        p => p.id === postParam || p.slug === postParam || p.postName.toLowerCase() === postParam.toLowerCase()
+      );
       if (found) return found;
     }
     return DISTRICT_STATE_POSTS[0]; // Default: District Active Member
   });
+
+  // Sync category UUIDs with live backend
+  useEffect(() => {
+    membershipService.getCategories().then((cats) => {
+      if (Array.isArray(cats) && cats.length > 0) {
+        setSelectedPost((current) => {
+          const matched = cats.find(
+            (c) =>
+              c.postName.toLowerCase() === current.postName.toLowerCase() ||
+              c.id === current.id ||
+              (c.slug && current.slug && c.slug === current.slug)
+          );
+          return matched ? { ...current, id: matched.id } : current;
+        });
+      }
+    }).catch(() => {});
+  }, []);
 
   // Category Filter in Step 0
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'district_state' | 'letter_pad' | 'national'>('all');
@@ -466,8 +486,15 @@ export const MemberRegistrationPage: React.FC = () => {
     const cleanDob = formatDateToDMY(personal.dateOfBirth);
 
     try {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedPost.id);
+      const targetCategoryId = isUUID
+        ? selectedPost.id
+        : CATEGORY_UUID_MAP[selectedPost.id] ||
+          CATEGORY_UUID_MAP[selectedPost.slug || ''] ||
+          '82f72f9c-b79e-470d-8160-f29b392e28b4';
+
       const record = await membershipService.submitApplication({
-        category_id: selectedPost.id,
+        category_id: targetCategoryId,
         full_name: personal.fullName.trim(),
         mobile_number: cleanMobile,
         email: cleanEmail,
@@ -1011,8 +1038,8 @@ export const MemberRegistrationPage: React.FC = () => {
 
       {/* Hero Strip */}
       <section className="bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#0B2F52] text-white pt-8 pb-16 px-4 text-center">
-        <div className="max-w-xl mx-auto space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif tracking-tight text-white">
+        <div className="max-w-3xl mx-auto space-y-2">
+          <h1 className="text-2xl sm:text-3.5xl font-extrabold font-serif tracking-tight text-white">
             <span style={{ color: '#FFFFFF' }}>Apply for </span>
             <span style={{ color: '#FAD465' }}>Membership</span>
           </h1>
@@ -1025,11 +1052,11 @@ export const MemberRegistrationPage: React.FC = () => {
       </section>
 
       {/* Main Container */}
-      <main className="flex-1 px-4 -mt-10 pb-16">
-        <div className="max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-9">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 -mt-10 pb-16">
+        <div className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200/80 p-6 sm:p-10 relative z-20">
           {/* 3-Step Progress Indicator */}
           <div className="mb-7 pb-6 border-b border-slate-100">
-            <div className="flex items-center justify-between relative max-w-sm mx-auto">
+            <div className="flex items-center justify-between relative max-w-md mx-auto">
               {/* Step 1 */}
               <div className="flex flex-col items-center z-10">
                 <div
@@ -1692,8 +1719,8 @@ export const MemberRegistrationPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* 4 Document Upload Cards */}
-              <div className="space-y-3.5">
+              {/* 4 Document Upload Cards in Responsive 2-Col Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 1. Identity Proof */}
                 <div className={`p-4 rounded-2xl border transition ${documents.identityProof ? 'bg-emerald-50/40 border-emerald-200' : documentErrors.identity ? 'bg-rose-50/30 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-1">
