@@ -754,35 +754,35 @@ export const RegisterPage: React.FC = () => {
       </header>
 
       {/* 2. Top Hero Section */}
-      <section className="bg-gradient-to-b from-[#011F39] via-[#06294D] to-[#0B2F52] text-white pt-10 pb-20 px-4 text-center relative overflow-hidden">
+      <section className="bg-gradient-to-b from-[#06294D] via-[#011F39] to-[#0B2F52] text-white pt-8 pb-16 px-4 text-center relative overflow-hidden">
         {/* Subtle decorative glow */}
         <div className="absolute top-0 right-1/4 w-80 h-80 bg-[#FAD465]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#174A78]/30 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="max-w-xl mx-auto relative z-10 space-y-3">
+        <div className="max-w-xl mx-auto relative z-10 space-y-2.5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-bold text-[#FAD465] tracking-widest uppercase">
             <span>Constitutional Platform</span>
             <span>•</span>
             <span>General User Registration</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-serif tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif tracking-tight text-white">
             <span style={{ color: '#FFFFFF' }}>Personal </span>
-            <span style={{ color: '#FAD465' }}>Details</span>
+            <span style={{ color: '#FAD465' }}>Information &amp; Details</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-200 max-w-md mx-auto leading-relaxed">
-            Enter your details and secure password to register your account.
+            Enter your personal credentials and secure password to register your citizen account.
           </p>
         </div>
       </section>
 
       {/* 3. Overlapping Registration Card */}
-      <main className="flex-1 px-4 -mt-12 pb-16">
-        <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-9 relative z-20">
+      <main className="flex-1 px-4 -mt-8 pb-16">
+        <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200/90 p-6 sm:p-10 relative z-20">
           {/* Stepper Bar: 3 Steps for General User */}
           <div className="mb-7 pb-6 border-b border-slate-100">
-            <div className="flex items-center justify-between relative max-w-xs mx-auto">
+            <div className="flex items-center justify-between relative max-w-sm mx-auto">
               {/* Step 1: Account Type (Done - click to change) */}
               <Link to="/register" className="flex flex-col items-center z-10 group cursor-pointer">
                 <div className="w-8 h-8 rounded-full bg-[#E9B82E] group-hover:bg-[#d89318] text-white flex items-center justify-center text-xs font-bold shadow-sm transition">
@@ -798,10 +798,10 @@ export const RegisterPage: React.FC = () => {
 
               {/* Step 2: Personal Details (Active) */}
               <div className="flex flex-col items-center z-10">
-                <div className="w-8 h-8 rounded-full bg-[#011F39] text-[#FAD465] border-2 border-[#E9B82E] flex items-center justify-center text-xs font-bold shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#06294D] text-[#FAD465] border-2 border-[#FAD465] flex items-center justify-center text-xs font-bold shadow-sm">
                   2
                 </div>
-                <span className="text-[10px] font-bold text-[#011F39] mt-1 text-center leading-tight">
+                <span className="text-[10px] font-extrabold text-[#06294D] mt-1 text-center leading-tight">
                   Personal<br />Details
                 </span>
               </div>
@@ -823,20 +823,20 @@ export const RegisterPage: React.FC = () => {
 
           {/* Section Heading inside Card */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#011F39] font-serif">
-              Personal Information &amp; Password
+            <h2 className="text-xl font-extrabold text-[#06294D] font-serif">
+              Personal Information &amp; Account Security
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Fill in your details and password to register your account.
+              Fill in your contact details and a strong password to create your citizen account.
             </p>
-            <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-1.5">
-              <span>Applying for a specific role?</span>
-              <div className="flex items-center gap-2 font-semibold">
-                <Link to="/membership/apply" className="text-[#011F39] hover:text-amber-600 underline">
+            <div className="mt-3 p-3 rounded-2xl bg-[#FAF7F0] border border-[#E2E8F0] flex flex-wrap items-center justify-between text-xs text-slate-600 gap-1.5">
+              <span>Applying for a designated official role?</span>
+              <div className="flex items-center gap-2 font-bold">
+                <Link to="/membership/apply" className="text-[#06294D] hover:text-amber-600 underline">
                   Member Registration
                 </Link>
                 <span>•</span>
-                <Link to="/assistance/apply" className="text-amber-700 hover:text-amber-800 underline">
+                <Link to="/assistance/apply" className="text-amber-800 hover:text-amber-900 underline">
                   Donation Seeker Aid
                 </Link>
               </div>
@@ -853,199 +853,207 @@ export const RegisterPage: React.FC = () => {
 
           {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Field 1: Full Name */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Full Name <span className="text-rose-500">*</span>
-              </label>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.fullName
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'fullName'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <User
-                  size={18}
-                  className={`mr-2.5 shrink-0 ${
-                    fieldErrors.fullName ? 'text-rose-500' : 'text-slate-400'
+            {/* Grid 1: Name & Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Field 1: Full Name */}
+              <div>
+                <label className="block text-xs font-bold text-[#06294D] mb-1.5">
+                  Full Legal Name <span className="text-rose-500">*</span>
+                </label>
+                <div
+                  className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                    fieldErrors.fullName
+                      ? 'border-rose-300 bg-rose-50/20'
+                      : focusedField === 'fullName'
+                      ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
-                />
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Full Name *"
-                  value={formData.fullName}
-                  onFocus={() => setFocusedField('fullName')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    setFormData(p => ({ ...p, fullName: e.target.value }));
-                    if (fieldErrors.fullName) {
-                      setFieldErrors(p => ({ ...p, fullName: undefined }));
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                />
+                >
+                  <User
+                    size={18}
+                    className={`mr-2.5 shrink-0 ${
+                      fieldErrors.fullName ? 'text-rose-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    name="fullName"
+                    placeholder="Full Legal Name *"
+                    value={formData.fullName}
+                    onFocus={() => setFocusedField('fullName')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={e => {
+                      setFormData(p => ({ ...p, fullName: e.target.value }));
+                      if (fieldErrors.fullName) {
+                        setFieldErrors(p => ({ ...p, fullName: undefined }));
+                      }
+                    }}
+                    className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  />
+                </div>
+                {fieldErrors.fullName && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    <span>{fieldErrors.fullName}</span>
+                  </p>
+                )}
               </div>
-              {fieldErrors.fullName && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.fullName}</span>
-                </p>
-              )}
+
+              {/* Field 2: Mobile Number */}
+              <div>
+                <label className="block text-xs font-bold text-[#06294D] mb-1.5">
+                  Mobile Number <span className="text-rose-500">*</span>
+                </label>
+                <div
+                  className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                    fieldErrors.phone
+                      ? 'border-rose-300 bg-rose-50/20'
+                      : focusedField === 'phone'
+                      ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <Phone
+                    size={18}
+                    className={`mr-2 shrink-0 ${
+                      fieldErrors.phone ? 'text-rose-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <span className="text-xs font-bold text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-md mr-2.5 select-none">
+                    {formData.countryCode}
+                  </span>
+                  <input
+                    type="tel"
+                    name="phone"
+                    maxLength={10}
+                    placeholder="10-digit Mobile Number *"
+                    value={formData.phone}
+                    onFocus={() => setFocusedField('phone')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={e => {
+                      const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setFormData(p => ({ ...p, phone: cleaned }));
+                      setVerifiedPhone(null);
+                      if (fieldErrors.phone) {
+                        setFieldErrors(p => ({ ...p, phone: undefined }));
+                      }
+                    }}
+                    className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium tracking-wide"
+                  />
+                  {checkingPhone ? (
+                    <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
+                  ) : verifiedPhone && formData.phone === verifiedPhone && !fieldErrors.phone ? (
+                    <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
+                  ) : null}
+                </div>
+                {fieldErrors.phone && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    <span>{fieldErrors.phone}</span>
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Field 2: Mobile Number */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Mobile Number <span className="text-rose-500">*</span>
-              </label>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.phone
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'phone'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <Phone
-                  size={18}
-                  className={`mr-2 shrink-0 ${
-                    fieldErrors.phone ? 'text-rose-500' : 'text-slate-400'
+            {/* Grid 2: Email & DOB */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Field 3: Email Address */}
+              <div>
+                <label className="block text-xs font-bold text-[#06294D] mb-1.5">
+                  Email Address <span className="text-rose-500">*</span>
+                </label>
+                <div
+                  className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                    fieldErrors.email
+                      ? 'border-rose-300 bg-rose-50/20'
+                      : focusedField === 'email'
+                      ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
-                />
-                <span className="text-xs font-bold text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-md mr-2.5 select-none">
-                  {formData.countryCode}
-                </span>
-                <input
-                  type="tel"
-                  name="phone"
-                  maxLength={10}
-                  placeholder="10-digit Mobile Number *"
-                  value={formData.phone}
-                  onFocus={() => setFocusedField('phone')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setFormData(p => ({ ...p, phone: cleaned }));
-                    setVerifiedPhone(null);
-                    if (fieldErrors.phone) {
-                      setFieldErrors(p => ({ ...p, phone: undefined }));
+                >
+                  <Mail
+                    size={18}
+                    className={`mr-2.5 shrink-0 ${
+                      fieldErrors.email ? 'text-rose-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="name@example.com *"
+                    value={formData.email}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={e => {
+                      setFormData(p => ({ ...p, email: e.target.value }));
+                      setVerifiedEmail(null);
+                      if (fieldErrors.email) {
+                        setFieldErrors(p => ({ ...p, email: undefined }));
+                      }
+                    }}
+                    className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  />
+                  {checkingEmail ? (
+                    <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
+                  ) : verifiedEmail && formData.email.trim().toLowerCase() === verifiedEmail && !fieldErrors.email ? (
+                    <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
+                  ) : null}
+                </div>
+                {fieldErrors.email && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    <span>{fieldErrors.email}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Field 4: Date of Birth */}
+              <div>
+                <CalendarDatePicker
+                  label="Date of Birth"
+                  required
+                  minAge={18}
+                  value={formData.dob}
+                  error={fieldErrors.dob}
+                  placeholder="dd-mm-yyyy"
+                  onChange={(selectedVal) => {
+                    setFormData((p) => ({ ...p, dob: selectedVal }));
+
+                    if (selectedVal) {
+                      const ageCheck = validateAgeEligibility(selectedVal);
+                      if (!ageCheck.isValid) {
+                        setFieldErrors((p) => ({ ...p, dob: ageCheck.error || undefined }));
+                      } else if (!ageCheck.isEligible) {
+                        setIneligibleAge(ageCheck.age);
+                        setPhase('ineligible');
+                      } else {
+                        setFieldErrors((p) => {
+                          const next = { ...p };
+                          delete next.dob;
+                          return next;
+                        });
+                      }
+                    } else {
+                      setFieldErrors((p) => {
+                        const next = { ...p };
+                        delete next.dob;
+                        return next;
+                      });
                     }
                   }}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium tracking-wide"
                 />
-                {checkingPhone ? (
-                  <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
-                ) : verifiedPhone && formData.phone === verifiedPhone && !fieldErrors.phone ? (
-                  <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
-                ) : null}
               </div>
-              {fieldErrors.phone && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.phone}</span>
-                </p>
-              )}
             </div>
 
-            {/* Field 3: Email Address */}
+            {/* Field 5: Gender */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Email Address <span className="text-rose-500">*</span>
-              </label>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.email
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'email'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <Mail
-                  size={18}
-                  className={`mr-2.5 shrink-0 ${
-                    fieldErrors.email ? 'text-rose-500' : 'text-slate-400'
-                  }`}
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="name@example.com *"
-                  value={formData.email}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    setFormData(p => ({ ...p, email: e.target.value }));
-                    setVerifiedEmail(null);
-                    if (fieldErrors.email) {
-                      setFieldErrors(p => ({ ...p, email: undefined }));
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                />
-                {checkingEmail ? (
-                  <Loader2 size={16} className="text-[#E9B82E] animate-spin shrink-0 ml-2" />
-                ) : verifiedEmail && formData.email.trim().toLowerCase() === verifiedEmail && !fieldErrors.email ? (
-                  <CheckCircle2 size={18} className="text-emerald-600 shrink-0 ml-2" />
-                ) : null}
-              </div>
-              {fieldErrors.email && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.email}</span>
-                </p>
-              )}
-            </div>
-
-            {/* Field 4: Date of Birth (18+ enforcement with interactive Calendar format) */}
-            <CalendarDatePicker
-              label="Date of Birth"
-              required
-              minAge={18}
-              value={formData.dob}
-              error={fieldErrors.dob}
-              placeholder="dd-mm-yyyy"
-              onChange={(selectedVal) => {
-                setFormData((p) => ({ ...p, dob: selectedVal }));
-
-                if (selectedVal) {
-                  const ageCheck = validateAgeEligibility(selectedVal);
-                  if (!ageCheck.isValid) {
-                    setFieldErrors((p) => ({ ...p, dob: ageCheck.error || undefined }));
-                  } else if (!ageCheck.isEligible) {
-                    setIneligibleAge(ageCheck.age);
-                    setPhase('ineligible');
-                  } else {
-                    setFieldErrors((p) => {
-                      const next = { ...p };
-                      delete next.dob;
-                      return next;
-                    });
-                  }
-                } else {
-                  setFieldErrors((p) => {
-                    const next = { ...p };
-                    delete next.dob;
-                    return next;
-                  });
-                }
-              }}
-            />
-
-            {/* Field 5: Gender (Optional) */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-[#06294D] mb-1.5">
                 Gender <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
               <div
                 className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
                   focusedField === 'gender'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
+                    ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
                     : 'border-slate-200 hover:border-slate-300'
                 }`}
               >
@@ -1066,108 +1074,111 @@ export const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Field 6: Create Password */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Create Password <span className="text-rose-500">*</span>
-              </label>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.password
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'password'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <Lock
-                  size={18}
-                  className={`mr-2.5 shrink-0 ${
-                    fieldErrors.password ? 'text-rose-500' : 'text-slate-400'
+            {/* Grid 3: Password & Confirm Password */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Field 6: Create Password */}
+              <div>
+                <label className="block text-xs font-bold text-[#06294D] mb-1.5">
+                  Create Password <span className="text-rose-500">*</span>
+                </label>
+                <div
+                  className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                    fieldErrors.password
+                      ? 'border-rose-300 bg-rose-50/20'
+                      : focusedField === 'password'
+                      ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
-                />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Create Password (min. 6 chars) *"
-                  value={formData.password}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    setFormData(p => ({ ...p, password: e.target.value }));
-                    if (fieldErrors.password) {
-                      setFieldErrors(p => ({ ...p, password: undefined }));
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(p => !p)}
-                  className="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
-                  tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
+                  <Lock
+                    size={18}
+                    className={`mr-2.5 shrink-0 ${
+                      fieldErrors.password ? 'text-rose-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="Min. 6 chars *"
+                    value={formData.password}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={e => {
+                      setFormData(p => ({ ...p, password: e.target.value }));
+                      if (fieldErrors.password) {
+                        setFieldErrors(p => ({ ...p, password: undefined }));
+                      }
+                    }}
+                    className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    className="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    <span>{fieldErrors.password}</span>
+                  </p>
+                )}
               </div>
-              {fieldErrors.password && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.password}</span>
-                </p>
-              )}
-            </div>
 
-            {/* Field 7: Confirm Password */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Confirm Password <span className="text-rose-500">*</span>
-              </label>
-              <div
-                className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
-                  fieldErrors.confirmPassword
-                    ? 'border-rose-300 bg-rose-50/20'
-                    : focusedField === 'confirmPassword'
-                    ? 'border-[#011F39] bg-white ring-2 ring-[#011F39]/10'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <Lock
-                  size={18}
-                  className={`mr-2.5 shrink-0 ${
-                    fieldErrors.confirmPassword ? 'text-rose-500' : 'text-slate-400'
+              {/* Field 7: Confirm Password */}
+              <div>
+                <label className="block text-xs font-bold text-[#06294D] mb-1.5">
+                  Confirm Password <span className="text-rose-500">*</span>
+                </label>
+                <div
+                  className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                    fieldErrors.confirmPassword
+                      ? 'border-rose-300 bg-rose-50/20'
+                      : focusedField === 'confirmPassword'
+                      ? 'border-[#06294D] bg-white ring-2 ring-[#06294D]/10'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
-                />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  placeholder="Confirm Password *"
-                  value={formData.confirmPassword}
-                  onFocus={() => setFocusedField('confirmPassword')}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={e => {
-                    setFormData(p => ({ ...p, confirmPassword: e.target.value }));
-                    if (fieldErrors.confirmPassword) {
-                      setFieldErrors(p => ({ ...p, confirmPassword: undefined }));
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(p => !p)}
-                  className="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
-                  tabIndex={-1}
                 >
-                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
+                  <Lock
+                    size={18}
+                    className={`mr-2.5 shrink-0 ${
+                      fieldErrors.confirmPassword ? 'text-rose-500' : 'text-slate-400'
+                    }`}
+                  />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    placeholder="Confirm password *"
+                    value={formData.confirmPassword}
+                    onFocus={() => setFocusedField('confirmPassword')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={e => {
+                      setFormData(p => ({ ...p, confirmPassword: e.target.value }));
+                      if (fieldErrors.confirmPassword) {
+                        setFieldErrors(p => ({ ...p, confirmPassword: undefined }));
+                      }
+                    }}
+                    className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(p => !p)}
+                    className="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    <span>{fieldErrors.confirmPassword}</span>
+                  </p>
+                )}
               </div>
-              {fieldErrors.confirmPassword && (
-                <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
-                  <AlertCircle size={12} />
-                  <span>{fieldErrors.confirmPassword}</span>
-                </p>
-              )}
             </div>
 
             {/* Voluntary Contribution Option (Optional 80G Support) */}

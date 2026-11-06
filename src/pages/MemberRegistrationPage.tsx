@@ -1037,31 +1037,34 @@ export const MemberRegistrationPage: React.FC = () => {
           </div>
 
           {/* Selected Post Banner */}
-          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                <Award size={20} />
+          <div className="bg-gradient-to-r from-[#06294D] via-[#0B2F52] to-[#011F39] text-white border border-white/10 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-[#FAD465]/15 border border-[#FAD465]/40 text-[#FAD465] flex items-center justify-center shrink-0 shadow-xs">
+                <Award size={22} />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                  Applying For Membership Post:
+                <span className="text-[10px] font-extrabold text-[#FAD465] uppercase tracking-wider block">
+                  Applying For Official Post:
                 </span>
-                <span className="text-sm font-bold text-[#011F39] font-serif block">
+                <span className="text-base sm:text-lg font-black text-white font-serif block">
                   {selectedPost.postName}
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-300">
                   {selectedPost.qualification} • {selectedPost.validity} Duration
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-black text-emerald-800">{selectedPost.fee}</div>
+            <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+              <div className="px-3 py-1 rounded-lg bg-white/10 border border-[#FAD465]/30 text-sm font-black text-[#FAD465]">
+                {selectedPost.fee}
+              </div>
               <button
                 type="button"
                 onClick={() => setPhase(0)}
-                className="text-[10px] font-bold text-[#011F39] hover:underline cursor-pointer block mt-0.5"
+                className="text-xs font-bold text-[#FAD465] hover:underline cursor-pointer flex items-center gap-1 mt-1 sm:mt-1.5"
               >
-                Change Post
+                <span>Change Post</span>
+                <ArrowRight size={13} />
               </button>
             </div>
           </div>
