@@ -29,7 +29,9 @@ export async function loadCashfreeWebSdk(): Promise<any> {
   const win = window as any;
   if (win.Cashfree) return win.Cashfree;
 
-  const existing = document.getElementById('cashfree-js-sdk');
+  const existing =
+    document.getElementById('cashfree-js-sdk') ||
+    document.querySelector('script[src*="cashfree.com/js/v3/cashfree.js"]');
   if (existing) {
     return new Promise((resolve) => {
       let attempts = 0;
@@ -38,9 +40,9 @@ export async function loadCashfreeWebSdk(): Promise<any> {
         if (win.Cashfree) {
           clearInterval(interval);
           resolve(win.Cashfree);
-        } else if (attempts > 30) {
+        } else if (attempts > 60) {
           clearInterval(interval);
-          resolve(null);
+          resolve(win.Cashfree || null);
         }
       }, 50);
     });
@@ -56,7 +58,7 @@ export async function loadCashfreeWebSdk(): Promise<any> {
       script.onerror = () => resolve(null);
       document.head.appendChild(script);
 
-      setTimeout(() => resolve(win.Cashfree || null), 3500);
+      setTimeout(() => resolve(win.Cashfree || null), 4000);
     } catch {
       resolve(null);
     }
@@ -122,6 +124,15 @@ export const cashfreeService = {
     const name = (params.customerName || 'HRSJM Member Applicant').trim();
     const returnUrl = typeof window !== 'undefined' ? `${window.location.origin}/?cashfree_callback=true&order_id={order_id}` : undefined;
 
+    // Validate that reference_id is a valid UUID; non-UUID string identifiers
+    // (such as post category slugs or tracking codes) cause PostgreSQL UUID query syntax errors in the backend.
+    const validReferenceId =
+      params.applicationId && UUID_REGEX.test(params.applicationId.trim())
+        ? params.applicationId.trim()
+        : params.membershipPaymentId && UUID_REGEX.test(params.membershipPaymentId.trim())
+        ? params.membershipPaymentId.trim()
+        : undefined;
+
     const payload = {
       purpose: 'membership' as const,
       amount: params.amount,
@@ -129,7 +140,7 @@ export const cashfreeService = {
       customer_phone: phone,
       customer_email: email,
       user_id: validUserId,
-      reference_id: params.applicationId || params.membershipPaymentId,
+      reference_id: validReferenceId,
       order_note: params.membershipType || 'Membership Accreditation Fee',
       return_url: returnUrl,
     };
@@ -186,7 +197,7 @@ export const cashfreeService = {
   },
 
   /**
-   * 4. Launches Cashfree Drop-in Checkout overlay safely bypassing popup blockers
+   * 4. Launches Cashfree Drop-in Checkout overlay safely
    */
   async launchCashfreeCheckout(
     session: CashfreeOrderSession,
@@ -204,136 +215,44 @@ export const cashfreeService = {
       return;
     }
 
-    // Ensure responsive overlay styling exists
-    const styleId = 'cashfree-web-modal-style';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.innerHTML = `
-        #cashfree-web-overlay {
-          position: fixed !important;
-          inset: 0 !important;
-          background: rgba(1, 31, 57, 0.75) !important;
-          backdrop-filter: blur(4px) !important;
-          z-index: 9999999 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 16px !important;
-          box-sizing: border-box !important;
-        }
-        #cashfree-web-card {
-          position: relative !important;
-          width: 100% !important;
-          max-width: 480px !important;
-          height: 680px !important;
-          max-height: 94vh !important;
-          background: #ffffff !important;
-          border-radius: 16px !important;
-          box-shadow: 0 25px 50px rgba(0,0,0,0.3) !important;
-          overflow: hidden !important;
-          display: flex !important;
-          flex-direction: column !important;
-        }
-        #cashfree-web-header {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          padding: 12px 18px !important;
-          background: #06294D !important;
-          color: #ffffff !important;
-        }
-        #cashfree-web-mount {
-          flex: 1 1 auto !important;
-          width: 100% !important;
-          height: 100% !important;
-          overflow-y: auto !important;
-          background: #ffffff !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    // Clean up any old overlay
-    const oldOverlay = document.getElementById('cashfree-web-overlay');
-    if (oldOverlay && oldOverlay.parentNode) oldOverlay.parentNode.removeChild(oldOverlay);
-
-    const overlay = document.createElement('div');
-    overlay.id = 'cashfree-web-overlay';
-
-    const card = document.createElement('div');
-    card.id = 'cashfree-web-card';
-
-    const header = document.createElement('div');
-    header.id = 'cashfree-web-header';
-    header.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;">🛡️</span>
-        <div>
-          <div style="font-weight:700;font-size:13.5px;color:#FFFFFF;line-height:1.2;">Cashfree Payment Gateway</div>
-          <div style="font-size:11px;color:#FAD465;">Secure 256-bit Encrypted Checkout • ₹${session.amount.toLocaleString('en-IN')}</div>
-        </div>
-      </div>
-      <button id="cashfree-web-close" style="background:rgba(255,255,255,0.15);border:none;color:#FFFFFF;font-size:18px;width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
-    `;
-
-    const mount = document.createElement('div');
-    mount.id = 'cashfree-web-mount';
-
-    card.appendChild(header);
-    card.appendChild(mount);
-    overlay.appendChild(card);
-    document.body.appendChild(overlay);
-
-    let isDone = false;
-    const cleanup = () => {
-      if (!isDone) {
-        isDone = true;
-        if (overlay && overlay.parentNode) {
-          overlay.parentNode.removeChild(overlay);
-        }
-      }
-    };
-
-    const closeBtn = document.getElementById('cashfree-web-close');
-    if (closeBtn) {
-      closeBtn.onclick = () => {
-        cleanup();
-        onClose?.();
-      };
-    }
-
     try {
       const mode = session.environment === 'PRODUCTION' ? 'production' : 'sandbox';
       const cashfree = CashfreeFactory({ mode });
-      cashfree
-        .checkout({
-          paymentSessionId: session.payment_session_id,
-          redirectTarget: mount,
-          redirect: 'if_required',
-          appearance: { width: '100%', height: '100%' },
-        })
-        .then(async (result: any) => {
-          cleanup();
-          if (result?.paymentDetails || result?.status === 'SUCCESS') {
-            const verified = await this.verifyOrder(session.order_id);
-            onSuccess(verified);
-          } else {
-            onClose?.();
-          }
-        })
-        .catch(async () => {
-          cleanup();
+
+      const result = await cashfree.checkout({
+        paymentSessionId: session.payment_session_id,
+        redirectTarget: '_modal',
+      });
+
+      if (result?.error) {
+        console.warn('[Cashfree] Checkout closed or reported error:', result.error);
+        if (
+          result.error.code === 'user_aborted' ||
+          result.error.type === 'user_dropped_error' ||
+          (result.error.message && /aborted|closed|dropped/i.test(result.error.message))
+        ) {
+          onClose?.();
+        } else {
+          // Verify with server before falling back, in case payment went through
           const verified = await this.verifyOrder(session.order_id);
           if (verified.status === 'SUCCESS' || verified.verified) {
             onSuccess(verified);
           } else {
             onClose?.();
           }
-        });
+        }
+        return;
+      }
+
+      // Check verification status from Cashfree server
+      const verified = await this.verifyOrder(session.order_id);
+      if (verified.status === 'SUCCESS' || verified.verified || result?.paymentDetails || result?.status === 'SUCCESS') {
+        onSuccess(verified);
+      } else {
+        onClose?.();
+      }
     } catch (err) {
-      console.warn('Cashfree mount failed, falling back to simulation modal:', err);
-      cleanup();
+      console.warn('Cashfree native modal launch failed, falling back to simulation modal:', err);
       this.launchSimulationCheckout(session, onSuccess, onClose);
     }
   },

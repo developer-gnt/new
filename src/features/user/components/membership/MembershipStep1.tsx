@@ -333,7 +333,7 @@ export const MembershipStep1: React.FC<MembershipStep1Props> = ({
       <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-2.5 text-xs text-amber-900">
         <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-[11.5px] leading-relaxed">
-          Ensure details match your Aadhaar Card and Official ID. Your password will be used to log in to your Member Portal once approved.
+         Your password will be used to log in to your Member Portal once approved.
         </p>
       </div>
 

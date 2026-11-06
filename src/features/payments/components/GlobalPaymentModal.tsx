@@ -42,7 +42,11 @@ const PaymentModalContent: React.FC<PaymentModalContentProps> = ({
   const [amount, setAmount] = useState<number>(payload.amount || 1000);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [donorName, setDonorName] = useState<string>(payload.donorName || user?.full_name || '');
-  const [donorMobile, setDonorMobile] = useState<string>(payload.donorMobile || user?.mobile_number || '');
+  const [donorMobile, setDonorMobile] = useState<string>(() => {
+    const raw = payload.donorMobile || user?.mobile_number || '';
+    const digits = raw.replace(/\D/g, '').slice(-10);
+    return digits || raw;
+  });
   const [donorEmail, setDonorEmail] = useState<string>(payload.donorEmail || user?.email || '');
   const [panNumber, setPanNumber] = useState<string>(payload.panNumber || '');
 
@@ -50,8 +54,6 @@ const PaymentModalContent: React.FC<PaymentModalContentProps> = ({
   const [stage, setStage] = useState<'details' | 'processing' | 'success' | 'error'>('details');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [verifiedReceipt, setVerifiedReceipt] = useState<PaymentReceiptDetails | null>(null);
-
-
 
   const effectiveAmount = customAmount ? parseFloat(customAmount) || 0 : amount;
   const isDonation = payload.purpose === 'donation';
@@ -66,7 +68,7 @@ const PaymentModalContent: React.FC<PaymentModalContentProps> = ({
       setErrorMessage('Please provide full name.');
       return;
     }
-    const cleanDigits = donorMobile.replace(/\D/g, '');
+    const cleanDigits = donorMobile.replace(/\D/g, '').slice(-10);
     if (cleanDigits.length < 10) {
       setErrorMessage('Please provide a valid 10-digit mobile number.');
       return;
