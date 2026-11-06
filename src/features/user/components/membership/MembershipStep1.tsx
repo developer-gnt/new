@@ -138,7 +138,7 @@ export const MembershipStep1: React.FC<MembershipStep1Props> = ({
         </div>
 
         <div className="text-center sm:text-left space-y-1">
-          <label htmlFor="profile-upload" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#06294D] hover:bg-slate-100 cursor-pointer shadow-2xs">
+          <label htmlFor="profile-upload" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-xs font-black text-[#011F39] border border-[#E9B82E] cursor-pointer shadow-xs transition-colors">
             <Upload className="w-3.5 h-3.5" />
             <span>{photoPreview ? 'Change Applicant Photo' : 'Upload Passport Photo'}</span>
           </label>
@@ -207,7 +207,7 @@ export const MembershipStep1: React.FC<MembershipStep1Props> = ({
                 onClick={() => setFormData({ ...formData, gender: g })}
                 className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   formData.gender === g
-                    ? 'bg-[#06294D] text-white border-[#06294D] shadow-xs'
+                    ? 'bg-[#06294D] text-[#FAD465] border-[#06294D] shadow-xs'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
@@ -349,7 +349,7 @@ export const MembershipStep1: React.FC<MembershipStep1Props> = ({
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2"
+          className="px-6 py-2.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 border border-[#E9B82E]"
         >
           <span>Continue to Address &amp; ID (Step 2)</span>
           <span>→</span>

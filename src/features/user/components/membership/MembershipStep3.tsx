@@ -340,7 +340,7 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 rounded-xl bg-[#E9B82E] hover:bg-[#d8a825] text-[#011F39] text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+          className="px-6 py-3 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 disabled:opacity-50 border border-[#E9B82E]"
         >
           <Lock className="w-3.5 h-3.5 text-[#011F39]" />
           <span>{submitting ? 'Verifying & Submitting...' : `Submit Application & Pay ${selectedPost.fee}`}</span>

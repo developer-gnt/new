@@ -174,7 +174,7 @@ export const MembershipSubmitted: React.FC<MembershipSubmittedProps> = ({
           <button
             type="button"
             onClick={onGoToStatus}
-            className="w-1/2 sm:w-auto px-5 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+            className="w-1/2 sm:w-auto px-5 py-2.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-[#E9B82E]"
           >
             <span>Track Status</span>
             <ArrowRight className="w-3.5 h-3.5" />

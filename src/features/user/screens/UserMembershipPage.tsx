@@ -40,27 +40,27 @@ export const UserMembershipPage: React.FC = () => {
   const [submittedAppId, setSubmittedAppId] = useState<string>('HRSJM-MEM-2026-9042');
   const [submitting, setSubmitting] = useState(false);
 
-  // Form data across steps
+  // Form data across steps (empty initial values so placeholders guide user)
   const [step1Data, setStep1Data] = useState<Step1FormData>({
-    fullName: user?.full_name || 'Mohd. Ayaan Shaikh',
-    dob: '1995-06-15',
+    fullName: user?.full_name || '',
+    dob: '',
     gender: 'Male',
-    mobile: user?.mobile_number || '9876543210',
-    email: user?.email || 'ayaan.shaikh@hrsjm.org',
-    policeStation: 'Azad Maidan Police Station, Mumbai',
+    mobile: user?.mobile_number || '',
+    email: user?.email || '',
+    policeStation: '',
     password: '',
     confirmPassword: '',
     photoUrl: user?.avatar || undefined,
   });
 
   const [step2Data, setStep2Data] = useState<Step2FormData>({
-    addressLine1: 'Flat 402, High Point Apartments, Linking Road',
-    addressLine2: 'Bandra West',
+    addressLine1: '',
+    addressLine2: '',
     country: 'India',
-    state: 'Maharashtra',
-    city: 'Mumbai',
-    pincode: '400050',
-    aadhaarNumber: '9845 2310 8892',
+    state: '',
+    city: '',
+    pincode: '',
+    aadhaarNumber: '',
   });
 
   // Live status
@@ -413,7 +413,7 @@ export const UserMembershipPage: React.FC = () => {
                 onClick={() => setCategoryFilter('all')}
                 className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
                   categoryFilter === 'all'
-                    ? 'bg-[#06294D] text-white'
+                    ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -424,7 +424,7 @@ export const UserMembershipPage: React.FC = () => {
                 onClick={() => setCategoryFilter('district_state')}
                 className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
                   categoryFilter === 'district_state'
-                    ? 'bg-[#06294D] text-white'
+                    ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -435,7 +435,7 @@ export const UserMembershipPage: React.FC = () => {
                 onClick={() => setCategoryFilter('letter_pad')}
                 className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
                   categoryFilter === 'letter_pad'
-                    ? 'bg-[#06294D] text-white'
+                    ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -446,7 +446,7 @@ export const UserMembershipPage: React.FC = () => {
                 onClick={() => setCategoryFilter('national')}
                 className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
                   categoryFilter === 'national'
-                    ? 'bg-[#06294D] text-white'
+                    ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >

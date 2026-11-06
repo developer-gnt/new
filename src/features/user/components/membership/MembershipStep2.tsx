@@ -242,9 +242,9 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2"
+          className="px-6 py-2.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 border border-[#E9B82E]"
         >
-          <span>Continue to Documents & Fee (Step 3)</span>
+          <span>Continue to Documents &amp; Fee (Step 3)</span>
           <span>→</span>
         </button>
       </div>
