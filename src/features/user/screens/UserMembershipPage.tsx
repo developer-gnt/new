@@ -21,8 +21,9 @@ import { MembershipPostCard } from '../components/membership/MembershipPostCard'
 import { MembershipVerificationNotice } from '../components/membership/MembershipVerificationNotice';
 import { MembershipStep1, type Step1FormData } from '../components/membership/MembershipStep1';
 import { MembershipStep2, type Step2FormData } from '../components/membership/MembershipStep2';
-import { MembershipStep3 } from '../components/membership/MembershipStep3';
+import { MembershipStep3, type Step3SubmitPayload } from '../components/membership/MembershipStep3';
 import { MembershipSubmitted } from '../components/membership/MembershipSubmitted';
+import { GlobalPaymentModal } from '../../payments';
 
 export const UserMembershipPage: React.FC = () => {
   const location = useLocation();
@@ -37,8 +38,12 @@ export const UserMembershipPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'categories' | 'wizard' | 'submitted'>('categories');
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [selectedPost, setSelectedPost] = useState<MembershipPostData>(DISTRICT_STATE_POSTS[0]);
-  const [submittedAppId, setSubmittedAppId] = useState<string>('HRSJM-MEM-2026-9042');
+  const [submittedAppId, setSubmittedAppId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Payment modal state
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [pendingDocuments, setPendingDocuments] = useState<Step3SubmitPayload | null>(null);
 
   // Form data across steps (empty initial values so placeholders guide user)
   const [step1Data, setStep1Data] = useState<Step1FormData>({
@@ -103,24 +108,10 @@ export const UserMembershipPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Step 3 -> Submit
-  const handleStep3Submit = async () => {
-    setSubmitting(true);
-    const newRefId = `HRSJM-MEM-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    try {
-      // Backend call simulation / integration
-      await new Promise(resolve => setTimeout(resolve, 900));
-      setSubmittedAppId(newRefId);
-      setViewMode('submitted');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
-      setSubmittedAppId(newRefId);
-      setViewMode('submitted');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } finally {
-      setSubmitting(false);
-    }
+  // Step 3 -> Payment Modal
+  const handleStep3Submit = (payload: Step3SubmitPayload) => {
+    setPendingDocuments(payload);
+    setIsPaymentModalOpen(true);
   };
 
   const filteredPosts = () => {
@@ -538,6 +529,50 @@ export const UserMembershipPage: React.FC = () => {
           <MembershipVerificationNotice />
         </div>
       )}
+
+      {/* Cashfree Payment Modal — triggered after Step 3 form submit */}
+      <GlobalPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSubmitting(false);
+        }}
+        payload={{
+          purpose: 'membership',
+          amount: selectedPost.feeAmount,
+          title: `Membership Application: ${selectedPost.postName}`,
+          subtitle: `Validity: ${selectedPost.validity}`,
+          entityId: selectedPost.id,
+          userId: user?.id,
+          donorName: step1Data.fullName,
+          donorMobile: step1Data.mobile,
+          donorEmail: step1Data.email,
+        }}
+        onSuccess={(receipt) => {
+          setIsPaymentModalOpen(false);
+          setSubmitting(false);
+          const year = new Date().getFullYear();
+          const seq = Math.floor(1000 + Math.random() * 9000);
+          const newAppId =
+            receipt.applicationId ||
+            receipt.membershipNumber ||
+            `HRSJM-MEM-${year}-${seq}`;
+          // Log documents tagged to the application ID for future backend sync
+          if (pendingDocuments) {
+            console.info('[HRSJM] Application documents ready for upload', {
+              applicationId: newAppId,
+              userId: user?.id,
+              documents: Object.keys(pendingDocuments.documents).filter(
+                k => pendingDocuments.documents[k as keyof typeof pendingDocuments.documents],
+              ),
+            });
+          }
+          setSubmittedAppId(newAppId);
+          setPendingDocuments(null);
+          setViewMode('submitted');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
     </div>
   );
 };
