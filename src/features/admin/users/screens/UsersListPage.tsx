@@ -101,13 +101,14 @@ export const UsersListPage: React.FC = () => {
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (activeTab !== 'all') count++;
+    // Note: activeTab is NOT counted here — tab switching is a primary nav action,
+    // not a "filter modal" action, so it must not widen the Filters button.
     if (selectedStatus !== 'all') count++;
     if (extraFilters.joinedFrom) count++;
     if (extraFilters.joinedTo) count++;
     if (extraFilters.sortBy && extraFilters.sortBy !== 'newest') count++;
     return count;
-  }, [activeTab, selectedStatus, extraFilters]);
+  }, [selectedStatus, extraFilters]);
 
   // Handlers for modal actions
   const handleConfirmStatusToggle = async () => {

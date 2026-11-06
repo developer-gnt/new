@@ -60,7 +60,7 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
         gap: '16px',
         marginBottom: '24px',
       }}
