@@ -20,9 +20,9 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
       count: stats.total,
       subtitle: `${stats.membersCount} members, ${stats.seekersCount} seekers`,
       icon: Users,
-      color: '#011F39',
-      bgLight: '#EDF2F7',
-      borderActive: '#011F39',
+      color: '#06294D',
+      bgLight: '#FAF7F0',
+      borderActive: '#FAD465',
     },
     {
       key: 'active' as const,
@@ -75,25 +75,30 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
             onClick={() => onSelectStatus(isSelected && card.key !== 'all' ? 'all' : card.key)}
             style={{
               backgroundColor: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '16px',
               padding: '18px 20px',
-              border: isSelected ? `2px solid ${card.borderActive}` : '1px solid #EDF2F7',
+              border: isSelected ? `2px solid ${card.borderActive}` : '1px solid #E2E8F0',
               boxShadow: isSelected
-                ? '0 6px 16px rgba(1, 31, 57, 0.08)'
+                ? '0 6px 18px rgba(6, 41, 77, 0.08)'
                 : '0 1px 3px rgba(0, 0, 0, 0.03)',
               cursor: 'pointer',
               transition: 'all 0.15s ease-in-out',
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'space-between',
+              position: 'relative',
+              overflow: 'hidden',
             }}
+            className="hover:shadow-md transition-all"
           >
             <div>
               <div
                 style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#718096',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: '#64748B',
                   marginBottom: '6px',
                 }}
               >
@@ -101,11 +106,12 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
               </div>
               <div
                 style={{
-                  fontSize: '26px',
-                  fontWeight: 700,
-                  color: '#011F39',
+                  fontSize: '28px',
+                  fontWeight: 800,
+                  color: '#06294D',
                   lineHeight: 1.1,
                   marginBottom: '4px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
                 }}
               >
                 {card.count.toLocaleString()}
@@ -113,7 +119,8 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
               <div
                 style={{
                   fontSize: '12px',
-                  color: '#718096',
+                  color: '#64748B',
+                  fontWeight: 500,
                 }}
               >
                 {card.subtitle}
@@ -124,16 +131,17 @@ export const UsersStatsCards: React.FC<UsersStatsCardsProps> = ({
               style={{
                 width: '42px',
                 height: '42px',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 backgroundColor: card.bgLight,
                 color: card.color,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
+                border: `1px solid ${card.borderActive}30`,
               }}
             >
-              <Icon size={22} />
+              <Icon size={20} strokeWidth={2.5} />
             </div>
           </div>
         );

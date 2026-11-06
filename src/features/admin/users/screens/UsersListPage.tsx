@@ -145,15 +145,15 @@ export const UsersListPage: React.FC = () => {
             style={{
               fontFamily: 'Playfair Display, Georgia, serif',
               fontSize: '26px',
-              fontWeight: 700,
-              color: '#011F39',
+              fontWeight: 800,
+              color: '#06294D',
               margin: '0 0 4px',
             }}
           >
             User Management
           </h1>
-          <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>
-            Manage registered members, donation seekers, donors, roles, and KYC verifications.
+          <p style={{ fontSize: '13px', color: '#64748B', margin: 0, fontWeight: 500 }}>
+            Central directory to view and manage members, citizens, donation seekers, roles, and KYC credentials.
           </p>
         </div>
 
@@ -163,20 +163,23 @@ export const UsersListPage: React.FC = () => {
             onClick={handleRefresh}
             title="Refresh user list"
             style={{
-              padding: '10px 14px',
+              padding: '10px 16px',
               backgroundColor: '#FFFFFF',
-              border: '1px solid #DBE5EE',
-              borderRadius: '10px',
-              color: '#011F39',
-              fontSize: '14px',
-              fontWeight: 600,
+              border: '1px solid #E2E8F0',
+              borderRadius: '12px',
+              color: '#06294D',
+              fontSize: '13px',
+              fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease',
             }}
+            className="hover:bg-slate-50 active:scale-95"
           >
-            <RefreshCw size={16} className={isRefreshing ? 'spin' : ''} />
+            <RefreshCw size={15} className={isRefreshing ? 'spin' : ''} />
             <span>Refresh</span>
           </button>
 
@@ -187,16 +190,18 @@ export const UsersListPage: React.FC = () => {
               padding: '10px 20px',
               backgroundColor: '#FAD465',
               border: 'none',
-              borderRadius: '10px',
-              color: '#011F39',
-              fontSize: '14px',
-              fontWeight: 700,
+              borderRadius: '12px',
+              color: '#06294D',
+              fontSize: '13px',
+              fontWeight: 800,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 2px 6px rgba(250, 212, 101, 0.4)',
+              boxShadow: '0 2px 8px rgba(250, 212, 101, 0.45)',
+              transition: 'all 0.15s ease',
             }}
+            className="hover:bg-[#f5c742] active:scale-95"
           >
             <UserPlus size={18} />
             <span>Add New User</span>
@@ -335,72 +340,72 @@ export const UsersListPage: React.FC = () => {
                   >
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                       }}
                     >
                       User & Contact
                     </th>
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                       }}
                     >
-                      Member / ID
+                      Membership / ID
                     </th>
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                       }}
                     >
                       Role
                     </th>
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                       }}
                     >
                       Status
                     </th>
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                       }}
                     >
                       Joined Date
                     </th>
                     <th
                       style={{
-                        padding: '12px 16px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: '#011F39',
+                        padding: '14px 18px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: '#06294D',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: '0.06em',
                         textAlign: 'right',
                       }}
                     >

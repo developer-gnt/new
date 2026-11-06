@@ -114,17 +114,25 @@ class UsersStore {
 
         for (let idx = 0; idx < items.length; idx++) {
           const u = items[idx];
+          const accType = (u.account_type || '').toLowerCase().trim();
           const roleNames = (u.roles || []).map((r: any) =>
             (typeof r === 'string' ? r : r.name || '').toUpperCase()
           );
-          const isAdmin = roleNames.some((r: string) => r.includes('ADMIN'));
+          const isAdmin = accType === 'admin' || roleNames.some((r: string) => r.includes('ADMIN'));
           const isMember =
-            roleNames.some((r: string) => r.includes('MEMBER')) || Boolean(u.membership);
+            accType === 'member' ||
+            roleNames.some((r: string) => r.includes('MEMBER')) ||
+            Boolean(u.membership_number) ||
+            (u.membership_status || '').toUpperCase() === 'ACTIVE' ||
+            (u.membership_status || '').toUpperCase() === 'APPROVED' ||
+            Boolean(u.membership);
           const isSeeker =
-            roleNames.some(
-              (r: string) => r.includes('SEEKER') || r.includes('DONATION_SEEKER')
-            ) || Boolean(u.assistance);
+            accType === 'seeker' ||
+            roleNames.some((r: string) => r.includes('SEEKER') || r.includes('DONATION_SEEKER')) ||
+            Boolean(u.assistance_status) ||
+            Boolean(u.assistance);
           const isDonor =
+            accType === 'donor' ||
             roleNames.some((r: string) => r.includes('DONOR')) ||
             Boolean(u.donations?.length);
 
@@ -149,15 +157,23 @@ class UsersStore {
             status = 'active';
           }
 
+          const memberId =
+            u.membership_number ||
+            u.membership?.membership_number ||
+            u.member_id ||
+            (isMember ? `HRSJM-${(u.id || '').replace(/-/g, '').slice(0, 6).toUpperCase()}` : undefined);
+
           mappedUsers.push({
             id: u.id || `user-api-${idx}`,
-            memberId: u.membership?.membership_number || u.member_id || undefined,
+            memberId,
             applicationNumber: u.application_number || undefined,
             name: u.full_name || u.name || 'User',
             email: u.email || '',
             phone: u.mobile_number || u.phone || '',
             userType,
             status,
+            membershipCategory: u.membership_category || (isMember ? 'Active Member' : undefined),
+            membershipStatus: u.membership_status || (isMember ? 'ACTIVE' : undefined),
             avatarUrl: u.avatar_url || u.avatar || undefined,
             joinedDate: u.created_at || new Date().toISOString(),
             lastLogin: u.last_login_at

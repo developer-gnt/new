@@ -49,10 +49,10 @@ export const UsersTypeTabs: React.FC<UsersTypeTabsProps> = ({
             onClick={() => onTabChange(tab.key)}
             style={{
               padding: '8px 16px',
-              borderRadius: '20px',
-              border: isActive ? '1px solid #011F39' : '1px solid #DBE5EE',
-              backgroundColor: isActive ? '#011F39' : '#FFFFFF',
-              color: isActive ? '#FFFFFF' : '#34516D',
+              borderRadius: '24px',
+              border: isActive ? '1px solid #06294D' : '1px solid #E2E8F0',
+              backgroundColor: isActive ? '#06294D' : '#FFFFFF',
+              color: isActive ? '#FFFFFF' : '#475569',
               fontSize: '13px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -60,18 +60,20 @@ export const UsersTypeTabs: React.FC<UsersTypeTabsProps> = ({
               alignItems: 'center',
               gap: '8px',
               whiteSpace: 'nowrap',
+              boxShadow: isActive ? '0 2px 6px rgba(6, 41, 77, 0.2)' : '0 1px 2px rgba(0,0,0,0.03)',
               transition: 'all 0.15s ease',
             }}
+            className="hover:scale-102 active:scale-98"
           >
             <span>{tab.label}</span>
             <span
               style={{
                 fontSize: '11px',
-                padding: '2px 7px',
-                borderRadius: '10px',
-                backgroundColor: isActive ? '#FAD465' : '#EDF2F7',
-                color: isActive ? '#011F39' : '#718096',
-                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '12px',
+                backgroundColor: isActive ? '#FAD465' : '#F1F5F9',
+                color: isActive ? '#06294D' : '#64748B',
+                fontWeight: 800,
               }}
             >
               {tab.count}

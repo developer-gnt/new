@@ -40,6 +40,8 @@ export interface UserItem {
   documents?: UserVerificationDocument[];
   notes?: string;
   remarks?: string;
+  membershipCategory?: string;
+  membershipStatus?: string;
 }
 
 export interface UserStats {
