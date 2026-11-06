@@ -57,16 +57,6 @@ export const LoginPage: React.FC = () => {
   const [forgotError, setForgotError] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
-  // Active portal tab derived from role query param
-  const activeTab: 'member' | 'seeker' | 'admin' | 'general' =
-    roleParam === 'seeker'
-      ? 'seeker'
-      : roleParam === 'admin'
-      ? 'admin'
-      : roleParam === 'general'
-      ? 'general'
-      : 'member';
-
   // If already authenticated with a valid token, route directly according to actual role
   useEffect(() => {
     const existingToken = authService.getAuthToken();
@@ -145,9 +135,9 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
-      // Check if user specified a role tab and has credentials for it
+      // Check if user specified a role parameter and has credentials for it
       if (
-        (activeTab === 'seeker' || roleParam === 'seeker') &&
+        roleParam === 'seeker' &&
         (session.user.account_type === 'seeker' ||
           session.user.roles?.some((r: any) => (r.name || r) === 'DONATION_SEEKER'))
       ) {
@@ -155,7 +145,7 @@ export const LoginPage: React.FC = () => {
         return;
       }
       if (
-        (activeTab === 'member' || roleParam === 'member') &&
+        roleParam === 'member' &&
         (session.user.account_type === 'member' ||
           session.user.roles?.some((r: any) => (r.name || r) === 'MEMBER'))
       ) {
@@ -171,17 +161,14 @@ export const LoginPage: React.FC = () => {
       if (password.length >= 6) {
         const idLower = identifier.toLowerCase();
         const isSeeker =
-          activeTab === 'seeker' ||
           roleParam === 'seeker' ||
           idLower.includes('seeker') ||
           idLower === '9888880004';
         const isMember =
-          activeTab === 'member' ||
           roleParam === 'member' ||
           idLower.includes('member') ||
           idLower === '9888880002';
         const isAdmin =
-          activeTab === 'admin' ||
           roleParam === 'admin' ||
           idLower.includes('admin') ||
           idLower === '9888880001';
@@ -483,54 +470,6 @@ export const LoginPage: React.FC = () => {
             <p className="text-xs text-[#718096] leading-relaxed">
               Enter your registered credentials to access your administrative, membership, or citizen service dashboard.
             </p>
-          </div>
-
-          {/* Portal Selector Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 bg-[#FAF7F0] rounded-xl border border-[#DCE4EC] text-[11px] font-bold">
-            <button
-              type="button"
-              onClick={() => setSearchParams({ role: 'member' })}
-              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
-                activeTab === 'member'
-                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
-                  : 'text-slate-600 hover:text-[#06294D]'
-              }`}
-            >
-              Member
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchParams({ role: 'seeker' })}
-              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
-                activeTab === 'seeker'
-                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
-                  : 'text-slate-600 hover:text-[#06294D]'
-              }`}
-            >
-              Seeker
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchParams({ role: 'admin' })}
-              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
-                activeTab === 'admin'
-                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
-                  : 'text-slate-600 hover:text-[#06294D]'
-              }`}
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchParams({ role: 'general' })}
-              className={`py-1.5 px-1 rounded-lg transition-all text-center cursor-pointer ${
-                activeTab === 'general'
-                  ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
-                  : 'text-slate-600 hover:text-[#06294D]'
-              }`}
-            >
-              General
-            </button>
           </div>
 
           {/* Logout Success Banner */}
