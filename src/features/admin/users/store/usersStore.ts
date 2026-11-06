@@ -99,7 +99,9 @@ class UsersStore {
   public async fetchUsers(): Promise<UserItem[]> {
     try {
       const response = await usersService.listUsers({ limit: 100 });
-      const items = Array.isArray(response?.data)
+      const items = Array.isArray(response?.items)
+        ? response.items
+        : Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response?.data?.items)
         ? response.data.items

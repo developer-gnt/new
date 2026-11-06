@@ -113,16 +113,8 @@ class EventsStore {
   public async fetchEvents(): Promise<void> {
     try {
       const items = await eventsService.list();
-      if (Array.isArray(items) && items.length > 0) {
-        const localMap = new Map<string, EventListItem>();
-        this.events.forEach((e) => localMap.set(e.id, e));
-        items.forEach((remote: EventListItem) => {
-          localMap.set(remote.id, {
-            ...localMap.get(remote.id),
-            ...remote,
-          });
-        });
-        this.events = Array.from(localMap.values());
+      if (Array.isArray(items)) {
+        this.events = items;
         this.sortInternal();
         this.notify();
       }

@@ -50,6 +50,39 @@ function triggerCsvDownload(csvContent: string, fileName: string): void {
 }
 
 export const donationsService = {
+  async getMyDonations(): Promise<Donation[]> {
+    try {
+      const res = await apiClient.get<any>('/donation-payments/my');
+      const items = Array.isArray(res?.items)
+        ? res.items
+        : Array.isArray(res?.data?.items)
+        ? res.data.items
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+        ? res
+        : [];
+      return items.map((p: any) => ({
+        id: p.id,
+        donor_name: p.donor_name || 'Donor',
+        donor_mobile: p.donor_mobile || '',
+        donor_email: p.donor_email || '',
+        amount: Number(p.amount) || 0,
+        donation_type: (p.donation_type || 'ONE_TIME') as DonationCategory,
+        status: (p.status || 'PAID') as DonationStatus,
+        cause: p.cause || p.campaign_title || 'General Relief Fund',
+        source: p.source || 'ONLINE',
+        is_80g_claimed: Boolean(p.is_80g_eligible ?? true),
+        pan_number: p.pan_number || undefined,
+        receipt_number: p.receipt_number || undefined,
+        created_at: p.created_at || new Date().toISOString(),
+      }));
+    } catch (e) {
+      console.warn('Failed to load my donations:', e);
+      return [];
+    }
+  },
+
   async getDonations(params?: {
     search?: string | null;
     status?: DonationStatus | null;

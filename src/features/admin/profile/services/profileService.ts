@@ -23,18 +23,25 @@ export class ProfileService {
   public getProfile(): AdminProfile {
     const base = { ...INITIAL_ADMIN_PROFILE };
     try {
+      const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
+      let profile = stored ? { ...base, ...JSON.parse(stored) } : base;
+
       const userRaw = localStorage.getItem('hrsjm_user_profile');
       if (userRaw) {
         const u = JSON.parse(userRaw);
-        if (u.full_name) base.fullName = u.full_name;
-        if (u.email) base.email = u.email;
-        if (u.mobile_number) base.phone = u.mobile_number;
-        if (u.membership_number) base.memberId = u.membership_number;
+        if (u.full_name) {
+          profile.fullName = u.full_name;
+          profile.accountName = u.full_name;
+        }
+        if (u.email) profile.email = u.email;
+        if (u.mobile_number) profile.phone = u.mobile_number;
+        if (u.membership_number) profile.memberId = u.membership_number;
+        if (u.blood_group) profile.bloodGroup = u.blood_group;
+        if (u.state) profile.state = u.state;
+        if (u.city) profile.city = u.city;
+        if (u.address) profile.address = u.address;
       }
-      const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
-      if (stored) {
-        return { ...base, ...JSON.parse(stored) };
-      }
+      return profile;
     } catch {
       // fallback to base
     }

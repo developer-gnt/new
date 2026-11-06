@@ -245,25 +245,8 @@ class MembersStore {
     try {
       const res = await membersService.list({ limit: 100 });
       const items = res?.items || (Array.isArray(res) ? res : []);
-      if (Array.isArray(items) && items.length > 0) {
-        const mappedRemote = items.map(mapBackendMembershipToMember);
-        const localMap = new Map<string, Member>();
-        this.members.forEach((m) => localMap.set(m.id, m));
-        mappedRemote.forEach((remote) => {
-          const existing = localMap.get(remote.id);
-          if (existing) {
-            localMap.set(remote.id, {
-              ...existing,
-              ...remote,
-              kitFulfillment: existing.kitFulfillment || remote.kitFulfillment,
-              documents: existing.documents && existing.documents.length > 0 ? existing.documents : remote.documents,
-            });
-          } else {
-            localMap.set(remote.id, remote);
-          }
-        });
-
-        this.members = Array.from(localMap.values());
+      if (Array.isArray(items)) {
+        this.members = items.map(mapBackendMembershipToMember);
         this.sortInternal();
         this.notify();
       }

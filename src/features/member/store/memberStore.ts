@@ -64,7 +64,14 @@ class MemberStore {
           if (u.full_name) base.fullName = u.full_name;
           if (u.email) base.email = u.email;
           if (u.mobile_number) base.phone = u.mobile_number;
-          if (u.membership_number) base.membershipNumber = u.membership_number;
+          base.membershipNumber = u.membership_number || 'PENDING VERIFICATION';
+          if (u.state || u.city) {
+            base.address = {
+              ...base.address,
+              ...(u.state ? { state: u.state } : {}),
+              ...(u.city ? { city: u.city } : {}),
+            };
+          }
         }
       }
     } catch {

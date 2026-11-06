@@ -74,7 +74,7 @@ export const UserDonationsPage: React.FC = () => {
       const loadHistory = async () => {
         try {
           setLoadingHistory(true);
-          const list = await donationsService.getDonations();
+          const list = await donationsService.getMyDonations();
           setPastDonations(list || []);
         } catch (err) {
           console.error('Failed to load donation history:', err);
