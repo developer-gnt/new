@@ -54,7 +54,24 @@ class MemberStore {
     } catch {
       // LocalStorage error fallback
     }
-    return { ...INITIAL_DEV_MEMBER };
+
+    const base = { ...INITIAL_DEV_MEMBER };
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const userRaw = window.localStorage.getItem('hrsjm_user_profile');
+        if (userRaw) {
+          const u = JSON.parse(userRaw);
+          if (u.full_name) base.fullName = u.full_name;
+          if (u.email) base.email = u.email;
+          if (u.mobile_number) base.phone = u.mobile_number;
+          if (u.membership_number) base.membershipNumber = u.membership_number;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return base;
   }
 
   private persistMember(): void {

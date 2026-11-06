@@ -16,9 +16,18 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
   membership_status?: string | null;
+  membership_number?: string | null;
+  membership_application_number?: string | null;
   assistance_status?: string | null;
   assistance_application_number?: string | null;
   account_type?: 'general' | 'member' | 'seeker' | 'admin';
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  blood_group?: string | null;
+  gender?: string | null;
+  dob?: string | null;
 }
 
 export interface HomeQuickAction {

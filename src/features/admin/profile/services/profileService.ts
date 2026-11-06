@@ -21,15 +21,24 @@ export class ProfileService {
   }
 
   public getProfile(): AdminProfile {
+    const base = { ...INITIAL_ADMIN_PROFILE };
     try {
+      const userRaw = localStorage.getItem('hrsjm_user_profile');
+      if (userRaw) {
+        const u = JSON.parse(userRaw);
+        if (u.full_name) base.fullName = u.full_name;
+        if (u.email) base.email = u.email;
+        if (u.mobile_number) base.phone = u.mobile_number;
+        if (u.membership_number) base.memberId = u.membership_number;
+      }
       const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (stored) {
-        return { ...INITIAL_ADMIN_PROFILE, ...JSON.parse(stored) };
+        return { ...base, ...JSON.parse(stored) };
       }
     } catch {
-      // fallback to initial
+      // fallback to base
     }
-    return { ...INITIAL_ADMIN_PROFILE };
+    return base;
   }
 
   public saveProfile(profile: AdminProfile): void {

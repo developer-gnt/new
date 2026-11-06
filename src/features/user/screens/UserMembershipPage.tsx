@@ -79,8 +79,8 @@ export const UserMembershipPage: React.FC = () => {
     addressLine1: '',
     addressLine2: '',
     country: 'India',
-    state: '',
-    city: '',
+    state: user?.state || '',
+    city: user?.city || '',
     pincode: '',
     aadhaarNumber: '',
   });
@@ -129,6 +129,8 @@ export const UserMembershipPage: React.FC = () => {
           // If no membership exists on backend, clear any stale mock or local session tracking IDs
           if (typeof window !== 'undefined') {
             localStorage.removeItem('hrsjm_user_membership_app_id');
+          }
+        }
           }
         }
       } catch {
