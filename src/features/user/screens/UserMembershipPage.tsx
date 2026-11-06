@@ -131,8 +131,6 @@ export const UserMembershipPage: React.FC = () => {
             localStorage.removeItem('hrsjm_user_membership_app_id');
           }
         }
-          }
-        }
       } catch {
         if (isMounted) {
           setMembershipData(null);
