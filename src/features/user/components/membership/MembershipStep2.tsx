@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Building, Globe, CreditCard } from 'lucide-react';
+import { MapPin, Building, Globe } from 'lucide-react';
 import { INDIAN_STATES, STATE_CITIES } from '../../data/membershipCategoriesData';
 
 export interface Step2FormData {
@@ -50,10 +50,10 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
       errs.pincode = 'Must be a valid 6-digit Indian postal pincode.';
     }
 
-    const cleanAadhaar = formData.aadhaarNumber.replace(/[\s-]/g, '');
-    if (cleanAadhaar.length < 10) {
-      errs.aadhaarNumber = 'Please enter a valid Aadhaar number (12 digits) or Voter ID.';
-    }
+    // const cleanAadhaar = formData.aadhaarNumber.replace(/[\s-]/g, '');
+    // if (cleanAadhaar.length < 10) {
+    //   errs.aadhaarNumber = 'Please enter a valid Aadhaar number (12 digits) or Voter ID.';
+    // }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -208,7 +208,7 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
         </div>
 
         {/* Aadhaar / Voter ID (Full Width) */}
-        <div className="sm:col-span-2">
+        {/* <div className="sm:col-span-2">
           <label className="block text-[11px] font-bold text-slate-700 mb-1">
             Aadhaar Card Number / Voter ID Number *
           </label>
@@ -227,7 +227,7 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
             Used strictly for KYC identity verification under Societies Registration Act 1860.
           </p>
           {errors.aadhaarNumber && <p className="text-[11px] text-rose-600 mt-1">{errors.aadhaarNumber}</p>}
-        </div>
+        </div> */}
       </div>
 
       {/* Action Buttons */}
@@ -242,9 +242,9 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2"
+          className="px-6 py-2.5 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 border border-[#E9B82E]"
         >
-          <span>Continue to Documents & Fee (Step 3)</span>
+          <span>Continue to Documents &amp; Fee (Step 3)</span>
           <span>→</span>
         </button>
       </div>

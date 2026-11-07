@@ -68,14 +68,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   actionBtn: {
     marginTop: '16px',
-    padding: '8px 18px',
-    backgroundColor: '#06294D',
-    color: '#FAD465',
+    padding: '9px 20px',
+    backgroundColor: '#FAD465',
+    color: '#011F39',
     border: 'none',
-    borderRadius: '6px',
-    fontSize: '12.5px',
-    fontWeight: 600,
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: 700,
     cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
   },
 };
 

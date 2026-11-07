@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { useAuth, resolveUserDestination } from '@/features/auth/store/authStore';
+import { authService } from '@/features/auth/services/authService';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AppErrorBoundary } from '../common/AppErrorBoundary';
 
 export const AdminLayout: React.FC = () => {
+  const { isAuthenticated, isAdmin, user } = useAuth();
+  const hasToken = Boolean(authService.getAuthToken());
+  const location = useLocation();
+
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -19,6 +25,18 @@ export const AdminLayout: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!isAuthenticated && !hasToken) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
+  // Prevent non-admin users from accessing the admin portal; route to their designated portal
+  if (!isAdmin) {
+    const currentUser = user || authService.getCurrentUser();
+    const destination = resolveUserDestination(currentUser);
+    const safeDestination = destination.startsWith('/admin') ? '/user/dashboard' : destination;
+    return <Navigate to={safeDestination} replace />;
+  }
 
   return (
     <div style={styles.layoutWrapper}>
@@ -41,9 +59,9 @@ export const AdminLayout: React.FC = () => {
 
         {/* Dynamic Page Outlet with Responsive Container */}
         <main style={styles.contentArea}>
-          <div style={styles.contentInner}>
-            <AppErrorBoundary>
-              <Outlet />
+          <div style={styles.contentInner} className="admin-content-inner">
+            <AppErrorBoundary key={location.pathname}>
+              <Outlet key={location.pathname} />
             </AppErrorBoundary>
           </div>
         </main>
@@ -56,26 +74,29 @@ const styles: Record<string, React.CSSProperties> = {
   layoutWrapper: {
     display: 'flex',
     minHeight: '100vh',
-    width: '100%',
     backgroundColor: '#FAF7F0',
   },
   mainContainer: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    flex: 1,
     minWidth: 0,
-    minHeight: '100vh',
-    overflowX: 'hidden',
+    backgroundColor: '#FAF7F0',
   },
   contentArea: {
     flex: 1,
-    padding: '24px',
-    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 'calc(100vh - 68px)',
   },
   contentInner: {
-    maxWidth: '1440px',
-    margin: '0 auto',
+    flex: 1,
+    maxWidth: '1600px',
     width: '100%',
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
   },
 };
 
+export default AdminLayout;

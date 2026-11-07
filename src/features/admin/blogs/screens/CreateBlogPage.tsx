@@ -1,0 +1,967 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Eye,
+  Send,
+  FileEdit,
+  X,
+} from 'lucide-react';
+import { blogsStore } from '../store/blogsStore';
+import {
+  DEFAULT_BLOG_CATEGORIES,
+  DEFAULT_BLOG_AUTHORS,
+  type CreateBlogFormState,
+  type CreateBlogFieldErrors,
+} from '../types/blog.types';
+import { BlogPreviewModal } from '../components/BlogPreviewModal';
+
+const SHORT_DESC_MAX = 200;
+const CONTENT_MAX = 5000;
+
+export const CreateBlogPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState<CreateBlogFormState>(() => ({
+    coverImageUri: 'https://picsum.photos/seed/hrsjm-blog-new/800/450',
+    title: '',
+    category: 'Know Your Rights',
+    shortDescription: '',
+    content: '',
+    author: 'HRSJM Admin',
+    status: 'PUBLISHED',
+    allowComments: true,
+    featured: false,
+    tagsText: 'Legal Awareness, Human Rights',
+  }));
+
+  const [tagInput, setTagInput] = useState('');
+  const [errors, setErrors] = useState<CreateBlogFieldErrors>({});
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+
+  const tagsList = form.tagsText
+    ? form.tagsText.split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  const handleAddTag = () => {
+    const clean = tagInput.trim().replace(/^#/, '');
+    if (clean && !tagsList.includes(clean)) {
+      const updated = [...tagsList, clean].join(', ');
+      setForm((prev) => ({ ...prev, tagsText: updated }));
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updated = tagsList.filter((t) => t !== tagToRemove).join(', ');
+    setForm((prev) => ({ ...prev, tagsText: updated }));
+  };
+
+  const validate = (): boolean => {
+    const errs: CreateBlogFieldErrors = {};
+    if (!form.coverImageUri) errs.coverImageUri = 'Cover image is required';
+    if (!form.title.trim()) errs.title = 'Blog title is required';
+    if (!form.category) errs.category = 'Category is required';
+    if (!form.shortDescription.trim()) errs.shortDescription = 'Short description is required';
+    if (!form.content.trim()) errs.content = 'Blog content is required';
+    if (!form.author.trim()) errs.author = 'Author is required';
+    if (!form.status) errs.status = 'Status is required';
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSaveDraft = async () => {
+    if (!form.title.trim()) {
+      setErrors({ title: 'Title is required to save a draft' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const draftPayload = { ...form, status: 'DRAFT' as const };
+      const created = await blogsStore.addBlog(draftPayload);
+      navigate(`/admin/blogs/${created.id}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePublishSubmit = async () => {
+    if (!validate()) return;
+    setIsSubmitting(true);
+    try {
+      const created = await blogsStore.addBlog(form);
+      navigate(`/admin/blogs/${created.id}`);
+    } finally {
+      setIsSubmitting(false);
+      setPublishModalOpen(false);
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* Top Header */}
+      <div style={styles.topBar}>
+        <button onClick={() => navigate('/admin/blogs')} style={styles.backBtn}>
+          <ArrowLeft size={16} />
+          <span>Back to Blogs</span>
+        </button>
+
+        <div style={styles.topActions}>
+          <button onClick={() => setIsPreviewOpen(true)} style={styles.previewBtn}>
+            <Eye size={16} />
+            <span>Preview Article</span>
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.pageTitleBox}>
+        <h1 style={styles.pageTitle}>Create Article & Blog</h1>
+        <p style={styles.pageSubtitle}>
+          Publish humanitarian thought leadership, educational articles, legal awareness essays and guides.
+        </p>
+      </div>
+
+      {/* Main Form Container */}
+      <div style={styles.formContainer}>
+        {/* Section 1: Cover Image */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionNumber}>1</div>
+            <div>
+              <h2 style={styles.sectionTitle}>Cover Image</h2>
+              <p style={styles.sectionSubtitle}>
+                Banner image displayed at the head of the article and on catalog cards.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>
+              Cover Image URL <span style={styles.requiredStar}>*</span>
+            </label>
+            <div style={styles.imageInputRow}>
+              <input
+                type="text"
+                placeholder="https://example.com/cover.jpg"
+                value={form.coverImageUri || ''}
+                onChange={(e) => {
+                  setForm((prev) => ({ ...prev, coverImageUri: e.target.value }));
+                  if (errors.coverImageUri) {
+                    setErrors((err) => ({ ...err, coverImageUri: undefined }));
+                  }
+                }}
+                style={styles.input}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    coverImageUri: `https://picsum.photos/seed/blog-${Date.now()}/800/450`,
+                  }))
+                }
+                style={styles.randomThumbBtn}
+              >
+                Sample Image
+              </button>
+            </div>
+
+            {form.coverImageUri && (
+              <div style={styles.previewImageContainer}>
+                <img
+                  src={form.coverImageUri}
+                  alt="Cover preview"
+                  style={styles.previewImage}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&q=80';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, coverImageUri: null }))}
+                  style={styles.removeImageBtn}
+                  title="Remove image"
+                >
+                  <X size={14} color="#FFFFFF" />
+                </button>
+              </div>
+            )}
+            {errors.coverImageUri && (
+              <span style={styles.errorText}>{errors.coverImageUri}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Section 2: Basic Information */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionNumber}>2</div>
+            <div>
+              <h2 style={styles.sectionTitle}>Article Details</h2>
+              <p style={styles.sectionSubtitle}>
+                Headline, editorial category, author and executive excerpt.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>
+              Blog Title <span style={styles.requiredStar}>*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Understanding Your Legal Rights as a Citizen..."
+              value={form.title}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, title: e.target.value }));
+                if (errors.title) setErrors((err) => ({ ...err, title: undefined }));
+              }}
+              style={{
+                ...styles.input,
+                borderColor: errors.title ? '#DC2626' : '#DCE4EC',
+              }}
+            />
+            {errors.title && <span style={styles.errorText}>{errors.title}</span>}
+          </div>
+
+          <div style={styles.twoCol}>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Category <span style={styles.requiredStar}>*</span>
+              </label>
+              <select
+                value={form.category || ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+                style={styles.select}
+              >
+                {DEFAULT_BLOG_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Author Name <span style={styles.requiredStar}>*</span>
+              </label>
+              <select
+                value={form.author || ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, author: e.target.value }))}
+                style={styles.select}
+              >
+                {DEFAULT_BLOG_AUTHORS.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <div style={styles.labelRow}>
+              <label style={styles.label}>
+                Short Description / Excerpt <span style={styles.requiredStar}>*</span>
+              </label>
+              <span style={styles.counter}>
+                {form.shortDescription.length}/{SHORT_DESC_MAX}
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              placeholder="A simple summary of fundamental rights every citizen should know..."
+              value={form.shortDescription}
+              onChange={(e) => {
+                setForm((prev) => ({
+                  ...prev,
+                  shortDescription: e.target.value.slice(0, SHORT_DESC_MAX),
+                }));
+                if (errors.shortDescription) {
+                  setErrors((err) => ({ ...err, shortDescription: undefined }));
+                }
+              }}
+              style={{
+                ...styles.textarea,
+                borderColor: errors.shortDescription ? '#DC2626' : '#DCE4EC',
+              }}
+            />
+            {errors.shortDescription && (
+              <span style={styles.errorText}>{errors.shortDescription}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Article Content */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionNumber}>3</div>
+            <div>
+              <h2 style={styles.sectionTitle}>Content Body</h2>
+              <p style={styles.sectionSubtitle}>
+                Complete article paragraphs. Use double returns for new paragraphs.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <div style={styles.labelRow}>
+              <label style={styles.label}>
+                Blog Content <span style={styles.requiredStar}>*</span>
+              </label>
+              <span style={styles.counter}>
+                {form.content.length}/{CONTENT_MAX}
+              </span>
+            </div>
+            <textarea
+              rows={10}
+              placeholder="Write the full editorial text here. Content will be cleanly rendered for readers..."
+              value={form.content}
+              onChange={(e) => {
+                setForm((prev) => ({
+                  ...prev,
+                  content: e.target.value.slice(0, CONTENT_MAX),
+                }));
+                if (errors.content) setErrors((err) => ({ ...err, content: undefined }));
+              }}
+              style={{
+                ...styles.textarea,
+                borderColor: errors.content ? '#DC2626' : '#DCE4EC',
+              }}
+            />
+            {errors.content && <span style={styles.errorText}>{errors.content}</span>}
+          </div>
+        </div>
+
+        {/* Section 4: Tags & Keywords */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionNumber}>4</div>
+            <div>
+              <h2 style={styles.sectionTitle}>Topics & Search Discovery</h2>
+              <p style={styles.sectionSubtitle}>
+                Add keyword tags so users can discover articles on related themes.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Topic Tags</label>
+            <div style={styles.tagInputWrapper}>
+              <input
+                type="text"
+                placeholder="Type a tag and press Enter (e.g. Legal Aid, Constitution, Civil Rights)..."
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                style={styles.input}
+              />
+              <button type="button" onClick={handleAddTag} style={styles.addTagBtn}>
+                Add Tag
+              </button>
+            </div>
+
+            <div style={styles.tagsPillContainer}>
+              {tagsList.map((t) => (
+                <span key={t} style={styles.tagPill}>
+                  #{t}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(t)}
+                    style={styles.removeTagBtn}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 5: Publication Settings & Flags */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionNumber}>5</div>
+            <div>
+              <h2 style={styles.sectionTitle}>Publication Status & Display Flags</h2>
+              <p style={styles.sectionSubtitle}>
+                Configure visibility and priority highlighting.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.statusOptions}>
+            <label
+              style={{
+                ...styles.statusOptionLabel,
+                backgroundColor: form.status === 'PUBLISHED' ? '#DCFCE7' : '#FFFFFF',
+                borderColor: form.status === 'PUBLISHED' ? '#166534' : '#DCE4EC',
+              }}
+            >
+              <input
+                type="radio"
+                name="status"
+                value="PUBLISHED"
+                checked={form.status === 'PUBLISHED'}
+                onChange={() => setForm((prev) => ({ ...prev, status: 'PUBLISHED' }))}
+              />
+              <div>
+                <strong style={{ color: '#166534' }}>Published Live</strong>
+                <div style={styles.statusOptionDesc}>Immediately viewable by all users and public readers</div>
+              </div>
+            </label>
+
+            <label
+              style={{
+                ...styles.statusOptionLabel,
+                backgroundColor: form.status === 'DRAFT' ? '#FEF3C7' : '#FFFFFF',
+                borderColor: form.status === 'DRAFT' ? '#92400E' : '#DCE4EC',
+              }}
+            >
+              <input
+                type="radio"
+                name="status"
+                value="DRAFT"
+                checked={form.status === 'DRAFT'}
+                onChange={() => setForm((prev) => ({ ...prev, status: 'DRAFT' }))}
+              />
+              <div>
+                <strong style={{ color: '#92400E' }}>Draft Only</strong>
+                <div style={styles.statusOptionDesc}>Saved privately in draft status for editorial review</div>
+              </div>
+            </label>
+          </div>
+
+          <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <label style={styles.toggleRow}>
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(e) => setForm((prev) => ({ ...prev, featured: e.target.checked }))}
+                style={{ width: '18px', height: '18px' }}
+              />
+              <div>
+                <strong style={{ fontSize: '14px', color: '#011F39' }}>Featured Article</strong>
+                <div style={styles.statusOptionDesc}>
+                  Highlight this blog with a golden banner at the top of the article feeds.
+                </div>
+              </div>
+            </label>
+
+            <label style={styles.toggleRow}>
+              <input
+                type="checkbox"
+                checked={form.allowComments}
+                onChange={(e) => setForm((prev) => ({ ...prev, allowComments: e.target.checked }))}
+                style={{ width: '18px', height: '18px' }}
+              />
+              <div>
+                <strong style={{ fontSize: '14px', color: '#011F39' }}>Allow Public Comments</strong>
+                <div style={styles.statusOptionDesc}>
+                  Allow readers and members to leave comments and feedback on this article.
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div style={{ ...styles.fieldGroup, marginTop: '20px' }}>
+            <label style={styles.label}>
+              Target Portal Visibility <span style={styles.requiredStar}>*</span>
+            </label>
+            <select
+              value={form.targetAudience || 'ALL'}
+              onChange={(e) => setForm((prev) => ({ ...prev, targetAudience: e.target.value }))}
+              style={styles.select}
+            >
+              <option value="ALL">All Portals (Public & All Roles)</option>
+              <option value="MEMBERS">Members Portal Only</option>
+              <option value="SEEKERS">Donation Seekers Portal Only</option>
+              <option value="USERS">General Users / Public Only</option>
+            </select>
+            <span style={styles.helpText}>
+              Controls which user roles are authorized to view this blog article once published.
+            </span>
+          </div>
+        </div>
+
+        {/* Section 6: Action Operations Footer */}
+        <div style={styles.formFooter}>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/blogs')}
+            style={styles.discardBtn}
+            disabled={isSubmitting}
+          >
+            Discard
+          </button>
+
+          <div style={styles.footerRight}>
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              style={styles.saveDraftBtn}
+              disabled={isSubmitting}
+            >
+              <FileEdit size={16} />
+              <span>Save as Draft</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (validate()) setPublishModalOpen(true);
+              }}
+              style={styles.submitBtn}
+              disabled={isSubmitting}
+            >
+              <Send size={16} />
+              <span>Publish Article</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Modal for Publishing */}
+      {publishModalOpen && (
+        <div style={styles.modalBackdrop}>
+          <div style={styles.modalCard}>
+            <div style={styles.modalIcon}>📝</div>
+            <h3 style={styles.modalTitle}>Publish Blog Article?</h3>
+            <p style={styles.modalText}>
+              This article will be saved to the database and made immediately visible to public users and members.
+            </p>
+            <div style={styles.modalActions}>
+              <button
+                onClick={() => setPublishModalOpen(false)}
+                style={styles.modalCancelBtn}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePublishSubmit}
+                style={styles.modalConfirmBtn}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Publishing...' : 'Publish Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Preview Modal */}
+      <BlogPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        form={form}
+      />
+    </div>
+  );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    maxWidth: '860px',
+    margin: '0 auto',
+  },
+  topBar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '16px',
+  },
+  backBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FFFFFF',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  topActions: {
+    display: 'flex',
+    gap: '10px',
+  },
+  previewBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: '1.5px solid #011F39',
+    backgroundColor: '#FFFFFF',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  pageTitleBox: {
+    marginBottom: '24px',
+  },
+  pageTitle: {
+    fontFamily: '"Playfair Display", Georgia, serif',
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#011F39',
+    margin: '0 0 6px 0',
+  },
+  pageSubtitle: {
+    fontSize: '14px',
+    color: '#34516D',
+    margin: 0,
+  },
+  formContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  section: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '16px',
+    border: '1px solid #DCE4EC',
+    padding: '28px 32px',
+    boxShadow: '0 2px 10px rgba(1, 31, 57, 0.03)',
+  },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '14px',
+    marginBottom: '20px',
+    paddingBottom: '16px',
+    borderBottom: '1px solid #F1F5F9',
+  },
+  sectionNumber: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '50%',
+    backgroundColor: '#011F39',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '13px',
+    fontWeight: 700,
+    flexShrink: 0,
+  },
+  sectionTitle: {
+    fontFamily: '"Playfair Display", Georgia, serif',
+    fontSize: '18px',
+    color: '#011F39',
+    margin: '0 0 4px 0',
+  },
+  sectionSubtitle: {
+    fontSize: '13px',
+    color: '#64748B',
+    margin: 0,
+  },
+  fieldGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    marginBottom: '18px',
+  },
+  labelRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: '13px',
+    fontWeight: 700,
+    color: '#011F39',
+  },
+  requiredStar: {
+    color: '#DC2626',
+  },
+  counter: {
+    fontSize: '11px',
+    color: '#94A3B8',
+  },
+  input: {
+    padding: '11px 14px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    fontSize: '14px',
+    color: '#011F39',
+    outline: 'none',
+    boxSizing: 'border-box',
+    width: '100%',
+  },
+  textarea: {
+    padding: '12px 14px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    fontSize: '14px',
+    color: '#011F39',
+    outline: 'none',
+    boxSizing: 'border-box',
+    width: '100%',
+    fontFamily: 'inherit',
+    lineHeight: 1.5,
+  },
+  select: {
+    padding: '11px 14px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    fontSize: '14px',
+    color: '#011F39',
+    outline: 'none',
+    boxSizing: 'border-box',
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+  },
+  errorText: {
+    fontSize: '12px',
+    color: '#DC2626',
+    fontWeight: 500,
+  },
+  twoCol: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '16px',
+  },
+  imageInputRow: {
+    display: 'flex',
+    gap: '10px',
+  },
+  randomThumbBtn: {
+    padding: '10px 14px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#F8FAFC',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  previewImageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: '200px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    marginTop: '10px',
+    backgroundColor: '#E2E8F0',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    border: 'none',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  tagInputWrapper: {
+    display: 'flex',
+    gap: '10px',
+  },
+  addTagBtn: {
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: '1px solid #011F39',
+    backgroundColor: '#011F39',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  tagsPillContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginTop: '10px',
+  },
+  tagPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#EBF3FA',
+    color: '#011F39',
+    padding: '4px 10px',
+    borderRadius: '14px',
+    fontSize: '12px',
+    fontWeight: 600,
+  },
+  removeTagBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#64748B',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 700,
+    padding: 0,
+    lineHeight: 1,
+  },
+  statusOptions: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '12px',
+  },
+  statusOptionLabel: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    padding: '14px',
+    borderRadius: '10px',
+    border: '1.5px solid',
+    cursor: 'pointer',
+  },
+  statusOptionDesc: {
+    fontSize: '12px',
+    color: '#64748B',
+    marginTop: '2px',
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+    cursor: 'pointer',
+  },
+  formFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '20px 24px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '16px',
+    border: '1px solid #DCE4EC',
+    marginBottom: '40px',
+  },
+  discardBtn: {
+    padding: '11px 20px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FFFFFF',
+    color: '#64748B',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  footerRight: {
+    display: 'flex',
+    gap: '12px',
+  },
+  saveDraftBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '11px 20px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FFFFFF',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  submitBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '11px 24px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#011F39',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(1, 31, 57, 0.2)',
+  },
+  modalBackdrop: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(1, 31, 57, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1300,
+    padding: '16px',
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '16px',
+    maxWidth: '440px',
+    width: '100%',
+    padding: '28px',
+    textAlign: 'center',
+    boxShadow: '0 20px 40px rgba(1, 31, 57, 0.2)',
+  },
+  modalIcon: {
+    fontSize: '36px',
+    marginBottom: '12px',
+  },
+  modalTitle: {
+    fontFamily: '"Playfair Display", Georgia, serif',
+    fontSize: '20px',
+    color: '#011F39',
+    margin: '0 0 8px 0',
+  },
+  modalText: {
+    fontSize: '14px',
+    color: '#64748B',
+    lineHeight: 1.5,
+    margin: '0 0 24px 0',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '12px',
+  },
+  modalCancelBtn: {
+    flex: 1,
+    padding: '11px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FFFFFF',
+    color: '#34516D',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    padding: '11px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#011F39',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+};
+

@@ -37,7 +37,7 @@ export const MembershipPostCard: React.FC<MembershipPostCardProps> = ({ post, on
       case 'minority':
         return <Users className="w-5 h-5 text-emerald-700" />;
       case 'women':
-        return <Award className="w-5 h-5 text-purple-700" />;
+        return <Award className="w-5 h-5 text-[#C9971A]" />;
       case 'political':
         return <Shield className="w-5 h-5 text-indigo-700" />;
       default:
@@ -127,10 +127,10 @@ export const MembershipPostCard: React.FC<MembershipPostCardProps> = ({ post, on
           <button
             type="button"
             onClick={() => onApply(post)}
-            className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#E9B82E] hover:bg-[#d8a825] text-[#011F39] font-extrabold text-xs shadow-xs hover:shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] font-black text-xs shadow-xs hover:shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2 border border-[#E9B82E]"
           >
             <span>Apply Now</span>
-            <span className="text-[#011F39]/80 font-black">→</span>
+            <span className="text-[#011F39] font-black">→</span>
           </button>
         </div>
       </div>

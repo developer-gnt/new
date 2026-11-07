@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   MessageSquare,
   Search,
@@ -8,9 +8,9 @@ import {
   ArrowRight,
   Share2,
 } from 'lucide-react';
-import { newsService } from '../../news/services/newsService';
-import type { NewsListItem } from '../../news/types/news.types';
-import { INITIAL_NEWS_FIXTURES } from '../../news/data/newsFixtures';
+import { newsStore } from '../../admin/news/store/newsStore';
+import type { NewsListItem } from '../../admin/news/types/news.types';
+import { filterNewsForRole } from '@/features/content';
 
 const NEWS_CATEGORIES = [
   'All',
@@ -27,14 +27,14 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
   const cat = (item.category || '').toLowerCase();
   const title = (item.title || '').toLowerCase();
   const summary = (item.summary || '').toLowerCase();
-  const tags = (item.tags || []).map(t => t.toLowerCase());
+  const tags = (item.tags || []).map((t: string) => t.toLowerCase());
 
   if (sel === 'legal awareness') {
     return (
       cat.includes('legal') ||
       cat.includes('awareness') ||
       cat.includes('rights') ||
-      tags.some(t => t.includes('legal') || t.includes('rights')) ||
+      tags.some((t: string) => t.includes('legal') || t.includes('rights')) ||
       title.includes('legal') ||
       title.includes('rights')
     );
@@ -44,7 +44,7 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
     return (
       cat.includes('community') ||
       cat.includes('relief') ||
-      tags.some(t => t.includes('community') || t.includes('relief')) ||
+      tags.some((t: string) => t.includes('community') || t.includes('relief')) ||
       title.includes('community') ||
       title.includes('relief')
     );
@@ -54,7 +54,7 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
     return (
       cat.includes('human rights') ||
       cat.includes('constitutional') ||
-      tags.some(t => t.includes('human rights') || t.includes('supreme court')) ||
+      tags.some((t: string) => t.includes('human rights') || t.includes('supreme court')) ||
       title.includes('human rights') ||
       summary.includes('human rights')
     );
@@ -64,7 +64,7 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
     return (
       cat.includes('women') ||
       cat.includes('child') ||
-      tags.some(t => t.includes('women') || t.includes('child') || t.includes('school') || t.includes('safety')) ||
+      tags.some((t: string) => t.includes('women') || t.includes('child') || t.includes('school') || t.includes('safety')) ||
       title.includes('women') ||
       title.includes('child') ||
       summary.includes('child') ||
@@ -72,11 +72,15 @@ const matchesNewsCategory = (selected: string, item: NewsListItem): boolean => {
     );
   }
 
-  return cat.includes(sel) || tags.some(t => t.includes(sel));
+  return cat.includes(sel) || tags.some((t: string) => t.includes(sel));
 };
 
 export const UserNewsPage: React.FC = () => {
-  const [newsList, setNewsList] = useState<NewsListItem[]>(INITIAL_NEWS_FIXTURES);
+  const snapshot = useSyncExternalStore(newsStore.subscribe, newsStore.getSnapshot);
+  const newsList = useMemo(() => {
+    return filterNewsForRole(snapshot.news, 'USER');
+  }, [snapshot.news]);
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -84,26 +88,13 @@ export const UserNewsPage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchNews = async () => {
-      try {
-        setLoading(true);
-        const res = await newsService.list({ status: 'PUBLISHED' });
-        if (isMounted) {
-          if (res.news && res.news.length > 0) {
-            setNewsList(res.news);
-          } else {
-            setNewsList(INITIAL_NEWS_FIXTURES);
-          }
-        }
-      } catch {
-        if (isMounted) {
-          setNewsList(INITIAL_NEWS_FIXTURES);
-        }
-      } finally {
+    setLoading(true);
+    newsStore
+      .fetchNews()
+      .catch(() => {})
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-    fetchNews();
+      });
     return () => {
       isMounted = false;
     };
@@ -122,7 +113,7 @@ export const UserNewsPage: React.FC = () => {
   }, [newsList, selectedCategory, search]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">
@@ -281,7 +272,7 @@ export const UserNewsPage: React.FC = () => {
 
               {activeArticle.content && activeArticle.content.length > 0 ? (
                 <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  {activeArticle.content.map((p, idx) => (
+                  {activeArticle.content.map((p: string, idx: number) => (
                     <p key={idx}>{p}</p>
                   ))}
                 </div>

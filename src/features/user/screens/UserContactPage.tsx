@@ -9,7 +9,7 @@ import {
   Building2,
   Shield,
 } from 'lucide-react';
-import { supportService } from '../../support/services/supportService';
+import { supportService } from '../../admin/support/services/supportService';
 import { useUserAuth } from '../store/userAuthStore';
 
 const REGIONAL_OFFICES = [
@@ -43,42 +43,44 @@ export const UserContactPage: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
-      alert('Please fill in all required fields.');
+      setErrorMessage('Please fill in all required fields.');
       return;
     }
 
     try {
       setSubmitting(true);
-      await supportService.create({
-        category: 'Legal Aid',
-        subject: `[Inquiry from ${name.trim()}] ${subject.trim() || 'General Public Inquiry'}`,
-        description: `Contact Person: ${name.trim()}\nEmail: ${email.trim()}\nPhone: ${phone.trim()}\n\nMessage:\n${message.trim()}`,
-        priority: 'NORMAL',
-        source: 'website',
+      setErrorMessage(null);
+      await supportService.submitContactInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        subject: subject.trim() || undefined,
+        message: message.trim(),
       });
       setSubmitted(true);
-    } catch {
-      // simulate success for public contact form
-      setSubmitted(true);
+    } catch (err: any) {
+      console.error('Failed to submit contact inquiry:', err);
+      setErrorMessage(err?.message || 'Unable to submit your inquiry at this moment. Please check your network and try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
-      <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md">
+      <div className="rounded-2xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md">
         <div className="max-w-2xl space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9B82E]/20 text-[#FAD465] text-xs font-bold uppercase tracking-wider mb-1">
             <PhoneCall size={14} />
             <span>National Citizen Helpline & Helpdesk</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Contact HRSJM</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-['Playfair_Display',Georgia,serif] text-white">Contact HRSJM</h1>
           <p className="text-xs sm:text-sm text-slate-200">
             Reach out to our constitutional legal cell, central administration, or state field directors. We operate free grievance redressal desks across India.
           </p>
@@ -88,24 +90,25 @@ export const UserContactPage: React.FC = () => {
       {/* Main Grid: Form Left, Office Cards Right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contact Form */}
-        <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xs">
+        <div className="lg:col-span-2 p-6 sm:p-8 rounded-2xl bg-white border border-[#DCE4EC] shadow-xs">
           {submitted ? (
             <div className="text-center py-10 space-y-4">
               <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-xs">
                 <CheckCircle size={32} />
               </div>
-              <h2 className="text-xl font-bold text-[#06294D]">Message Received Successfully</h2>
-              <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+              <h2 className="text-xl font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D]">Message Received Successfully</h2>
+              <p className="text-xs sm:text-sm text-[#718096] max-w-md mx-auto">
                 Thank you for reaching out. Your inquiry has been routed to our citizen support cell. An official representative will review and respond within 24 to 48 business hours.
               </p>
               <button
                 type="button"
                 onClick={() => {
                   setSubmitted(false);
+                  setErrorMessage(null);
                   setMessage('');
                   setSubject('');
                 }}
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#06294D] hover:bg-[#083563] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-[#011F39] bg-[#FAD465] hover:bg-[#E9B82E] cursor-pointer shadow-xs transition"
               >
                 Send Another Message
               </button>
@@ -113,72 +116,78 @@ export const UserContactPage: React.FC = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-[#06294D]">Send an Official Inquiry</h2>
-                <p className="text-xs text-slate-500">Fill in your details below and our team will get in touch with you.</p>
+                <h2 className="text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D]">Send an Official Inquiry</h2>
+                <p className="text-xs text-[#718096]">Fill in your details below and our team will get in touch with you.</p>
               </div>
+
+              {errorMessage && (
+                <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+                  {errorMessage}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Your Full Name *</label>
+                  <label className="block text-xs font-bold text-[#06294D] mb-1">Your Full Name *</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE4EC] text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Email Address *</label>
+                  <label className="block text-xs font-bold text-[#06294D] mb-1">Email Address *</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE4EC] text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Mobile Phone Number</label>
+                  <label className="block text-xs font-bold text-[#06294D] mb-1">Mobile Phone Number</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE4EC] text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Subject / Nature of Inquiry *</label>
+                  <label className="block text-xs font-bold text-[#06294D] mb-1">Subject / Nature of Inquiry *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g., Legal Aid, Educational Support, Workshop Query"
                     value={subject}
                     onChange={e => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE4EC] text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Your Message or Grievance Details *</label>
+                <label className="block text-xs font-bold text-[#06294D] mb-1">Your Message or Grievance Details *</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Please describe your query or incident thoroughly..."
                   value={message}
                   onChange={e => setMessage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE4EC] text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 px-4 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white font-bold text-xs shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs shadow-xs transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
               >
                 <Send size={14} />
                 <span>{submitting ? 'Submitting Message...' : 'Submit Inquiry'}</span>

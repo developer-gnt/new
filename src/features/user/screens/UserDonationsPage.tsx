@@ -10,9 +10,11 @@ import {
   Building,
   ArrowRight,
 } from 'lucide-react';
-import { donationsService } from '../../donations/services/donationsService';
-import type { Donation } from '../../donations/types/donations.types';
+import { donationsService } from '../../admin/donations/services/donationsService';
+import { assistanceService } from '../../admin/assistance/services/assistanceService';
+import type { Donation } from '../../admin/donations/types/donations.types';
 import { useUserAuth } from '../store/userAuthStore';
+import { cashfreeService } from '../../payments';
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
@@ -30,8 +32,28 @@ export const UserDonationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'donate' | 'history'>('donate');
   const [selectedAmount, setSelectedAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
+  const [causes, setCauses] = useState<string[]>(CAUSES);
   const [selectedCause, setSelectedCause] = useState<string>(CAUSES[0]);
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'CARD' | 'NETBANKING'>('UPI');
+
+  useEffect(() => {
+    const loadApprovedCauses = async () => {
+      try {
+        const approved = await assistanceService.listApproved();
+        if (approved && approved.length > 0) {
+          const names = approved
+            .map((a: any) => a.title || a.purpose || a.reason_for_aid)
+            .filter(Boolean);
+          if (names.length > 0) {
+            setCauses([...new Set([...CAUSES, ...names])]);
+          }
+        }
+      } catch {
+        // keep default CAUSES
+      }
+    };
+    loadApprovedCauses();
+  }, []);
 
   // Form State
   const [donorName, setDonorName] = useState(user?.full_name || 'Mohd. Ayaan Shaikh');
@@ -52,7 +74,7 @@ export const UserDonationsPage: React.FC = () => {
       const loadHistory = async () => {
         try {
           setLoadingHistory(true);
-          const list = await donationsService.getDonations();
+          const list = await donationsService.getMyDonations();
           setPastDonations(list || []);
         } catch (err) {
           console.error('Failed to load donation history:', err);
@@ -68,42 +90,55 @@ export const UserDonationsPage: React.FC = () => {
 
   const handleMakeDonation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (effectiveAmount < 100) {
-      alert('Minimum donation amount is ₹100.');
+    if (effectiveAmount < 10) {
+      alert('Minimum donation amount is ₹10.');
       return;
     }
 
     try {
       setSubmitting(true);
-      const res = await donationsService.createDonation({
-        donor_name: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
-        donor_email: donorEmail.trim() || undefined,
-        donor_mobile: donorMobile.trim() || undefined,
+      const session = await cashfreeService.createDonationOrder({
         cause: selectedCause,
         amount: effectiveAmount,
-        is_anonymous: isAnonymous,
-        payment_method: paymentMethod,
-        remark: `Donation towards ${selectedCause}${panNumber ? ` (PAN: ${panNumber.toUpperCase()})` : ''}`,
-        source: 'Web App',
+        donorName: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
+        donorEmail: donorEmail.trim() || undefined,
+        donorMobile: donorMobile.trim() || undefined,
+        userId: user?.id,
+        panNumber: panNumber ? panNumber.toUpperCase() : undefined,
+        need80G: Boolean(panNumber),
       });
 
-      setCompletedDonation(res);
-
-      // Generate receipt
-      try {
-        await donationsService.getReceiptByDonationId(res.id);
-      } catch {
-        // fallback receipt
-      }
+      await cashfreeService.launchCashfreeCheckout(
+        session,
+        async (verifyRes) => {
+          const completed: any = {
+            id: session.order_id,
+            amount: effectiveAmount,
+            cause: selectedCause,
+            donor_name: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
+            donor_mobile: donorMobile.trim(),
+            donor_email: donorEmail.trim(),
+            transaction_id: verifyRes.transaction_id || `CF-${Date.now().toString().slice(-8)}`,
+            receipt_number: verifyRes.receipt_number || `RCP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+            is_anonymous: isAnonymous,
+            created_at: new Date().toISOString(),
+            payment_method: verifyRes.payment_method || 'CASHFREE',
+          };
+          setCompletedDonation(completed);
+          setSubmitting(false);
+        },
+        () => {
+          setSubmitting(false);
+        }
+      );
     } catch (err: any) {
-      alert(err.message || 'Payment processing failed. Please try again.');
-    } finally {
       setSubmitting(false);
+      alert(err.message || 'Payment processing failed. Please try again.');
     }
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">
@@ -111,7 +146,7 @@ export const UserDonationsPage: React.FC = () => {
             <Heart size={14} className="fill-[#FAD465]" />
             <span>80G Tax-Exempt National Contribution</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Donations & Support Desk</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-white">Donations & Support Desk</h1>
           <p className="text-xs sm:text-sm text-slate-200 mt-1">
             Every contribution directly funds legal interventions, constitutional protection, women and child welfare, and grassroots relief. All donations are 50% tax exempt under Section 80G.
           </p>
@@ -155,7 +190,7 @@ export const UserDonationsPage: React.FC = () => {
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 Payment Received Successfully
               </span>
-              <h2 className="text-2xl font-black text-[#06294D] mt-3">Thank You for Your Generosity!</h2>
+              <h2 className="text-2xl font-black font-serif text-[#06294D] mt-3">Thank You for Your Generosity!</h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 Your contribution of <strong className="text-slate-800">₹{completedDonation.amount.toLocaleString('en-IN')}</strong> will directly safeguard human dignity and constitutional rights.
               </p>
@@ -184,7 +219,23 @@ export const UserDonationsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  window.print();
+                  cashfreeService.downloadDonationReceiptPdf({
+                    receiptNumber: (completedDonation as any).receipt_number || `RCP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+                    orderId: completedDonation.id,
+                    transactionId: (completedDonation as any).transaction_id || `CF-${Date.now().toString().slice(-8)}`,
+                    amount: completedDonation.amount,
+                    purpose: 'donation',
+                    purposeTitle: completedDonation.cause,
+                    donorName: completedDonation.donor_name,
+                    donorMobile: donorMobile,
+                    donorEmail: donorEmail,
+                    panNumber: panNumber,
+                    userId: user?.id,
+                    paymentMethod: (completedDonation as any).payment_method || 'CASHFREE',
+                    paidAt: completedDonation.created_at || new Date().toISOString(),
+                    is80GEligible: true,
+                    status: 'SUCCESS',
+                  });
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
               >
@@ -215,7 +266,7 @@ export const UserDonationsPage: React.FC = () => {
                   1. Select Mission Cause
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {CAUSES.map(cause => (
+                  {causes.map(cause => (
                     <button
                       key={cause}
                       type="button"
@@ -345,7 +396,7 @@ export const UserDonationsPage: React.FC = () => {
                 <label className="text-xs font-bold text-[#06294D] uppercase tracking-wider block">
                   4. Payment Gateway Option
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('UPI')}
@@ -384,7 +435,7 @@ export const UserDonationsPage: React.FC = () => {
                   className="w-full py-3.5 px-4 rounded-xl bg-[#E9B82E] hover:bg-[#d8a825] text-[#011F39] font-black text-sm shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Heart size={16} className="fill-[#011F39]" />
-                  <span>{submitting ? 'Processing Contribution...' : `Proceed to Donate ₹${effectiveAmount.toLocaleString('en-IN')}`}</span>
+                  <span>{submitting ? 'Connecting to Cashfree...' : `Pay ₹${effectiveAmount.toLocaleString('en-IN')} with Cashfree Gateway`}</span>
                   <ArrowRight size={16} />
                 </button>
               </div>

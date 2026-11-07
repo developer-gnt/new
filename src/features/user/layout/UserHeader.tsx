@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../store/userAuthStore';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import { Bell, User, LogOut, ChevronDown, Heart, Menu } from 'lucide-react';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 interface UserHeaderProps {
   onToggleSidebar?: () => void;
@@ -19,7 +21,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
   onOpenProfile,
 }) => {
   const navigate = useNavigate();
-  const { user, unreadNotificationsCount, signOut } = useUserAuth();
+  const { user, unreadNotificationsCount } = useUserAuth();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,13 +57,20 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     if (onOpenNotifications) {
       onOpenNotifications();
     } else {
-      navigate('/notifications');
+      navigate('/user/notifications');
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setDropdownOpen(false);
-    signOut();
+    try {
+      await executeSignOut(navigate);
+    } catch (err) {
+      console.error('Sign out error:', err);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/login?logout=success';
+    }
   };
 
   return (
@@ -83,15 +92,11 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
           )}
 
           <Link
-            to="/"
+            to="/user/dashboard"
             className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer min-w-0"
             aria-label="HRSJM Home"
           >
-            <img
-              src="/assets/logo/logo.png"
-              alt="HRSJM Official Logo"
-              className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 group-hover:scale-105 transition-transform"
-            />
+            <HrsjmLogo size="sm" variant="dark" showWordmark={false} />
             <div className="flex flex-col min-w-0">
               <span className="text-[16px] sm:text-[18px] font-black tracking-tight text-[#06294D] leading-none shrink-0">
                 HRSJM
@@ -99,7 +104,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
               <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 uppercase tracking-wider leading-tight mt-0.5 truncate hidden min-[480px]:block">
                 HUMAN RIGHTS AND SOCIAL JUSTICE MISSION
               </span>
-              <span className="text-[8.5px] sm:text-[9.5px] font-semibold text-[#0F2860] leading-tight truncate hidden min-[480px]:block">
+              <span className="text-[8.5px] sm:text-[9.5px] font-semibold text-[#06294D] leading-tight truncate hidden min-[480px]:block">
                 मानव अधिकार • सामाजिक न्याय
               </span>
             </div>
@@ -178,7 +183,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                     onClick={() => {
                       setDropdownOpen(false);
                       if (onOpenProfile) onOpenProfile();
-                      else navigate('/profile');
+                      else navigate('/user/profile');
                     }}
                     className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 text-left cursor-pointer"
                   >
@@ -205,4 +210,3 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     </header>
   );
 };
-

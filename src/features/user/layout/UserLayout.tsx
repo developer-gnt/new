@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { UserHeader } from './UserHeader';
 import { UserSidebar } from './UserSidebar';
 import { UserBottomNav } from './UserBottomNav';
 import { AppErrorBoundary } from '../../../components/common/AppErrorBoundary';
 
 export const UserLayout: React.FC = () => {
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -58,8 +59,8 @@ export const UserLayout: React.FC = () => {
 
         {/* Dynamic Page Outlet with Error Boundary */}
         <main className="flex-1 pb-16 md:pb-8">
-          <AppErrorBoundary>
-            <Outlet />
+          <AppErrorBoundary key={location.pathname}>
+            <Outlet key={location.pathname} />
           </AppErrorBoundary>
         </main>
       </div>

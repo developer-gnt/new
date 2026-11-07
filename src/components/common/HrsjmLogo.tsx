@@ -1,149 +1,154 @@
 import type React from 'react';
+import { useState } from 'react';
+import hrsjmLogo from '@/assets/hrsjm_logo.png';
+import { HRSJM_LOGO_DATA_URI } from '@/assets/logoBase64';
 
-interface HrsjmLogoProps {
-  size?: 'sm' | 'md' | 'lg';
+export interface HrsjmLogoProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   variant?: 'light' | 'dark'; // 'light' on navy backgrounds, 'dark' on light backgrounds
   showWordmark?: boolean;
+  showSubtitle?: boolean;
+  title?: string;
+  subtitle?: string;
+  layout?: 'horizontal' | 'vertical';
+  className?: string;
+  imgClassName?: string;
+  style?: React.CSSProperties;
 }
+
+const SIZES = {
+  xs: 28,
+  sm: 34,
+  md: 44,
+  lg: 56,
+  xl: 72,
+} as const;
 
 export const HrsjmLogo: React.FC<HrsjmLogoProps> = ({
   size = 'md',
   variant = 'light',
   showWordmark = true,
+  showSubtitle = true,
+  title = 'HRSJM',
+  subtitle,
+  layout = 'horizontal',
+  className = '',
+  imgClassName = '',
+  style,
 }) => {
-  const iconSizes = {
-    sm: 32,
-    md: 40,
-    lg: 52,
+  const dim = typeof size === 'number' ? size : SIZES[size] || 44;
+  const isLight = variant === 'light';
+  const isVertical = layout === 'vertical';
+
+  // Fallback cascade: imported asset -> public static file -> WebP -> Base64 URI -> inline SVG emblem
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const sources = [
+    hrsjmLogo,
+    '/logo.png',
+    '/assets/logo/logo.png',
+    '/logo.webp',
+    HRSJM_LOGO_DATA_URI,
+  ];
+
+  const currentSrc = sources[sourceIndex];
+  const allImagesFailed = sourceIndex >= sources.length;
+
+  const handleImgError = () => {
+    setSourceIndex((prev) => prev + 1);
   };
 
-  const dim = iconSizes[size];
-  const isLight = variant === 'light';
-
   return (
-    <div style={styles.container}>
-      {/* Golden Shield & Crest Emblem */}
-      <svg
-        width={dim}
-        height={dim}
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0 }}
-      >
-        <defs>
-          <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FAD465" />
-            <stop offset="50%" stopColor="#E9B82E" />
-            <stop offset="100%" stopColor="#C9971A" />
-          </linearGradient>
-          <linearGradient id="innerShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06294D" />
-            <stop offset="100%" stopColor="#011F39" />
-          </linearGradient>
-        </defs>
-
-        {/* Outer Shield with Gold Accent */}
-        <path
-          d="M50 4L88 18V48C88 74 50 96 50 96C50 96 12 74 12 48V18L50 4Z"
-          fill="url(#shieldGrad)"
-          stroke="#C9971A"
-          strokeWidth="2"
+    <div
+      style={style}
+      className={`flex ${
+        isVertical ? 'flex-col text-center' : 'flex-row text-left'
+      } items-center gap-2.5 ${className}`}
+    >
+      {allImagesFailed ? (
+        <svg
+          width={dim}
+          height={dim}
+          viewBox="0 0 100 100"
+          className={`shrink-0 drop-shadow-sm ${imgClassName}`}
+          aria-label="HRSJM Official Seal"
+        >
+          <circle cx="50" cy="50" r="48" fill="#06294D" stroke="#E9B82E" strokeWidth="3" />
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#E9B82E" strokeWidth="1" strokeDasharray="2 2" />
+          {/* Scales of Justice Icon */}
+          <path
+            d="M50 22 v38 M36 28 h28 M36 28 l-8 16 h16 z M64 28 l-8 16 h16 z M42 60 h16"
+            fill="none"
+            stroke="#FAD465"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text x="50" y="78" textAnchor="middle" fill="#FFFFFF" fontSize="12" fontWeight="bold" fontFamily="serif">
+            HRSJM
+          </text>
+          <text x="50" y="88" textAnchor="middle" fill="#FAD465" fontSize="7" fontWeight="bold">
+            मानव अधिकार
+          </text>
+        </svg>
+      ) : (
+        <img
+          src={currentSrc}
+          alt="HRSJM Logo"
+          width={dim}
+          height={Math.round(dim * (825 / 813))}
+          className={`object-contain shrink-0 drop-shadow-sm ${imgClassName}`}
+          style={{ width: `${dim}px`, height: 'auto' }}
+          onError={handleImgError}
         />
-
-        {/* Inner Shield in Deep Navy */}
-        <path
-          d="M50 9L82 22V47C82 69 50 88 50 88C50 88 18 69 18 47V22L50 9Z"
-          fill="url(#innerShieldGrad)"
-        />
-
-        {/* Scales of Justice & Dove / Torch Symbolism */}
-        <circle cx="50" cy="34" r="5" fill="#FAD465" />
-        <path
-          d="M36 42H64M50 34V64M38 64H62"
-          stroke="#FAD465"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-        />
-        {/* Balance Pans */}
-        <path
-          d="M30 48L36 42L42 48"
-          stroke="#FAD465"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M28 54C28 58 44 58 44 54"
-          stroke="#FAD465"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M58 48L64 42L70 48"
-          stroke="#FAD465"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M56 54C56 58 72 58 72 54"
-          stroke="#FAD465"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        {/* Base Foundation */}
-        <rect x="34" y="64" width="32" height="4" rx="2" fill="#FAD465" />
-      </svg>
+      )}
 
       {showWordmark && (
-        <div style={styles.textWrap}>
-          <div
-            style={{
-              ...styles.title,
-              color: isLight ? '#FFFFFF' : '#0B2F52',
-              fontSize: size === 'sm' ? '15px' : size === 'md' ? '18px' : '22px',
-            }}
+        <div
+          className={`flex flex-col ${
+            isVertical ? 'items-center mt-2' : ''
+          } leading-tight select-none`}
+        >
+          <span
+            className={`font-serif font-black tracking-wider ${
+              isLight ? 'text-white' : 'text-[#011F39]'
+            }`}
+            style={{ fontSize: `${Math.max(13, dim * 0.42)}px` }}
           >
-            HRSJM
-          </div>
-          <div
-            style={{
-              ...styles.subtitle,
-              color: isLight ? '#FAD465' : '#174A78',
-              fontSize: size === 'sm' ? '10px' : '11px',
-            }}
-          >
-            Digital Platform Admin
-          </div>
+            {title}
+          </span>
+          {subtitle ? (
+            <span
+              className={`font-semibold tracking-wider mt-0.5 ${
+                isLight ? 'text-[#FAD465]' : 'text-[#174A78]'
+              }`}
+              style={{ fontSize: `${Math.max(10, dim * 0.22)}px` }}
+            >
+              {subtitle}
+            </span>
+          ) : (
+            showSubtitle && (
+              <>
+                <span
+                  className={`font-bold uppercase tracking-widest mt-0.5 ${
+                    isLight ? 'text-[#FAD465]' : 'text-[#06294D]'
+                  }`}
+                  style={{ fontSize: `${Math.max(8.5, dim * 0.2)}px` }}
+                >
+                  HUMAN RIGHTS &amp; SOCIAL JUSTICE MISSION
+                </span>
+                <span
+                  className={`tracking-wide font-medium mt-0.5 ${
+                    isLight ? 'text-slate-300' : 'text-slate-500'
+                  }`}
+                  style={{ fontSize: `${Math.max(8, dim * 0.18)}px` }}
+                >
+                  मानव अधिकार • सामाजिक न्याय
+                </span>
+              </>
+            )
+          )}
         </div>
       )}
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    userSelect: 'none',
-  },
-  textWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    lineHeight: 1.2,
-  },
-  title: {
-    fontFamily: 'var(--font-display)',
-    fontWeight: 700,
-    letterSpacing: '0.04em',
-  },
-  subtitle: {
-    fontFamily: 'var(--font-sans)',
-    fontWeight: 600,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-  },
-};
-

@@ -69,14 +69,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '8px 18px',
+    padding: '9px 18px',
     backgroundColor: '#06294D',
     color: '#FFFFFF',
     border: 'none',
-    borderRadius: '6px',
-    fontSize: '12.5px',
+    borderRadius: '12px',
+    fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
   },
 };
 

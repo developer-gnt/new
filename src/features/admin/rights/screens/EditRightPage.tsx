@@ -1,0 +1,972 @@
+import type React from 'react';
+import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Image as ImageIcon,
+  Save,
+  Send,
+  Eye,
+  Plus,
+  X,
+  AlertCircle,
+  CheckCircle,
+  Trash2,
+} from 'lucide-react';
+import { rightsStore } from '../store/rightsStore';
+import { RightsPreviewModal } from '../components/RightsPreviewModal';
+import { RightsDeleteModal } from '../components/RightsDeleteModal';
+import {
+  DEFAULT_RIGHTS_CATEGORIES,
+  DEFAULT_RIGHTS_AUTHORS,
+  type RightsArticle,
+  type RightsArticleFieldErrors,
+  type RightsArticleFormState,
+} from '../types/rights.types';
+
+const SAMPLE_COVERS = [
+  'https://picsum.photos/seed/hrsjm-rights-01/600/400',
+  'https://picsum.photos/seed/hrsjm-rights-02/600/400',
+  'https://picsum.photos/seed/hrsjm-rights-03/600/400',
+  'https://picsum.photos/seed/hrsjm-rights-04/600/400',
+  'https://picsum.photos/seed/hrsjm-rights-05/600/400',
+  'https://picsum.photos/seed/hrsjm-rights-06/600/400',
+];
+
+export const EditRightPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const snapshot = useSyncExternalStore(rightsStore.subscribe, rightsStore.getSnapshot);
+  const article = snapshot.articles.find((a) => a.id === id);
+
+  const initialFormState = useMemo<RightsArticleFormState>(() => {
+    if (!article) {
+      return {
+        coverImageUri: null,
+        title: '',
+        category: 'Constitution',
+        shortDescription: '',
+        content: '',
+        author: 'Priya Sharma',
+        status: 'DRAFT',
+        allowComments: true,
+        featured: false,
+        tags: [],
+        targetAudience: 'ALL',
+      };
+    }
+    return {
+      coverImageUri: article.thumbnailUrl ?? null,
+      title: article.title,
+      category: article.category,
+      shortDescription: article.description,
+      content: article.content.join('\n\n'),
+      author: article.author,
+      status: article.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT',
+      allowComments: article.allowComments !== false,
+      featured: Boolean(article.featured),
+      tags: [...(article.tags ?? [])],
+      targetAudience: article.targetAudience ?? 'ALL',
+    };
+  }, [article]);
+
+  const [form, setForm] = useState<RightsArticleFormState>(initialFormState);
+  const [newTagInput, setNewTagInput] = useState('');
+  const [errors, setErrors] = useState<RightsArticleFieldErrors>({});
+  const [previewArticle, setPreviewArticle] = useState<RightsArticle | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmUpdateOpen, setConfirmUpdateOpen] = useState(false);
+
+  if (!article) {
+    return (
+      <div style={styles.notFoundContainer}>
+        <AlertCircle size={48} color="#94A3B8" />
+        <h2 style={styles.notFoundTitle}>Rights Article Not Found</h2>
+        <p style={styles.notFoundText}>
+          The legal rights article you are attempting to edit does not exist or was removed.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/admin/rights')}
+          style={styles.backBtn}
+        >
+          <ArrowLeft size={16} />
+          <span>Back to Rights Directory</span>
+        </button>
+      </div>
+    );
+  }
+
+  const validate = (): boolean => {
+    const errs: RightsArticleFieldErrors = {};
+    if (!form.coverImageUri) errs.coverImageUri = 'Cover image is required';
+    if (!form.title.trim()) errs.title = 'Title is required';
+    if (!form.category) errs.category = 'Category is required';
+    if (!form.shortDescription.trim()) errs.shortDescription = 'Short description is required';
+    if (!form.content.trim()) errs.content = 'Article content is required';
+    if (!form.author) errs.author = 'Author is required';
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleAddTag = () => {
+    const trimmed = newTagInput.trim().replace(/^#/, '');
+    if (trimmed && !form.tags.includes(trimmed)) {
+      setForm((prev) => ({ ...prev, tags: [...prev.tags, trimmed] }));
+      setNewTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setForm((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tagToRemove),
+    }));
+  };
+
+  const handleSaveDraft = async () => {
+    if (!form.title.trim()) {
+      setErrors({ title: 'Title is required to save as draft' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await rightsStore.update(article.id, {
+        ...form,
+        status: 'DRAFT',
+      });
+      navigate(`/admin/rights/${article.id}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateSubmit = async () => {
+    if (!validate()) return;
+    setIsSubmitting(true);
+    try {
+      await rightsStore.update(article.id, {
+        ...form,
+        status: form.status,
+      });
+      navigate(`/admin/rights/${article.id}`);
+    } finally {
+      setIsSubmitting(false);
+      setConfirmUpdateOpen(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await rightsStore.delete(article.id);
+      navigate('/admin/rights');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+    }
+  };
+
+  const handleOpenPreview = () => {
+    const now = new Date();
+    const temp: RightsArticle = {
+      ...article,
+      title: form.title || article.title,
+      description: form.shortDescription || article.description,
+      category: form.category || article.category,
+      status: form.status,
+      thumbnailUrl: form.coverImageUri,
+      author: form.author || article.author,
+      content: form.content.split('\n\n').filter(Boolean),
+      tags: form.tags,
+      featured: form.featured,
+      allowComments: form.allowComments,
+      lastUpdatedDate: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      lastUpdatedTime: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    };
+    setPreviewArticle(temp);
+  };
+
+  return (
+    <div style={styles.page}>
+      {/* Top Header */}
+      <div style={styles.topBar}>
+        <div>
+          <button
+            type="button"
+            onClick={() => navigate(`/admin/rights/${article.id}`)}
+            style={styles.backBtn}
+          >
+            <ArrowLeft size={16} />
+            <span>Cancel & Back to Details</span>
+          </button>
+          <h1 style={styles.pageTitle}>Edit Rights Article</h1>
+          <p style={styles.subtitle}>
+            Update statutory documentation, provisions and citizen empowerment guides.
+          </p>
+        </div>
+
+        <div style={styles.topActions}>
+          <button
+            type="button"
+            onClick={handleOpenPreview}
+            style={styles.previewBtn}
+          >
+            <Eye size={15} />
+            <span>Preview</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={isSubmitting}
+            style={styles.draftBtn}
+          >
+            <Save size={15} />
+            <span>Save as Draft</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (validate()) setConfirmUpdateOpen(true);
+            }}
+            disabled={isSubmitting}
+            style={styles.updateBtn}
+          >
+            <Send size={15} />
+            <span>Update Article</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeleteModalOpen(true)}
+            style={styles.deleteTopBtn}
+            title="Delete this article"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.formGrid}>
+        {/* Main Column */}
+        <div style={styles.mainCol}>
+          {/* Section 1: Overview */}
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>Article Overview</h2>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Article Title <span style={styles.required}>*</span>
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                style={{
+                  ...styles.input,
+                  borderColor: errors.title ? '#DC2626' : '#CBD5E1',
+                }}
+              />
+              {errors.title && <span style={styles.errorText}>{errors.title}</span>}
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <div style={styles.labelRow}>
+                <label style={styles.label}>
+                  Short Description / Summary <span style={styles.required}>*</span>
+                </label>
+                <span style={styles.charCount}>
+                  {form.shortDescription.length} / 300
+                </span>
+              </div>
+              <textarea
+                value={form.shortDescription}
+                onChange={(e) => {
+                  if (e.target.value.length <= 300) {
+                    setForm((p) => ({ ...p, shortDescription: e.target.value }));
+                  }
+                }}
+                rows={3}
+                style={{
+                  ...styles.textarea,
+                  borderColor: errors.shortDescription ? '#DC2626' : '#CBD5E1',
+                }}
+              />
+              {errors.shortDescription && (
+                <span style={styles.errorText}>{errors.shortDescription}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2: Full Body Content */}
+          <div style={styles.card}>
+            <div style={styles.labelRow}>
+              <h2 style={styles.cardTitle}>Full Article Content</h2>
+              <span style={styles.charCount}>
+                {form.content.length} / 5000
+              </span>
+            </div>
+            <p style={styles.helpText}>
+              Separate paragraphs with blank lines. Legal articles support markdown headers and bullet points.
+            </p>
+
+            <textarea
+              value={form.content}
+              onChange={(e) => {
+                if (e.target.value.length <= 5000) {
+                  setForm((p) => ({ ...p, content: e.target.value }));
+                }
+              }}
+              rows={12}
+              style={{
+                ...styles.textarea,
+                fontFamily: 'Inter, sans-serif',
+                lineHeight: 1.6,
+                borderColor: errors.content ? '#DC2626' : '#CBD5E1',
+              }}
+            />
+            {errors.content && <span style={styles.errorText}>{errors.content}</span>}
+          </div>
+
+          {/* Section 3: Topic Tags */}
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>Topic Tags</h2>
+            <div style={styles.tagInputRow}>
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                placeholder="Enter tag and press Enter"
+                style={styles.input}
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                style={styles.addTagBtn}
+              >
+                <Plus size={15} />
+                <span>Add</span>
+              </button>
+            </div>
+
+            <div style={styles.tagsContainer}>
+              {form.tags.map((tag) => (
+                <span key={tag} style={styles.tagBadge}>
+                  #{tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    style={styles.removeTagBtn}
+                    title="Remove tag"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Settings Column */}
+        <div style={styles.sideCol}>
+          {/* Cover Image */}
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>
+              <ImageIcon size={16} />
+              <span>Cover Image</span>
+            </h2>
+
+            {form.coverImageUri && (
+              <div style={styles.coverPreview}>
+                <img
+                  src={form.coverImageUri}
+                  alt="Cover Preview"
+                  style={styles.coverPreviewImg}
+                />
+              </div>
+            )}
+
+            <label style={styles.smallLabel}>Preset Images</label>
+            <div style={styles.coverChoicesGrid}>
+              {SAMPLE_COVERS.map((url, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, coverImageUri: url }))}
+                  style={{
+                    ...styles.coverThumbnailBtn,
+                    borderColor: form.coverImageUri === url ? '#06294D' : '#E2E8F0',
+                    borderWidth: form.coverImageUri === url ? '2px' : '1px',
+                  }}
+                >
+                  <img src={url} alt={`Preset ${i + 1}`} style={styles.thumbnailImg} />
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '12px' }}>
+              <label style={styles.smallLabel}>Image URL</label>
+              <input
+                type="text"
+                value={form.coverImageUri || ''}
+                onChange={(e) => setForm((p) => ({ ...p, coverImageUri: e.target.value }))}
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          {/* Publishing Settings */}
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>Publishing Settings</h2>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Category <span style={styles.required}>*</span>
+              </label>
+              <select
+                value={form.category || ''}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                style={styles.select}
+              >
+                {DEFAULT_RIGHTS_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Author / Editorial Cell <span style={styles.required}>*</span>
+              </label>
+              <select
+                value={form.author || ''}
+                onChange={(e) => setForm((p) => ({ ...p, author: e.target.value }))}
+                style={styles.select}
+              >
+                {DEFAULT_RIGHTS_AUTHORS.map((a) => (
+                  <option key={a.name} value={a.name}>
+                    {a.name} ({a.organization})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Publication Status</label>
+              <select
+                value={form.status}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, status: e.target.value as 'DRAFT' | 'PUBLISHED' }))
+                }
+                style={styles.select}
+              >
+                <option value="DRAFT">Draft (Unpublished)</option>
+                <option value="PUBLISHED">Published (Live)</option>
+              </select>
+            </div>
+
+            {/* Target Portal Visibility */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>
+                Target Portal Visibility <span style={styles.required}>*</span>
+              </label>
+              <select
+                value={form.targetAudience || 'ALL'}
+                onChange={(e) => setForm((p) => ({ ...p, targetAudience: e.target.value }))}
+                style={styles.select}
+              >
+                <option value="ALL">All Portals (Public & All Roles)</option>
+                <option value="MEMBERS">Members Portal Only</option>
+                <option value="SEEKERS">Donation Seekers Portal Only</option>
+                <option value="USERS">General Users / Public Only</option>
+              </select>
+            </div>
+
+            <div style={styles.divider} />
+
+            <div style={styles.toggleRow}>
+              <div>
+                <div style={styles.toggleLabel}>Featured Guide</div>
+                <div style={styles.toggleDesc}>Highlight prominently on portal</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
+                style={styles.checkbox}
+              />
+            </div>
+
+            <div style={styles.toggleRow}>
+              <div>
+                <div style={styles.toggleLabel}>Allow Public Comments</div>
+                <div style={styles.toggleDesc}>Permit citizens to ask questions</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.allowComments}
+                onChange={(e) => setForm((p) => ({ ...p, allowComments: e.target.checked }))}
+                style={styles.checkbox}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      {confirmUpdateOpen && (
+        <div style={styles.overlay} onClick={() => setConfirmUpdateOpen(false)}>
+          <div style={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.confirmHeader}>
+              <CheckCircle size={24} color="#0284C7" />
+              <h3 style={styles.confirmTitle}>Confirm Article Update</h3>
+            </div>
+            <p style={styles.confirmMessage}>
+              Are you sure you want to save changes to <strong>"{form.title}"</strong>? The article
+              will be updated with status <strong>{form.status}</strong>.
+            </p>
+            <div style={styles.confirmFooter}>
+              <button
+                type="button"
+                onClick={() => setConfirmUpdateOpen(false)}
+                style={styles.cancelBtn}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateSubmit}
+                disabled={isSubmitting}
+                style={styles.confirmUpdateBtn}
+              >
+                {isSubmitting ? 'Updating...' : 'Yes, Update Article'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      <RightsPreviewModal
+        isOpen={Boolean(previewArticle)}
+        onClose={() => setPreviewArticle(null)}
+        article={previewArticle}
+      />
+
+      {/* Delete Modal */}
+      <RightsDeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        article={article}
+        isDeleting={isDeleting}
+      />
+    </div>
+  );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    padding: '24px 32px',
+    maxWidth: '1280px',
+    margin: '0 auto',
+  },
+  topBar: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '20px',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+  },
+  backBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '0',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#06294D',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    marginBottom: '8px',
+  },
+  pageTitle: {
+    margin: '4px 0 0 0',
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#011F39',
+    fontFamily: 'Playfair Display, Georgia, serif',
+  },
+  subtitle: {
+    margin: '4px 0 0 0',
+    fontSize: '14px',
+    color: '#64748B',
+  },
+  topActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+  },
+  previewBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '9px 16px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    backgroundColor: '#FFFFFF',
+    color: '#475569',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  draftBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '9px 18px',
+    borderRadius: '8px',
+    border: '1px solid #FED7AA',
+    backgroundColor: '#FFF7ED',
+    color: '#C2410C',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  updateBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '9px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#0284C7',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+  },
+  deleteTopBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '9px 12px',
+    borderRadius: '8px',
+    border: '1px solid #FECACA',
+    backgroundColor: '#FEF2F2',
+    color: '#DC2626',
+    cursor: 'pointer',
+  },
+  formGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) 360px',
+    gap: '24px',
+  },
+  mainCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  sideCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '10px',
+    border: '1px solid #E2E8F0',
+    padding: '24px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  },
+  cardTitle: {
+    margin: '0 0 16px 0',
+    fontSize: '16px',
+    fontWeight: 700,
+    color: '#011F39',
+    fontFamily: 'Playfair Display, Georgia, serif',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  fieldGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    marginBottom: '16px',
+  },
+  labelRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '4px',
+  },
+  label: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#1E293B',
+  },
+  smallLabel: {
+    fontSize: '12px',
+    fontWeight: 600,
+    color: '#475569',
+    marginBottom: '6px',
+    display: 'block',
+  },
+  required: {
+    color: '#DC2626',
+  },
+  charCount: {
+    fontSize: '12px',
+    color: '#94A3B8',
+  },
+  helpText: {
+    margin: '0 0 12px 0',
+    fontSize: '13px',
+    color: '#64748B',
+    lineHeight: 1.45,
+  },
+  input: {
+    width: '100%',
+    padding: '9px 12px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    fontSize: '14px',
+    color: '#0F172A',
+    outline: 'none',
+    boxSizing: 'border-box',
+    backgroundColor: '#FFFFFF',
+  },
+  textarea: {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    fontSize: '14px',
+    color: '#0F172A',
+    outline: 'none',
+    boxSizing: 'border-box',
+    backgroundColor: '#FFFFFF',
+    resize: 'vertical',
+  },
+  select: {
+    width: '100%',
+    padding: '9px 12px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    fontSize: '14px',
+    color: '#0F172A',
+    outline: 'none',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+  },
+  errorText: {
+    fontSize: '12px',
+    color: '#DC2626',
+    fontWeight: 500,
+  },
+  tagInputRow: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '12px',
+  },
+  addTagBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '0 16px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#06294D',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  tagsContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  tagBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    backgroundColor: '#F0F9FF',
+    color: '#0369A1',
+    fontSize: '12px',
+    fontWeight: 600,
+    border: '1px solid #BAE6FD',
+  },
+  removeTagBtn: {
+    border: 'none',
+    background: 'none',
+    padding: '0',
+    color: '#0369A1',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  coverPreview: {
+    width: '100%',
+    height: '160px',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    marginBottom: '12px',
+    backgroundColor: '#011F39',
+  },
+  coverPreviewImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  coverChoicesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '8px',
+    marginBottom: '12px',
+  },
+  coverThumbnailBtn: {
+    padding: '0',
+    borderRadius: '6px',
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    cursor: 'pointer',
+    aspectRatio: '16 / 10',
+    outline: 'none',
+  },
+  thumbnailImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
+  },
+  divider: {
+    height: '1px',
+    backgroundColor: '#E2E8F0',
+    margin: '16px 0',
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8px 0',
+  },
+  toggleLabel: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#1E293B',
+  },
+  toggleDesc: {
+    fontSize: '12px',
+    color: '#64748B',
+  },
+  checkbox: {
+    width: '18px',
+    height: '18px',
+    cursor: 'pointer',
+    accentColor: '#06294D',
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(1, 31, 57, 0.45)',
+    backdropFilter: 'blur(3px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1100,
+    padding: '16px',
+  },
+  confirmModal: {
+    width: '100%',
+    maxWidth: '480px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+  },
+  confirmHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '12px',
+  },
+  confirmTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#011F39',
+    fontFamily: 'Playfair Display, Georgia, serif',
+  },
+  confirmMessage: {
+    margin: '0 0 20px 0',
+    fontSize: '14px',
+    lineHeight: 1.5,
+    color: '#475569',
+  },
+  confirmFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: '10px',
+  },
+  cancelBtn: {
+    padding: '8px 16px',
+    borderRadius: '6px',
+    border: '1px solid #CBD5E1',
+    backgroundColor: '#FFFFFF',
+    color: '#475569',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  confirmUpdateBtn: {
+    padding: '8px 18px',
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: '#0284C7',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  notFoundContainer: {
+    padding: '80px 24px',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notFoundTitle: {
+    margin: '16px 0 8px 0',
+    fontSize: '22px',
+    fontWeight: 700,
+    color: '#1E293B',
+  },
+  notFoundText: {
+    margin: '0 0 24px 0',
+    fontSize: '14px',
+    color: '#64748B',
+  },
+};
+

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { AboutVideoData } from '../types/userHome.types';
 import { X, Check, Share2, ExternalLink, Heart, ArrowRight } from 'lucide-react';
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 
 export interface AboutVideoModalProps {
   visible: boolean;
@@ -19,6 +20,8 @@ export const AboutVideoModal: React.FC<AboutVideoModalProps> = ({
 }) => {
   const [copiedToast, setCopiedToast] = useState(false);
   const [playerMode, setPlayerMode] = useState<'youtube' | 'direct'>('youtube');
+
+  useLockBodyScroll(visible);
 
   if (!visible) return null;
 

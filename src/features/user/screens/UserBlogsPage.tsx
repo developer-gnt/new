@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   BookOpen,
   Search,
@@ -9,9 +9,9 @@ import {
   ArrowRight,
   Share2,
 } from 'lucide-react';
-import { blogsService } from '../../blogs/services/blogsService';
-import type { BlogListItem } from '../../blogs/types/blog.types';
-import { INITIAL_BLOGS_FIXTURES } from '../../blogs/data/blogsFixtures';
+import { blogsStore } from '../../admin/blogs/store/blogsStore';
+import type { BlogListItem } from '../../admin/blogs/types/blog.types';
+import { filterBlogsForRole } from '@/features/content';
 
 const BLOG_CATEGORIES = [
   'All Articles',
@@ -28,14 +28,14 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
   const sel = selected.toLowerCase().trim();
   const cat = (item.category || '').toLowerCase().trim();
   const title = (item.title || '').toLowerCase();
-  const tags = (item.tags || []).map(t => t.toLowerCase());
+  const tags = (item.tags || []).map((t: string) => t.toLowerCase());
 
   if (sel === 'social justice') {
     return (
       cat.includes('social justice') ||
       cat.includes('justice') ||
       cat.includes('rights') ||
-      tags.some(t => t.includes('social justice') || t.includes('justice')) ||
+      tags.some((t: string) => t.includes('social justice') || t.includes('justice')) ||
       title.includes('social justice')
     );
   }
@@ -43,7 +43,7 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
   if (sel === 'relief work') {
     return (
       cat.includes('relief') ||
-      tags.some(t => t.includes('relief')) ||
+      tags.some((t: string) => t.includes('relief')) ||
       title.includes('relief')
     );
   }
@@ -51,7 +51,7 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
   if (sel === 'environment') {
     return (
       cat.includes('environment') ||
-      tags.some(t => t.includes('environment')) ||
+      tags.some((t: string) => t.includes('environment')) ||
       title.includes('environment')
     );
   }
@@ -59,7 +59,7 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
   if (sel === 'women rights' || sel.includes('women')) {
     return (
       cat.includes('women') ||
-      tags.some(t => t.includes('women')) ||
+      tags.some((t: string) => t.includes('women')) ||
       title.includes('women')
     );
   }
@@ -68,17 +68,21 @@ const matchesBlogCategory = (selected: string, item: BlogListItem): boolean => {
     return (
       cat.includes('event') ||
       cat.includes('outreach') ||
-      tags.some(t => t.includes('event') || t.includes('outreach')) ||
+      tags.some((t: string) => t.includes('event') || t.includes('outreach')) ||
       title.includes('event') ||
       title.includes('outreach')
     );
   }
 
-  return cat === sel || cat.includes(sel) || tags.some(t => t === sel || t.includes(sel));
+  return cat === sel || cat.includes(sel) || tags.some((t: string) => t === sel || t.includes(sel));
 };
 
 export const UserBlogsPage: React.FC = () => {
-  const [blogs, setBlogs] = useState<BlogListItem[]>(INITIAL_BLOGS_FIXTURES);
+  const snapshot = useSyncExternalStore(blogsStore.subscribe, blogsStore.getSnapshot);
+  const blogs = useMemo(() => {
+    return filterBlogsForRole(snapshot.blogs, 'USER');
+  }, [snapshot.blogs]);
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Articles');
@@ -86,26 +90,13 @@ export const UserBlogsPage: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchBlogs = async () => {
-      try {
-        setLoading(true);
-        const res = await blogsService.list({ status: 'PUBLISHED' });
-        if (isMounted) {
-          if (res.blogs && res.blogs.length > 0) {
-            setBlogs(res.blogs);
-          } else {
-            setBlogs(INITIAL_BLOGS_FIXTURES);
-          }
-        }
-      } catch {
-        if (isMounted) {
-          setBlogs(INITIAL_BLOGS_FIXTURES);
-        }
-      } finally {
+    setLoading(true);
+    blogsStore
+      .fetchBlogs()
+      .catch(() => {})
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-    fetchBlogs();
+      });
     return () => {
       isMounted = false;
     };
@@ -124,7 +115,7 @@ export const UserBlogsPage: React.FC = () => {
   }, [blogs, selectedCategory, search]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header Banner */}
       <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="max-w-xl">

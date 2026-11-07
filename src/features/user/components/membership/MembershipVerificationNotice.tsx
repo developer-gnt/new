@@ -21,7 +21,7 @@ export const MembershipVerificationNotice: React.FC = () => {
       <div className="pt-3 space-y-2.5">
         <p className="text-xs text-slate-700 leading-relaxed">
           All membership applications are subject to mandatory document verification and background check by the{' '}
-          <strong className="text-[#0F2860] font-bold">HRSJM National Committee</strong> before final appointment approval.
+          <strong className="text-[#06294D] font-bold">HRSJM National Committee</strong> before final appointment approval.
         </p>
 
         <div className="bg-white rounded-xl p-3 border border-blue-200/60 flex items-start gap-2.5">

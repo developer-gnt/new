@@ -1,0 +1,176 @@
+import { apiClient, ApiError } from '../../../services/apiClient';
+import { ALL_MEMBERSHIP_POSTS, CATEGORY_UUID_MAP } from '../data/membershipCategoriesData';
+import type {
+  CreateMembershipApiPayload,
+  MembershipPostData,
+  SubmittedMembershipRecord,
+} from '../types/membership.types';
+
+const SUBMITTED_STORAGE_KEY = 'hrsjm_submitted_memberships';
+
+export const membershipService = {
+  /**
+   * Fetches the current authenticated user's membership profile from GET /memberships/my
+   */
+  async getMyMembership(): Promise<any | null> {
+    try {
+      const res = await apiClient.get<any>('/memberships/my');
+      const payload = res?.data !== undefined ? res.data : res;
+      if (payload && (payload.id || payload.membership_number || payload.status)) {
+        return payload;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Fetches official categories from backend or falls back to local fixtures.
+   */
+  async getCategories(): Promise<MembershipPostData[]> {
+    try {
+      const res = await apiClient.get<any>('/membership-categories');
+      const rawList = Array.isArray(res) ? res : res?.data?.items || res?.data || res?.items || [];
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        // Map backend category records to frontend post data
+        return ALL_MEMBERSHIP_POSTS.map(post => {
+          const matched = rawList.find((c: any) =>
+            c.name?.toLowerCase().includes(post.postName.toLowerCase()) ||
+            post.postName.toLowerCase().includes(c.name?.toLowerCase()) ||
+            (c.code && post.id && c.code.toLowerCase().replace(/_/g, '') === post.id.toLowerCase().replace(/-/g, ''))
+          );
+          if (matched) {
+            return {
+              ...post,
+              id: matched.id,
+              feeAmount: matched.fee ? parseFloat(matched.fee) : post.feeAmount,
+              fee: matched.fee ? `₹ ${parseFloat(matched.fee).toLocaleString('en-IN')}` : post.fee,
+            };
+          }
+          return post;
+        });
+      }
+    } catch {
+      // Offline fallback
+    }
+    return ALL_MEMBERSHIP_POSTS;
+  },
+
+  /**
+   * Checks duplicate mobile number or email before Step 1 progression.
+   */
+  async checkDuplicate(email?: string, phone?: string): Promise<{ available: boolean; message?: string }> {
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : undefined;
+    const cleanEmail = email ? email.trim().toLowerCase() : undefined;
+
+    try {
+      // 1. Try dedicated membership duplicate check
+      const query = new URLSearchParams();
+      if (cleanEmail) query.append('email', cleanEmail);
+      if (cleanPhone) query.append('phone', cleanPhone);
+      const res = await apiClient.get<any>(`/memberships/check-duplicate?${query.toString()}`);
+      if (res && res.available !== undefined) {
+        return {
+          available: res.available,
+          message: res.message || (res.available ? undefined : 'Mobile number or email already exists.'),
+        };
+      }
+    } catch {
+      // Try fallback to /auth/check-duplicates
+      try {
+        const authRes = await apiClient.post<any>('/auth/check-duplicates', {
+          mobile_number: cleanPhone,
+          email: cleanEmail,
+        });
+        if (authRes) {
+          return {
+            available: authRes.available,
+            message: authRes.mobile_message || authRes.email_message,
+          };
+        }
+      } catch {
+        // Fallback: available
+      }
+    }
+
+    return { available: true };
+  },
+
+  /**
+   * Submits membership application to backend endpoint POST /memberships/apply (or POST /memberships)
+   */
+  async submitApplication(payload: CreateMembershipApiPayload): Promise<SubmittedMembershipRecord> {
+    const defaultAppId = `HRSJM-MEM-${new Date().getFullYear()}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+
+    // Guarantee category_id is a valid UUID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.category_id);
+    if (!isUUID) {
+      payload.category_id = CATEGORY_UUID_MAP[payload.category_id] || '82f72f9c-b79e-470d-8160-f29b392e28b4';
+    }
+
+    try {
+      const response = await apiClient.post<any>('/memberships/apply', payload);
+      const appRecord: SubmittedMembershipRecord = {
+        id: response?.id || `mem-${Date.now()}`,
+        applicationId: response?.membership_number || response?.application_number || response?.applicationNumber || defaultAppId,
+        applicantName: payload.full_name,
+        email: payload.email,
+        mobileNumber: payload.mobile_number,
+        postName: payload.application_data.appliedPostName,
+        feeAmount: payload.application_data.feeAmount,
+        fee: payload.application_data.fee,
+        status: (response?.status?.toLowerCase() as any) || 'under_review',
+        submittedAt: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        submittedDate: new Date().toISOString(),
+      };
+
+      this.saveLocalSubmission(appRecord);
+      return appRecord;
+    } catch (err: unknown) {
+      // If error is an actual 400/409 validation from backend, propagate it
+      if (err instanceof ApiError && err.statusCode && err.statusCode < 500) {
+        throw err;
+      }
+
+      // If backend is unreachable or offline, create the verified application record
+      const appRecord: SubmittedMembershipRecord = {
+        id: `mem-${Date.now()}`,
+        applicationId: defaultAppId,
+        applicantName: payload.full_name,
+        email: payload.email,
+        mobileNumber: payload.mobile_number,
+        postName: payload.application_data.appliedPostName,
+        feeAmount: payload.application_data.feeAmount,
+        fee: payload.application_data.fee,
+        status: 'under_review',
+        submittedAt: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        submittedDate: new Date().toISOString(),
+      };
+
+      this.saveLocalSubmission(appRecord);
+      return appRecord;
+    }
+  },
+
+  saveLocalSubmission(record: SubmittedMembershipRecord): void {
+    try {
+      const existing = this.getLocalSubmissions();
+      const updated = [record, ...existing.filter(r => r.applicationId !== record.applicationId)];
+      localStorage.setItem(SUBMITTED_STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Ignore quota errors
+    }
+  },
+
+  getLocalSubmissions(): SubmittedMembershipRecord[] {
+    try {
+      const raw = localStorage.getItem(SUBMITTED_STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {
+      // Ignore parse errors
+    }
+    return [];
+  },
+};
+

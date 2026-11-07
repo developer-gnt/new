@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { executeSignOut } from '@/features/auth/store/authStore';
 import {
   Menu,
   Bell,
@@ -10,8 +11,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
-import { useProfile } from '../../features/profile/store/profileStore';
-import { useUnreadCount } from '../../features/notifications/store/notificationsStore';
+import { useProfile } from '@/features/admin/profile/store/profileStore';
+import { useUnreadCount } from '@/features/admin/notifications/store/notificationsStore';
 
 interface AdminHeaderProps {
   onToggleMobileSidebar: () => void;
@@ -54,10 +55,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     return 'Admin Dashboard';
   }, [location.pathname]);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setProfileDropdownOpen(false);
-    // Demonstration sign out action
-    navigate('/');
+    await executeSignOut(navigate);
   };
 
   return (
@@ -66,21 +66,18 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       <div style={styles.leftSection}>
         <button
           type="button"
-          onClick={onToggleMobileSidebar}
-          style={styles.mobileMenuBtn}
-          aria-label="Open Navigation Menu"
-        >
-          <Menu size={20} color="#0B2F52" />
-        </button>
-
-        <button
-          type="button"
-          onClick={onToggleDesktopCollapse}
-          style={styles.desktopToggleBtn}
-          aria-label="Toggle Sidebar"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+              onToggleMobileSidebar();
+            } else {
+              onToggleDesktopCollapse();
+            }
+          }}
+          style={styles.toggleBtn}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <Menu size={18} color="#06294D" />
+          <Menu size={19} color="#06294D" />
         </button>
 
         <div style={styles.titleWrap}>
@@ -220,24 +217,17 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '14px',
   },
-  mobileMenuBtn: {
-    display: 'none',
-    background: '#F1F5F9',
-    border: '1px solid #DCE4EC',
-    borderRadius: '6px',
-    padding: '7px',
-    cursor: 'pointer',
-  },
-  desktopToggleBtn: {
+  toggleBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#FAF7F0',
+    width: '38px',
+    height: '38px',
+    borderRadius: '8px',
     border: '1px solid #DCE4EC',
-    borderRadius: '6px',
-    padding: '7px',
+    backgroundColor: '#FAF7F0',
     cursor: 'pointer',
-    transition: 'background-color 0.15s',
+    transition: 'all 0.15s ease',
   },
   titleWrap: {
     display: 'flex',

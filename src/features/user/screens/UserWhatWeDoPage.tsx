@@ -229,7 +229,7 @@ export const UserWhatWeDoPage: React.FC = () => {
   }, [selectedCategory]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 1. Hero Banner */}
       <div className="rounded-3xl bg-gradient-to-br from-[#06294D] via-[#041E3A] to-[#011F39] text-white p-6 sm:p-10 shadow-xl relative overflow-hidden">
         {/* Subtle background glow */}

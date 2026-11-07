@@ -1,4 +1,4 @@
-import type { RightsArticle } from '../../rights/types/rights.types';
+import type { RightsArticle } from '../../admin/rights/types/rights.types';
 
 export const USER_RIGHTS_ARTICLES: RightsArticle[] = [
   {

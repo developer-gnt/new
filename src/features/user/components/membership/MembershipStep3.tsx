@@ -4,9 +4,6 @@ import {
   Upload,
   CheckCircle2,
   AlertCircle,
-  CreditCard,
-  QrCode,
-  Building2,
   Lock,
 } from 'lucide-react';
 import type { MembershipPostData } from '../../data/membershipCategoriesData';
@@ -22,16 +19,18 @@ export interface DocumentState {
   qualificationProofName?: string;
   photoProof?: File | null;
   photoProofName?: string;
+  urls?: Record<string, string>;
+}
+
+export interface Step3SubmitPayload {
+  documents: DocumentState;
 }
 
 interface MembershipStep3Props {
   selectedPost: MembershipPostData;
   step1Data: Step1FormData;
   step2Data: Step2FormData;
-  onSubmit: (payload: {
-    documents: DocumentState;
-    paymentMethod: string;
-  }) => void;
+  onSubmit: (payload: Step3SubmitPayload) => void;
   onBack: () => void;
   submitting: boolean;
 }
@@ -44,26 +43,38 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
   submitting,
 }) => {
   const [documents, setDocuments] = useState<DocumentState>({
-    identityProofName: 'aadhaar_card_front.pdf',
-    addressProofName: 'address_proof.pdf',
-    qualificationProofName: `${selectedPost.qualification.toLowerCase().replace(/[^a-z0-9]/g, '_')}_cert.pdf`,
+    identityProofName: undefined,
+    addressProofName: undefined,
+    qualificationProofName: undefined,
     photoProofName: step1Data.photoUrl ? 'applicant_photo.jpg' : undefined,
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreeConduct, setAgreeConduct] = useState(false);
   const [agreeAccuracy, setAgreeAccuracy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleFileUpload = (field: keyof DocumentState, nameField: keyof DocumentState, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    field: keyof DocumentState,
+    nameField: keyof DocumentState,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setDocuments(prev => ({
-        ...prev,
-        [field]: file,
-        [nameField]: file.name,
-      }));
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setDocuments(prev => ({
+          ...prev,
+          [field]: file,
+          [nameField]: file.name,
+          urls: {
+            ...(prev.urls || {}),
+            [field]: dataUrl,
+          },
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -74,10 +85,7 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
       return;
     }
     setErrorMsg(null);
-    onSubmit({
-      documents,
-      paymentMethod,
-    });
+    onSubmit({ documents });
   };
 
   return (
@@ -87,7 +95,7 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
         <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">
           Step 3 of 3
         </span>
-        <h2 className="text-xl font-black text-[#06294D]">Document Verification & Membership Fee</h2>
+        <h2 className="text-xl font-black text-[#06294D]">Document Verification &amp; Membership Fee</h2>
         <p className="text-xs text-slate-500 mt-0.5">
           Upload required verification certificates and complete official appointment processing.
         </p>
@@ -175,10 +183,10 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
           <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition-colors">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-700 shrink-0" />
+                <FileText className="w-4 h-4 text-[#06294D] shrink-0" />
                 <span className="text-xs font-bold text-[#06294D]">Qualification Certificate</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-[#EDF2F7] text-[#06294D] text-[10px] font-bold">
                 {selectedPost.qualification}
               </span>
             </div>
@@ -225,61 +233,10 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
         </div>
       </div>
 
-      {/* Payment Method Selector */}
-      <div className="space-y-3">
-        <h4 className="text-xs font-bold text-[#06294D] uppercase tracking-wider">
-          Official Payment Gateway
-        </h4>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            type="button"
-            onClick={() => setPaymentMethod('upi')}
-            className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
-              paymentMethod === 'upi'
-                ? 'bg-emerald-50/80 border-emerald-500 text-emerald-950 shadow-xs'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <QrCode className="w-5 h-5 text-emerald-700 mb-1" />
-            <span className="text-xs font-bold block">UPI / QR Code</span>
-            <span className="text-[10.5px] text-slate-500">GPay, PhonePe, Paytm, BHIM</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod('card')}
-            className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
-              paymentMethod === 'card'
-                ? 'bg-blue-50/80 border-blue-500 text-blue-950 shadow-xs'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <CreditCard className="w-5 h-5 text-blue-700 mb-1" />
-            <span className="text-xs font-bold block">Credit / Debit Card</span>
-            <span className="text-[10.5px] text-slate-500">Visa, Mastercard, RuPay</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod('netbanking')}
-            className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
-              paymentMethod === 'netbanking'
-                ? 'bg-amber-50/80 border-amber-500 text-amber-950 shadow-xs'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <Building2 className="w-5 h-5 text-amber-700 mb-1" />
-            <span className="text-xs font-bold block">Net Banking / IMPS</span>
-            <span className="text-[10.5px] text-slate-500">All major Indian banks</span>
-          </button>
-        </div>
-      </div>
-
       {/* Statutory Declarations (Checkboxes from APK) */}
       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
         <h4 className="text-xs font-bold text-[#06294D] uppercase tracking-wider">
-          Statutory Declarations & Consents
+          Statutory Declarations &amp; Consents
         </h4>
 
         <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700">
@@ -340,13 +297,12 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 rounded-xl bg-[#E9B82E] hover:bg-[#d8a825] text-[#011F39] text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+          className="px-6 py-3 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#D4A416] text-[#011F39] text-xs font-black shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex items-center gap-2 disabled:opacity-50 border border-[#E9B82E]"
         >
           <Lock className="w-3.5 h-3.5 text-[#011F39]" />
-          <span>{submitting ? 'Verifying & Submitting...' : `Submit Application & Pay ${selectedPost.fee}`}</span>
+          <span>{submitting ? 'Processing Payment...' : `Submit Application & Pay ${selectedPost.fee}`}</span>
         </button>
       </div>
     </form>
   );
 };
-

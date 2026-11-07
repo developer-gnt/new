@@ -202,7 +202,7 @@ export const UserAboutPage: React.FC = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 1. Hero Overview Header */}
       <div className="relative rounded-3xl overflow-hidden bg-[#06294D] text-white p-6 sm:p-10 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-[#011F39]/95 via-[#06294D]/85 to-transparent z-0" />
@@ -218,7 +218,7 @@ export const UserAboutPage: React.FC = () => {
             <span>National Non-Governmental Mission</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+          <h1 className="text-2xl sm:text-4xl font-extrabold font-serif tracking-tight leading-tight text-white">
             Human Rights and Social Justice Mission
           </h1>
 
@@ -298,7 +298,7 @@ export const UserAboutPage: React.FC = () => {
             <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
               <Target size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#06294D] mb-2">Our Mission</h2>
+            <h2 className="text-xl font-extrabold font-serif text-[#06294D] mb-2">Our Mission</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
               To defend civil rights, provide accessible legal counsel to the underprivileged, eradicate social discrimination, and foster an informed citizenry conscious of both constitutional rights and civic duties.
             </p>
@@ -310,7 +310,7 @@ export const UserAboutPage: React.FC = () => {
             <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#06294D] flex items-center justify-center mb-4">
               <BookOpen size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#06294D] mb-2">Our Vision</h2>
+            <h2 className="text-xl font-extrabold font-serif text-[#06294D] mb-2">Our Vision</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
               An inclusive, just, and dignified democratic society where every citizen—regardless of gender, caste, creed, or economic background—exercises their fundamental rights with confidence and dignity.
             </p>
@@ -425,17 +425,6 @@ export const UserAboutPage: React.FC = () => {
               </div>
             );
           })}
-        </div>
-
-        <div className="pt-2 flex justify-start">
-          <button
-            type="button"
-            onClick={() => navigate('/what-we-do/human-rights-monitoring')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#0c3966] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-          >
-            <span>Open Dedicated Human-rights Monitoring Page</span>
-            <ArrowRight size={14} />
-          </button>
         </div>
       </div>
 
@@ -555,7 +544,7 @@ export const UserAboutPage: React.FC = () => {
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
-            onClick={() => navigate('/membership-applications')}
+            onClick={() => navigate('/user/membership')}
             className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold text-[#011F39] bg-[#E9B82E] hover:bg-[#d8a825] transition-all shadow-md active:scale-95 cursor-pointer"
           >
             Become a Member
