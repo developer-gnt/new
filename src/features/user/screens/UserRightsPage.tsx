@@ -1,211 +1,497 @@
-import React, { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Scale,
+  ShieldCheck,
+  FileText,
   Search,
-  BookOpen,
-  ArrowRight,
-  Shield,
   X,
-  Eye,
-  CheckCircle,
+  ArrowRight,
+  Info,
+  HeartHandshake,
+  Megaphone,
+  GraduationCap,
+  Shield,
+  Heart,
+  Lock,
+  Users,
+  Globe,
+  Briefcase,
+  Clock,
 } from 'lucide-react';
-import { rightsStore } from '../../admin/rights/store/rightsStore';
-import type { RightsArticle } from '../../admin/rights/types/rights.types';
-import { USER_RIGHTS_ARTICLES } from '../data/userRightsData';
-import { filterRightsForRole } from '@/features/content';
 
-const RIGHTS_CATEGORIES = [
-  'ALL',
-  'Human Rights',
-  "Women's Rights",
-  'Right to Education',
-  "Children's Rights",
-  'Labor & Worker Rights',
-  'Senior Citizens',
-  'Minority Rights',
+export type RightsCategoryKey =
+  | 'ALL'
+  | 'CONSTITUTIONAL'
+  | 'WOMEN_CHILD'
+  | 'CIVIL_JUSTICE'
+  | 'LABOUR_WELFARE';
+
+export interface CategoryFilterTab {
+  key: RightsCategoryKey;
+  label: string;
+}
+
+export const CATEGORY_TABS: CategoryFilterTab[] = [
+  { key: 'ALL', label: 'All Rights' },
+  { key: 'CONSTITUTIONAL', label: 'Constitutional' },
+  { key: 'WOMEN_CHILD', label: 'Women & Child' },
+  { key: 'CIVIL_JUSTICE', label: 'Civil & Justice' },
+  { key: 'LABOUR_WELFARE', label: 'Labour & Welfare' },
 ];
 
-const getCanonicalCategory = (category: string): string => {
-  const c = (category || '').toLowerCase().trim();
-  if (c.includes('child')) return 'CHILDREN';
-  if (c.includes('women')) return 'WOMEN';
-  if (c.includes('education')) return 'EDUCATION';
-  if (c.includes('labor') || c.includes('labour') || c.includes('worker')) return 'LABOR';
-  if (c.includes('senior') || c.includes('elder')) return 'SENIOR';
-  if (c.includes('minority')) return 'MINORITY';
-  if (c.includes('human') || c.includes('constitution') || c.includes('fundamental')) return 'HUMAN';
-  return c;
-};
+export interface RightGuideItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: RightsCategoryKey;
+  categoryLabel: string;
+  legalReference: string;
+  highlights: string[];
+  accentColor: string;
+  badgeBg: string;
+  iconBg: string;
+}
 
-const matchesCategoryFilter = (
-  selected: string,
-  articleCategory: string
-): boolean => {
-  if (!selected || selected === 'ALL') return true;
+export const RIGHTS_GUIDES: RightGuideItem[] = [
+  {
+    id: 'freedom-of-speech',
+    title: 'Freedom of Speech & Expression',
+    description: 'Constitutional liberty to express views, assemble peacefully and critique governance.',
+    icon: 'megaphone',
+    category: 'CONSTITUTIONAL',
+    categoryLabel: 'Constitutional',
+    legalReference: 'Article 19(1)(a) • Expression & Press',
+    highlights: ['Freedom of Thought', 'Free Press', 'Peaceful Assembly'],
+    accentColor: '#C9971A',
+    badgeBg: '#FFF9E6',
+    iconBg: '#FFF8E8',
+  },
+  {
+    id: 'fundamental-rights',
+    title: 'Fundamental Rights',
+    description: 'Constitutional rights guaranteed to every citizen of India enforceable under Article 32.',
+    icon: 'file-text',
+    category: 'CONSTITUTIONAL',
+    categoryLabel: 'Constitutional',
+    legalReference: 'Part III of Constitution • Articles 12–35',
+    highlights: ['Right to Equality', 'Right to Freedom', 'Article 32 Writs'],
+    accentColor: '#06294D',
+    badgeBg: '#FFF9E6',
+    iconBg: '#FFF8E8',
+  },
+  {
+    id: 'right-to-education',
+    title: 'Right to Education',
+    description: 'Right to free and compulsory education for all children aged 6 to 14 years.',
+    icon: 'graduation-cap',
+    category: 'CONSTITUTIONAL',
+    categoryLabel: 'Constitutional',
+    legalReference: 'RTE Act 2009 • Article 21A',
+    highlights: ['Free & Compulsory', 'Age 6 to 14 Years', 'Zero Discrimination'],
+    accentColor: '#174A78',
+    badgeBg: '#EDF2F7',
+    iconBg: '#ECF9F4',
+  },
+  {
+    id: 'womens-rights',
+    title: "Women's Rights",
+    description: 'Statutory safeguards against domestic violence, workplace harassment, and wage disparity.',
+    icon: 'shield',
+    category: 'WOMEN_CHILD',
+    categoryLabel: 'Women & Child',
+    legalReference: 'DV Act 2005 • Article 15(3) • POSH Act',
+    highlights: ['Workplace Safety', 'Protection from Violence', 'Equal Inheritance'],
+    accentColor: '#06294D',
+    badgeBg: '#EDF2F7',
+    iconBg: '#FFF0F2',
+  },
+  {
+    id: 'childrens-rights',
+    title: "Children's Rights",
+    description: 'Protection from abuse, forced labour, trafficking and right to education & care.',
+    icon: 'heart',
+    category: 'WOMEN_CHILD',
+    categoryLabel: 'Women & Child',
+    legalReference: 'POCSO Act 2012 • Articles 21A & 24',
+    highlights: ['Free Education', 'No Child Labour', 'Nutrition & Care'],
+    accentColor: '#174A78',
+    badgeBg: '#EDF2F7',
+    iconBg: '#EEF4FF',
+  },
+  {
+    id: 'civil-rights',
+    title: 'Civil Rights',
+    description: 'Rights related to equal treatment, protection under law and non-discrimination.',
+    icon: 'scale',
+    category: 'CIVIL_JUSTICE',
+    categoryLabel: 'Civil & Justice',
+    legalReference: 'Articles 14–18 • Equal Protection',
+    highlights: ['Equal Treatment', 'Non-Discrimination', 'Access to Law'],
+    accentColor: '#174A78',
+    badgeBg: '#EDF2F7',
+    iconBg: '#EEF4FF',
+  },
+  {
+    id: 'civil-liberties',
+    title: 'Civil Liberties & Personal Freedom',
+    description: 'Protection against arbitrary arrest, custody safeguards, privacy and bodily autonomy.',
+    icon: 'lock',
+    category: 'CIVIL_JUSTICE',
+    categoryLabel: 'Civil & Justice',
+    legalReference: 'Article 21 • Personal Liberty & Privacy',
+    highlights: ['Right to Privacy', 'Due Process of Law', 'Bodily Autonomy'],
+    accentColor: '#174A78',
+    badgeBg: '#DBE5EE',
+    iconBg: '#EEF4FF',
+  },
+  {
+    id: 'right-to-information',
+    title: 'Right to Information',
+    description: 'Statutory right to inspect public files, demand citizen transparency and hold authorities accountable.',
+    icon: 'search',
+    category: 'CIVIL_JUSTICE',
+    categoryLabel: 'Civil & Justice',
+    legalReference: 'RTI Act 2005 • Public Accountability',
+    highlights: ['Access Public Files', 'Citizen Transparency', '30-Day Reply Window'],
+    accentColor: '#06294D',
+    badgeBg: '#EDF2F7',
+    iconBg: '#EEF4FF',
+  },
+  {
+    id: 'minority-rights',
+    title: 'Minority Rights',
+    description: 'Safeguards for cultural preservation, mother-tongue education and institutional autonomy.',
+    icon: 'users',
+    category: 'CIVIL_JUSTICE',
+    categoryLabel: 'Civil & Justice',
+    legalReference: 'Articles 29 & 30 • Cultural & Educational',
+    highlights: ['Language Preservation', 'Community Institutions', 'Non-Discrimination'],
+    accentColor: '#06294D',
+    badgeBg: '#DBE5EE',
+    iconBg: '#F5F0FF',
+  },
+  {
+    id: 'human-rights',
+    title: 'Universal Human Rights',
+    description: 'Inalienable rights to life, dignity, equality and protection against cruel punishment.',
+    icon: 'globe',
+    category: 'LABOUR_WELFARE',
+    categoryLabel: 'Universal Protection',
+    legalReference: 'UDHR 1948 • NHRC Guidelines',
+    highlights: ['Life with Dignity', 'Freedom from Torture', 'Universal Equality'],
+    accentColor: '#C9971A',
+    badgeBg: '#FFF9E6',
+    iconBg: '#FFF8E8',
+  },
+  {
+    id: 'labour-rights',
+    title: 'Labour & Worker Rights',
+    description: 'Statutory safeguards for fair wages, safe workplaces, unionization and social security.',
+    icon: 'briefcase',
+    category: 'LABOUR_WELFARE',
+    categoryLabel: 'Labour & Welfare',
+    legalReference: 'Factories Act 1948 • Minimum Wages Act',
+    highlights: ['Fair Compensation', 'Safe Workplace', 'Right to Unionize'],
+    accentColor: '#C9971A',
+    badgeBg: '#FFF9E6',
+    iconBg: '#FFF0F2',
+  },
+  {
+    id: 'senior-citizen-rights',
+    title: 'Senior Citizen Rights',
+    description: 'Statutory maintenance allowances, property deed protection and healthcare priority for elders.',
+    icon: 'clock',
+    category: 'LABOUR_WELFARE',
+    categoryLabel: 'Labour & Welfare',
+    legalReference: 'Maintenance & Welfare Act, 2007',
+    highlights: ['Parental Support', 'Special Healthcare', 'Legal Protection'],
+    accentColor: '#C9971A',
+    badgeBg: '#FFF9E6',
+    iconBg: '#FFF8E8',
+  },
+];
 
-  const target = getCanonicalCategory(selected);
-  const actual = getCanonicalCategory(articleCategory);
+interface UserRightsPageProps {
+  isMember?: boolean;
+}
 
-  return target === actual;
-};
+export const UserRightsPage: React.FC<UserRightsPageProps> = ({ isMember = false }) => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<RightsCategoryKey>('ALL');
 
-const deduplicateByTitle = (list: RightsArticle[]): RightsArticle[] => {
-  const seen = new Set<string>();
-  return list.filter(item => {
-    const key = item.title
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/labour/g, 'labor')
-      .replace(/[^a-z0-9]/g, '');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-};
+  const filteredRights = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return RIGHTS_GUIDES.filter((item) => {
+      const matchesCategory =
+        selectedCategory === 'ALL' || item.category === selectedCategory;
+      if (!matchesCategory) return false;
+      if (!q) return true;
 
-export const UserRightsPage: React.FC = () => {
-  const snapshot = useSyncExternalStore(rightsStore.subscribe, rightsStore.getSnapshot);
-
-  const articles = useMemo(() => {
-    const authorized = filterRightsForRole(snapshot.articles, 'USER');
-    // Deduplicate between dynamic rights and user rights fixture baseline
-    return deduplicateByTitle([...USER_RIGHTS_ARTICLES, ...authorized]);
-  }, [snapshot.articles]);
-
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [activeArticle, setActiveArticle] = useState<RightsArticle | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    rightsStore
-      .fetchRights()
-      .catch(() => {})
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const filteredArticles = useMemo(() => {
-    return articles.filter(item => {
-      const matchesCat = matchesCategoryFilter(
-        selectedCategory,
-        item.category
+      const titleMatch = item.title.toLowerCase().includes(q);
+      const descMatch = item.description.toLowerCase().includes(q);
+      const refMatch = item.legalReference.toLowerCase().includes(q);
+      const highlightsMatch = item.highlights.some((h) =>
+        h.toLowerCase().includes(q)
       );
-      const matchesSearch =
-        !search.trim() ||
-        item.title.toLowerCase().includes(search.toLowerCase()) ||
-        item.description.toLowerCase().includes(search.toLowerCase()) ||
-        item.category.toLowerCase().includes(search.toLowerCase());
-      return matchesCat && matchesSearch;
+
+      return titleMatch || descMatch || refMatch || highlightsMatch;
     });
-  }, [articles, selectedCategory, search]);
+  }, [searchQuery, selectedCategory]);
+
+  const renderIcon = (name: string, color: string, size = 20) => {
+    switch (name) {
+      case 'megaphone':
+        return <Megaphone size={size} color={color} />;
+      case 'file-text':
+        return <FileText size={size} color={color} />;
+      case 'graduation-cap':
+        return <GraduationCap size={size} color={color} />;
+      case 'shield':
+        return <Shield size={size} color={color} />;
+      case 'heart':
+        return <Heart size={size} color={color} />;
+      case 'scale':
+        return <Scale size={size} color={color} />;
+      case 'lock':
+        return <Lock size={size} color={color} />;
+      case 'search':
+        return <Search size={size} color={color} />;
+      case 'users':
+        return <Users size={size} color={color} />;
+      case 'globe':
+        return <Globe size={size} color={color} />;
+      case 'briefcase':
+        return <Briefcase size={size} color={color} />;
+      case 'clock':
+        return <Clock size={size} color={color} />;
+      default:
+        return <Scale size={size} color={color} />;
+    }
+  };
+
+  const handleOpenRight = (rightId: string) => {
+    navigate(`/rights/${rightId}`);
+  };
+
+  const handleFileComplaint = () => {
+    if (isMember) {
+      navigate('/member/support');
+    } else {
+      navigate('/support');
+    }
+  };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Top Banner */}
-      <div className="rounded-3xl bg-[#06294D] text-white p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E9B82E]/20 text-[#FAD465] text-xs font-bold uppercase tracking-wider mb-2">
-            <Scale size={14} />
-            <span>Constitutional Literacy Center</span>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      {/* Spotlight Hero Banner */}
+      <div className="rounded-2xl bg-[#06294D] text-white p-5 sm:p-7 shadow-lg relative overflow-hidden">
+        {/* Top meta row */}
+        <div className="flex items-center justify-between gap-3 mb-2.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-[11px] font-bold tracking-wider uppercase">
+            <Scale size={13} className="text-white" />
+            <span>CITIZEN RIGHTS & JUSTICE</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Know Your Rights</h1>
-          <p className="text-xs sm:text-sm text-slate-200 mt-1">
-            Empower yourself with fundamental constitutional knowledge, civil rights safeguards, and legal recourse procedures under Indian Law.
-          </p>
+          <span className="text-[#FCD34D] text-xs sm:text-sm font-bold">
+            {RIGHTS_GUIDES.length} Legal Guides
+          </span>
         </div>
 
-        {/* Search Input */}
-        <div className="w-full md:w-72 relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search rights or articles..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 text-xs focus:outline-hidden focus:ring-2 focus:ring-[#FAD465]"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-            >
-              <X size={14} />
-            </button>
-          )}
+        {/* Title & Tagline */}
+        <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+          Know Your Rights. Protect Your Voice.
+        </h1>
+        <p className="text-xs sm:text-sm text-[#E0E7FF] mt-2 leading-relaxed max-w-3xl">
+          Every citizen is guaranteed legal protections and fundamental liberties
+          by the Constitution of India and international human rights conventions.
+        </p>
+
+        {/* 3 Key Pillars Row */}
+        <div className="mt-5 bg-black/20 rounded-xl py-3 px-3 sm:px-6 flex items-center justify-around divide-x divide-white/20">
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
+            <Scale size={20} className="text-[#D97706] mb-1" />
+            <span className="text-white text-xs sm:text-sm font-semibold">
+              Constitutional Rights
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
+            <ShieldCheck size={20} className="text-[#D97706] mb-1" />
+            <span className="text-white text-xs sm:text-sm font-semibold">
+              Legal Protection
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
+            <FileText size={20} className="text-[#D97706] mb-1" />
+            <span className="text-white text-xs sm:text-sm font-semibold">
+              Free Legal Aid
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {RIGHTS_CATEGORIES.map(cat => (
+      {/* Facing a Rights Violation Callout Banner */}
+      <div className="rounded-xl sm:rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-full bg-[#FEF3C7] flex items-center justify-center shrink-0">
+            <ShieldCheck size={22} className="text-[#D97706]" />
+          </div>
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-[#92400E]">
+              Facing a Rights Violation?
+            </h3>
+            <p className="text-xs sm:text-sm text-[#B45309] mt-0.5">
+              HRSJM Legal Cell assists members with grievances, legal aid, and guidance.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleFileComplaint}
+          className="bg-[#D97706] hover:bg-[#B45309] text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
+        >
+          File Complaint
+        </button>
+      </div>
+
+      {/* Search and Discovery */}
+      <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-3.5 flex items-center gap-3 shadow-xs">
+        <Search size={18} className="text-slate-400 shrink-0" />
+        <input
+          type="text"
+          placeholder="Search rights, laws, or constitutional articles..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-transparent outline-none"
+        />
+        {searchQuery.trim().length > 0 && (
           <button
-            key={cat}
             type="button"
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-              selectedCategory === cat
-                ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
-            }`}
+            onClick={() => setSearchQuery('')}
+            className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
           >
-            {cat === 'ALL' ? 'All Rights' : cat}
+            <X size={16} />
           </button>
-        ))}
+        )}
       </div>
 
-      {/* Grid of Rights Articles */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-64 rounded-2xl bg-slate-200 animate-pulse" />
-          ))}
-        </div>
-      ) : filteredArticles.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">
-          <BookOpen size={36} className="mx-auto mb-2 text-slate-400" />
-          <p className="text-sm font-bold text-slate-700">No legal articles found</p>
-          <p className="text-xs text-slate-400 mt-1">Try modifying your search or selecting another category.</p>
+      {/* Category Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {CATEGORY_TABS.map((tab) => {
+          const isSelected = selectedCategory === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setSelectedCategory(tab.key)}
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                isSelected
+                  ? 'bg-[#06294D] text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Results Header */}
+      <div className="flex items-center justify-between pt-2">
+        <h2 className="font-serif text-base sm:text-lg font-bold text-[#06294D]">
+          {selectedCategory === 'ALL'
+            ? 'All Rights & Protections'
+            : CATEGORY_TABS.find((c) => c.key === selectedCategory)?.label}
+        </h2>
+        <span className="text-xs font-bold text-[#06294D] bg-[#DBE5EE]/70 px-3 py-1 rounded-full">
+          {filteredRights.length} {filteredRights.length === 1 ? 'Topic' : 'Topics'}
+        </span>
+      </div>
+
+      {/* Rights Cards List / Grid */}
+      {filteredRights.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 shadow-xs">
+          <Search size={36} className="mx-auto mb-2 text-slate-300" />
+          <p className="text-base font-bold text-slate-700">No Rights Found</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
+            No rights or articles match &ldquo;{searchQuery}&rdquo;. Try another keyword or clear the search.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('ALL');
+            }}
+            className="mt-4 px-4 py-2 rounded-xl text-xs font-bold text-[#06294D] bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors"
+          >
+            Clear All Filters
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredArticles.map(article => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredRights.map((item) => (
             <div
-              key={article.id}
-              onClick={() => setActiveArticle(article)}
-              className="flex flex-col justify-between p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+              key={item.id}
+              onClick={() => handleOpenRight(item.id)}
+              className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                    {article.category}
-                  </span>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                    <Eye size={12} />
-                    <span>{article.views} views</span>
+                {/* Header row with Icon, Category badge, Legal reference */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: item.iconBg }}
+                  >
+                    {renderIcon(item.icon, item.accentColor, 20)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span
+                      className="inline-block px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase mb-0.5"
+                      style={{
+                        backgroundColor: item.badgeBg,
+                        color: item.accentColor,
+                      }}
+                    >
+                      {item.categoryLabel.toUpperCase()}
+                    </span>
+                    <p className="text-xs text-slate-500 font-medium truncate">
+                      {item.legalReference}
+                    </p>
                   </div>
                 </div>
 
-                <h3 className="text-base font-bold font-serif text-[#06294D] group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug mb-2">
-                  {article.title}
+                {/* Title & Description */}
+                <h3 className="font-serif text-lg font-bold text-[#06294D] group-hover:text-[#D97706] transition-colors mt-3 mb-1.5 leading-snug">
+                  {item.title}
                 </h3>
-
-                <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
-                  {article.description}
+                <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                  {item.description}
                 </p>
+
+                {/* Highlights Pills */}
+                {item.highlights && item.highlights.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 mt-3.5">
+                    {item.highlights.slice(0, 3).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 font-medium"
+                      >
+                        <span className="text-slate-400 font-bold">•</span>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#06294D]">
-                <span>Read Full Guide</span>
-                <div className="w-6 h-6 rounded-full bg-slate-50 group-hover:bg-[#06294D] flex items-center justify-center transition-colors">
-                  <ArrowRight size={12} className="text-slate-600 group-hover:text-white" />
+              {/* Action Footer */}
+              <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-slate-100">
+                <span className="text-xs font-bold text-[#06294D] group-hover:text-[#D97706] transition-colors">
+                  Read Legal Guide
+                </span>
+                <div className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-[#06294D] flex items-center justify-center transition-colors text-slate-600 group-hover:text-white">
+                  <ArrowRight size={12} />
                 </div>
               </div>
             </div>
@@ -213,87 +499,46 @@ export const UserRightsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Article Detail Reading Modal */}
-      {activeArticle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white w-full max-w-3xl rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50">
-              <div className="pr-4">
-                <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800">
-                  {activeArticle.category}
-                </span>
-                <h2 className="text-xl font-black font-serif text-[#06294D] mt-2 leading-tight">
-                  {activeArticle.title}
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Authored by {activeArticle.author || 'HRSJM Legal Cell'} • {activeArticle.lastUpdatedDate}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveArticle(null)}
-                className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer shrink-0"
-              >
-                <X size={20} />
-              </button>
+      {/* Constitutional Safeguards Section */}
+      <div className="pt-6 space-y-3.5">
+        <h2 className="font-serif text-base sm:text-lg font-bold text-[#06294D]">
+          Constitutional Safeguards
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex items-start gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0 text-[#D97706]">
+              <Info size={18} strokeWidth={2} />
             </div>
-
-            {/* Scrollable Content */}
-            <div className="p-6 overflow-y-auto space-y-5 text-sm text-slate-700 leading-relaxed">
-              <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-[#06294D] leading-relaxed">
-                <div className="flex items-center gap-1.5 font-bold mb-1">
-                  <Shield size={14} className="text-amber-600" />
-                  <span>Constitutional Principle Overview</span>
-                </div>
-                {activeArticle.description}
-              </div>
-
-              {activeArticle.highlights && activeArticle.highlights.length > 0 && (
-                <div>
-                  <h4 className="font-bold text-[#06294D] text-xs uppercase tracking-wider mb-2">
-                    Key Legal Rights & Provisions:
-                  </h4>
-                  <div className="space-y-2">
-                    {activeArticle.highlights.map((h: any, i: number) => (
-                      <div key={i} className="flex items-start gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
-                        <CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900 block">{h.title}</strong>
-                          <span className="text-slate-600">{h.description}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeArticle.content && activeArticle.content.length > 0 && (
-                <div className="space-y-3 pt-2 text-slate-600 text-xs sm:text-sm">
-                  {activeArticle.content.map((p: string, i: number) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-              )}
+            <div>
+              <h3 className="text-sm font-bold text-[#06294D]">
+                Article 32 — The Heart & Soul of the Constitution
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                Dr. B.R. Ambedkar termed Article 32 as the most fundamental provision,
+                granting citizens direct recourse to the Supreme Court through Writs if
+                any fundamental right is violated.
+              </p>
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-              <span className="text-xs text-slate-500">Need specific legal counsel on this issue?</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveArticle(null);
-                  window.location.href = '/support';
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#06294D] hover:bg-[#083563] cursor-pointer"
-              >
-                File a Free Grievance
-              </button>
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex items-start gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0 text-[#D97706]">
+              <HeartHandshake size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#06294D]">
+                Article 39A — Equal Justice & Free Legal Aid
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                The State is mandated to provide free legal aid to ensure that
+                opportunities for securing justice are not denied to any citizen by
+                reason of economic or other disabilities.
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

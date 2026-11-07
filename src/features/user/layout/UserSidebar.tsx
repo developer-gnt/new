@@ -159,8 +159,15 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
           <button
             type="button"
             onClick={async () => {
-              if (mobileOpen) onCloseMobile();
-              await executeSignOut(navigate);
+              try {
+                if (mobileOpen) onCloseMobile();
+                await executeSignOut(navigate);
+              } catch (err) {
+                console.error('Sign out error:', err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/login?logout=success';
+              }
             }}
             className={`w-full flex items-center gap-3 rounded-xl text-rose-300 hover:bg-rose-500/15 hover:text-rose-200 transition-colors cursor-pointer ${
               collapsed && !mobileOpen ? 'justify-center p-2.5' : 'px-3 py-2 text-xs font-semibold'

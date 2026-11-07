@@ -350,7 +350,11 @@ export const authService = {
     try {
       const refreshToken = this.getStoredRefreshToken();
       if (refreshToken) {
-        await apiClient.post('/auth/logout', { refresh_token: refreshToken });
+        // Race with a 1-second timeout so sign-out is never blocked or frozen by network issues
+        await Promise.race([
+          apiClient.post('/auth/logout', { refresh_token: refreshToken }),
+          new Promise((resolve) => setTimeout(resolve, 1000)),
+        ]).catch(() => {});
       }
     } catch {
       // Ignore errors on logout

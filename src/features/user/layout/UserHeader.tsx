@@ -63,7 +63,14 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
 
   const handleSignOut = async () => {
     setDropdownOpen(false);
-    await executeSignOut(navigate);
+    try {
+      await executeSignOut(navigate);
+    } catch (err) {
+      console.error('Sign out error:', err);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/login?logout=success';
+    }
   };
 
   return (

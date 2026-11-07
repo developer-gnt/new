@@ -110,7 +110,9 @@ import { UserLayout } from '@/features/user/layout/UserLayout';
 import { UserDashboardPage } from '@/features/user/screens/UserDashboardPage';
 import { UserAboutPage } from '@/features/user/screens/UserAboutPage';
 import { UserWhatWeDoPage } from '@/features/user/screens/UserWhatWeDoPage';
+import { UserWhatWeDoDetailPage } from '@/features/user/screens/UserWhatWeDoDetailPage';
 import { UserRightsPage } from '@/features/user/screens/UserRightsPage';
+import { UserRightDetailsPage } from '@/features/user/screens/UserRightDetailsPage';
 import { UserEventsPage } from '@/features/user/screens/UserEventsPage';
 import { UserNewsPage } from '@/features/user/screens/UserNewsPage';
 import { UserBlogsPage } from '@/features/user/screens/UserBlogsPage';
@@ -120,6 +122,7 @@ import { UserSupportPage } from '@/features/user/screens/UserSupportPage';
 import { UserMembershipPage } from '@/features/user/screens/UserMembershipPage';
 import { UserNotificationsPage } from '@/features/user/screens/UserNotificationsPage';
 import { UserProfilePage } from '@/features/user/screens/UserProfilePage';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { useAuth, resolveUserDestination } from '@/features/auth/store/authStore';
 import { authService } from '@/features/auth/services/authService';
 
@@ -139,6 +142,7 @@ const DashboardRedirect: React.FC = () => {
 export const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Initial Entry Point: Login Page First (Matches Mobile APK) */}
         <Route path="/" element={<LoginPage />} />
@@ -161,8 +165,11 @@ export const AppRoutes: React.FC = () => {
           <Route path="/user/dashboard" element={<UserDashboardPage />} />
           <Route path="/about" element={<UserAboutPage />} />
           <Route path="/what-we-do" element={<UserWhatWeDoPage />} />
+          <Route path="/what-we-do/:initiativeId" element={<UserWhatWeDoDetailPage />} />
           <Route path="/rights" element={<UserRightsPage />} />
+          <Route path="/rights/:rightId" element={<UserRightDetailsPage />} />
           <Route path="/know-your-rights" element={<UserRightsPage />} />
+          <Route path="/know-your-rights/:rightId" element={<UserRightDetailsPage />} />
           <Route path="/events" element={<UserEventsPage />} />
           <Route path="/event" element={<UserEventsPage />} />
           <Route path="/news" element={<UserNewsPage />} />

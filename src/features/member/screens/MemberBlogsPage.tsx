@@ -1,144 +1,453 @@
-import type React from 'react';
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import {
-  BookOpenCheck,
-  Calendar,
-  Eye,
-  Search,
-  ChevronRight,
+  FileText,
+  Clock,
+  Check,
   X,
-  User,
+  Search,
+  Plus,
+  Eye,
+  MoreVertical,
+  Calendar,
+  Share2,
+  BookOpen,
 } from 'lucide-react';
 import { blogsStore } from '@/features/admin/blogs/store/blogsStore';
-import type { BlogListItem } from '@/features/admin/blogs/types/blog.types';
-import { filterBlogsForRole } from '@/features/content';
+import type {
+  BlogListItem,
+  BlogStatusFilter,
+  BlogDateFilter,
+  CreateBlogFormState,
+} from '@/features/admin/blogs/types/blog.types';
+import {
+  DEFAULT_BLOG_CATEGORIES,
+  formatViews,
+} from '@/features/admin/blogs/types/blog.types';
+import { BlogFilterModal } from '@/features/admin/blogs/components/BlogFilterModal';
 
 export const MemberBlogsPage: React.FC = () => {
-  const snapshot = useSyncExternalStore<{ blogs: BlogListItem[]; version: number }>(blogsStore.subscribe, blogsStore.getSnapshot);
+  const snapshot = useSyncExternalStore<{ blogs: BlogListItem[]; version: number }>(
+    blogsStore.subscribe,
+    blogsStore.getSnapshot
+  );
   const blogs = snapshot.blogs;
+  const stats = blogsStore.getStats();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<BlogStatusFilter>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedDateRange, setSelectedDateRange] = useState<BlogDateFilter>('ANY');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [activeBlog, setActiveBlog] = useState<BlogListItem | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // New Blog form state
+  const [addForm, setAddForm] = useState<CreateBlogFormState>({
+    title: '',
+    shortDescription: '',
+    content: '',
+    category: 'Know Your Rights',
+    author: 'HRSJM Member',
+    status: 'PUBLISHED',
+    allowComments: true,
+    featured: false,
+    tagsText: 'Rights, Justice',
+    coverImageUri: null,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     blogsStore.fetchBlogs().catch(() => {});
   }, []);
 
-  const categories = ['ALL', 'Know Your Rights', 'Social Justice', 'Human Rights'];
+  // Filter tabs with live counts
+  const tabs = useMemo(
+    () => [
+      { key: 'ALL' as BlogStatusFilter, label: 'All', count: stats.total },
+      { key: 'PUBLISHED' as BlogStatusFilter, label: 'Published', count: stats.published },
+      { key: 'DRAFT' as BlogStatusFilter, label: 'Drafts', count: stats.drafts },
+      { key: 'ARCHIVED' as BlogStatusFilter, label: 'Archived', count: stats.archived },
+    ],
+    [stats]
+  );
 
-  const roleAuthorizedBlogs = filterBlogsForRole(blogs, 'MEMBER');
+  // Filtered dataset
+  const filteredBlogs = useMemo(() => {
+    return blogs.filter((item) => {
+      // Status tab
+      if (selectedStatus !== 'ALL' && item.status !== selectedStatus) {
+        return false;
+      }
+      // Category filter
+      if (selectedCategory && item.category !== selectedCategory) {
+        return false;
+      }
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const inTitle = item.title?.toLowerCase().includes(q);
+        const inExcerpt = item.excerpt?.toLowerCase().includes(q);
+        const inCategory = item.category?.toLowerCase().includes(q);
+        if (!inTitle && !inExcerpt && !inCategory) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [blogs, selectedStatus, selectedCategory, searchQuery]);
 
-  const filteredBlogs = roleAuthorizedBlogs.filter((item: BlogListItem) => {
-    if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
-      return false;
+  const handleCreateBlog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addForm.title.trim() || !addForm.shortDescription.trim()) {
+      alert('Please provide a title and short description.');
+      return;
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const inTitle = item.title.toLowerCase().includes(q);
-      const inExcerpt = item.excerpt.toLowerCase().includes(q);
-      if (!inTitle && !inExcerpt) return false;
+    setIsSubmitting(true);
+    try {
+      await blogsStore.addBlog(addForm);
+      setIsAddModalOpen(false);
+      setAddForm({
+        title: '',
+        shortDescription: '',
+        content: '',
+        category: 'Know Your Rights',
+        author: 'HRSJM Member',
+        status: 'PUBLISHED',
+        allowComments: true,
+        featured: false,
+        tagsText: 'Rights, Justice',
+        coverImageUri: null,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    return true;
-  });
+  };
 
   return (
-    <div style={styles.container}>
-      {/* Hero Banner */}
-      <section style={styles.heroBanner}>
-        <div style={styles.heroLeft}>
-          <div style={styles.heroBadge}>KNOWLEDGE & ANALYSIS</div>
-          <h1 style={styles.heroTitle}>Articles & Blogs</h1>
-          <p style={styles.heroSub}>
-            Thought leadership, constitutional jurisprudence, human rights case studies, and editorial essays
-            curated by jurists, legal scholars, and frontline human rights defenders.
+    <div className="w-full space-y-4 pb-12">
+      {/* 1. Header: Blogs + Add Blog Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#0C2340]">
+            Blogs
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Create, manage and publish blog articles.
           </p>
         </div>
-        <div style={styles.heroRight}>
-          <div style={styles.heroStatBox}>
-            <div style={styles.heroStatVal}>{blogs.length}</div>
-            <div style={styles.heroStatLbl}>Essays & Blogs</div>
+
+        <button
+          type="button"
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#F6B819] hover:bg-[#e5aa14] text-[#0C2340] font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 cursor-pointer self-start sm:self-auto shrink-0"
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          <span>Add Blog</span>
+        </button>
+      </div>
+
+      {/* 2. KPI Stats Grid (1 line full width) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {/* Total Blogs */}
+        <div
+          onClick={() => setSelectedStatus('ALL')}
+          className={`p-3.5 sm:p-5 rounded-2xl bg-[#EDF4FB] border transition-all cursor-pointer ${
+            selectedStatus === 'ALL'
+              ? 'border-[#0C2340] shadow-sm'
+              : 'border-blue-100/70 hover:border-blue-300'
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#0C2340] flex items-center justify-center text-white mb-2.5 shadow-xs">
+            <FileText size={16} />
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-[#0C2340] leading-none">
+            {stats.total}
+          </div>
+          <div className="text-xs sm:text-sm font-semibold text-slate-700 mt-1.5">
+            Total Blogs
           </div>
         </div>
-      </section>
 
-      {/* Search & Categories Bar */}
-      <div style={styles.controlsCard}>
-        <div style={styles.searchBox}>
-          <Search size={18} color="#718096" />
-          <input
-            type="text"
-            placeholder="Search articles and blogs by topic or keyword..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={styles.searchInput}
-          />
+        {/* Drafts */}
+        <div
+          onClick={() => setSelectedStatus('DRAFT')}
+          className={`p-3.5 sm:p-5 rounded-2xl bg-[#FEF7ED] border transition-all cursor-pointer ${
+            selectedStatus === 'DRAFT'
+              ? 'border-[#D97706] shadow-sm'
+              : 'border-amber-100/70 hover:border-amber-300'
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#D97706] flex items-center justify-center text-white mb-2.5 shadow-xs">
+            <Clock size={16} />
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-[#D97706] leading-none">
+            {stats.drafts}
+          </div>
+          <div className="text-xs sm:text-sm font-semibold text-[#D97706] mt-1.5">
+            Drafts
+          </div>
         </div>
 
-        <div style={styles.categoriesRow}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              style={{
-                ...styles.chip,
-                ...(selectedCategory === cat ? styles.chipActive : {}),
-              }}
-              onClick={() => setSelectedCategory(cat)}
-            >
-              {cat === 'ALL' ? 'All Articles' : cat}
-            </button>
-          ))}
+        {/* Published */}
+        <div
+          onClick={() => setSelectedStatus('PUBLISHED')}
+          className={`p-3.5 sm:p-5 rounded-2xl bg-[#EDF9F0] border transition-all cursor-pointer ${
+            selectedStatus === 'PUBLISHED'
+              ? 'border-[#16A34A] shadow-sm'
+              : 'border-green-100/70 hover:border-green-300'
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center text-white mb-2.5 shadow-xs">
+            <Check size={16} />
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-[#16A34A] leading-none">
+            {stats.published}
+          </div>
+          <div className="text-xs sm:text-sm font-semibold text-[#16A34A] mt-1.5">
+            Published
+          </div>
+        </div>
+
+        {/* Archived */}
+        <div
+          onClick={() => setSelectedStatus('ARCHIVED')}
+          className={`p-3.5 sm:p-5 rounded-2xl bg-[#FEF2F2] border transition-all cursor-pointer ${
+            selectedStatus === 'ARCHIVED'
+              ? 'border-[#DC2626] shadow-sm'
+              : 'border-rose-100/70 hover:border-rose-300'
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#DC2626] flex items-center justify-center text-white mb-2.5 shadow-xs">
+            <X size={16} />
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-[#DC2626] leading-none">
+            {stats.archived}
+          </div>
+          <div className="text-xs sm:text-sm font-semibold text-[#DC2626] mt-1.5">
+            Archived
+          </div>
         </div>
       </div>
 
-      {/* Blogs Grid */}
+      {/* 3. Search Bar and Filters Button */}
+      <div className="flex items-center gap-2.5">
+        <div className="relative flex-1">
+          <Search
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search by title, category or keyword..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-2xl bg-white border border-slate-200/90 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#0C2340] shadow-2xs"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsFilterModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 sm:py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 text-xs sm:text-sm font-bold text-slate-700 shadow-2xs transition-colors shrink-0 cursor-pointer"
+        >
+          <span className="text-slate-400">▾</span>
+          <span>Filters</span>
+          {selectedCategory && (
+            <span className="w-2 h-2 rounded-full bg-[#F6B819]" />
+          )}
+        </button>
+      </div>
+
+      {/* 4. Filter Tabs Row */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {tabs.map((tab) => {
+          const isActive = selectedStatus === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setSelectedStatus(tab.key)}
+              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+                isActive
+                  ? 'bg-[#0C2340] text-white shadow-xs'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/90'
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Category Indicator */}
+      {selectedCategory && (
+        <div className="flex items-center gap-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+          <span>
+            Filtered by category: <strong>{selectedCategory}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className="text-amber-800 hover:text-amber-950 font-bold ml-auto cursor-pointer"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* 5. Blogs List Items */}
       {filteredBlogs.length === 0 ? (
-        <div style={styles.emptyState}>
-          <BookOpenCheck size={44} color="#CBD5E1" />
-          <h3 style={styles.emptyTitle}>No Articles Found</h3>
-          <p style={styles.emptySub}>Try searching with different terms or selecting another category.</p>
+        <div className="p-8 sm:p-12 text-center bg-white rounded-3xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+            <BookOpen size={24} />
+          </div>
+          <h3 className="text-base font-bold text-[#0C2340]">No Blog Articles Found</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            Try adjusting your search query, filter tabs, or clear active category filters.
+          </p>
         </div>
       ) : (
-        <div style={styles.blogsGrid}>
-          {filteredBlogs.map((blog: BlogListItem) => (
+        <div className="space-y-3 sm:space-y-3.5">
+          {filteredBlogs.map((item) => (
             <div
-              key={blog.id}
-              style={styles.card}
-              onClick={() => setActiveBlog(blog)}
-              role="button"
-              tabIndex={0}
+              key={item.id}
+              onClick={() => setActiveBlog(item)}
+              className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all cursor-pointer group"
             >
-              <div style={styles.cardImageWrap}>
-                <img src={blog.thumbnailUrl || undefined} alt={blog.title} style={styles.cardImg} />
-                <span style={styles.categoryBadge}>{blog.category}</span>
-                {blog.featured && <span style={styles.featuredBadge}>Editor's Pick</span>}
-              </div>
-
-              <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>{blog.title}</h3>
-                <p style={styles.cardExcerpt}>{blog.excerpt}</p>
-
-                <div style={styles.cardMeta}>
-                  <div style={styles.metaItem}>
-                    <User size={13} color="#718096" />
-                    <span>{blog.author}</span>
-                  </div>
-                  <div style={styles.metaItem}>
-                    <Calendar size={13} color="#718096" />
-                    <span>{blog.date}</span>
-                  </div>
-                  <div style={styles.metaItem}>
-                    <Eye size={13} color="#718096" />
-                    <span>{blog.views.toLocaleString()}</span>
-                  </div>
+              <div className="flex items-start gap-3.5 sm:gap-4">
+                {/* Thumbnail / Icon Box */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 shrink-0 flex items-center justify-center">
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          'https://picsum.photos/seed/hrsjm-blog/400/250';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#FAF7F0] flex items-center justify-center text-2xl">
+                      📝
+                    </div>
+                  )}
                 </div>
 
-                <div style={styles.cardFooter}>
-                  <span style={styles.readMoreText}>
-                    <span>Read Full Essay</span>
-                    <ChevronRight size={14} />
-                  </span>
+                {/* Main Content Area */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-[#0C2340] text-sm sm:text-base leading-snug truncate group-hover:text-amber-600 transition-colors">
+                      {item.title}
+                    </h3>
+
+                    {/* Three Dots More Menu */}
+                    <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === item.id ? null : item.id)
+                        }
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-500 cursor-pointer transition-colors"
+                        title="Options"
+                      >
+                        <MoreVertical size={15} />
+                      </button>
+
+                      {openMenuId === item.id && (
+                        <div className="absolute right-0 top-9 w-40 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-20 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              setActiveBlog(item);
+                            }}
+                            className="w-full text-left px-3 py-1.5 hover:bg-slate-50 flex items-center gap-2 text-slate-700 cursor-pointer"
+                          >
+                            <Eye size={13} />
+                            <span>Read Article</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              if (navigator.share) {
+                                navigator.share({
+                                  title: item.title,
+                                  text: item.excerpt,
+                                });
+                              } else {
+                                navigator.clipboard.writeText(window.location.href);
+                                alert('Blog link copied to clipboard!');
+                              }
+                            }}
+                            className="w-full text-left px-3 py-1.5 hover:bg-slate-50 flex items-center gap-2 text-slate-700 cursor-pointer"
+                          >
+                            <Share2 size={13} />
+                            <span>Share Blog</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-500 line-clamp-1 mt-0.5">
+                    {item.excerpt}
+                  </p>
+
+                  {/* Bottom Metadata Row */}
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-500">
+                    {/* Category pill */}
+                    <span className="px-2.5 py-0.5 rounded-md bg-[#EFF6FF] text-[#0C2340] font-bold text-[11px] sm:text-xs">
+                      {item.category}
+                    </span>
+
+                    <span className="text-slate-300">|</span>
+
+                    {/* Date & Time */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-bold text-slate-800">{item.date}</span>
+                      {item.time && (
+                        <span className="text-slate-400 text-[11px]">{item.time}</span>
+                      )}
+                    </div>
+
+                    {/* Status badge */}
+                    {item.status === 'PUBLISHED' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EDF9F0] text-[#16A34A] font-semibold text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
+                        Published
+                      </span>
+                    )}
+                    {item.status === 'DRAFT' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEF7ED] text-[#D97706] font-semibold text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
+                        Draft
+                      </span>
+                    )}
+                    {item.status === 'ARCHIVED' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEF2F2] text-[#DC2626] font-semibold text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]" />
+                        Archived
+                      </span>
+                    )}
+
+                    {/* Views Count */}
+                    <div className="inline-flex items-center gap-1 text-slate-500 font-bold ml-auto text-[11px]">
+                      <Eye size={12} className="text-slate-400" />
+                      <span>{formatViews(item.views)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -146,62 +455,238 @@ export const MemberBlogsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Blog Article Reader Modal */}
-      {activeBlog && (
-        <div style={styles.modalBackdrop} onClick={() => setActiveBlog(null)}>
+      {/* 6. Filter Modal */}
+      <BlogFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        status={selectedStatus}
+        category={selectedCategory}
+        dateRange={selectedDateRange}
+        onApply={(status, category, dateRange) => {
+          setSelectedStatus(status);
+          setSelectedCategory(category);
+          setSelectedDateRange(dateRange);
+        }}
+        onReset={() => {
+          setSelectedStatus('ALL');
+          setSelectedCategory(null);
+          setSelectedDateRange('ANY');
+        }}
+      />
+
+      {/* 7. Add Blog Modal */}
+      {isAddModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={() => setIsAddModalOpen(false)}
+        >
           <div
-            style={styles.modalCard}
+            className="w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
           >
-            <div style={styles.modalHeader}>
-              <span style={styles.modalCatBadge}>{activeBlog.category}</span>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-lg font-bold text-[#0C2340]">Add Blog Article</h3>
+                <p className="text-xs text-slate-500">Draft or publish a knowledge piece</p>
+              </div>
               <button
                 type="button"
-                style={styles.modalCloseBtn}
-                onClick={() => setActiveBlog(null)}
+                onClick={() => setIsAddModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
               >
-                <X size={20} color="#64748B" />
+                <X size={16} />
               </button>
             </div>
 
-            <div style={styles.modalBody}>
-              <h1 style={styles.modalArticleTitle}>{activeBlog.title}</h1>
-              <div style={styles.modalMetaRow}>
-                <span>By <strong>{activeBlog.author}</strong></span>
-                <span>•</span>
+            <form onSubmit={handleCreateBlog} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Blog Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Understanding Fundamental Constitutional Rights"
+                  value={addForm.title}
+                  onChange={(e) => setAddForm({ ...addForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0C2340]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={addForm.category || 'Know Your Rights'}
+                    onChange={(e) => setAddForm({ ...addForm, category: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0C2340]"
+                  >
+                    {DEFAULT_BLOG_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={addForm.status}
+                    onChange={(e) =>
+                      setAddForm({ ...addForm, status: e.target.value as any })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0C2340]"
+                  >
+                    <option value="PUBLISHED">Published</option>
+                    <option value="DRAFT">Draft</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Short Description (Excerpt) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="One sentence summary shown on blog card"
+                  value={addForm.shortDescription}
+                  onChange={(e) =>
+                    setAddForm({ ...addForm, shortDescription: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0C2340]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Article Content
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Write the full blog article content here..."
+                  value={addForm.content}
+                  onChange={(e) => setAddForm({ ...addForm, content: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0C2340]"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-[#F6B819] hover:bg-[#e5aa14] text-[#0C2340] cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Saving...' : 'Publish Blog'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Detailed Blog Reader Modal */}
+      {activeBlog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+          onClick={() => setActiveBlog(null)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="px-3 py-1 rounded-md bg-[#EFF6FF] text-[#0C2340] font-bold text-xs">
+                {activeBlog.category}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveBlog(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Thumbnail */}
+            {activeBlog.thumbnailUrl && (
+              <div className="w-full h-48 sm:h-64 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <img
+                  src={activeBlog.thumbnailUrl}
+                  alt={activeBlog.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Headline */}
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0C2340] leading-snug">
+              {activeBlog.title}
+            </h2>
+
+            {/* Metadata */}
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 py-1 border-y border-slate-100">
+              <div className="flex items-center gap-1.5">
+                <Calendar size={13} className="text-slate-400" />
                 <span>Published {activeBlog.date}</span>
-                <span>•</span>
-                <span>{activeBlog.views.toLocaleString()} reads</span>
+                {activeBlog.time && <span>at {activeBlog.time}</span>}
               </div>
-
-              <div style={styles.modalExcerptBox}>
-                <p style={styles.modalExcerptText}>{activeBlog.excerpt}</p>
+              <span>•</span>
+              <div>By {activeBlog.author || 'HRSJM Editorial Board'}</div>
+              <span>•</span>
+              <div className="flex items-center gap-1">
+                <Eye size={13} className="text-slate-400" />
+                <span>{formatViews(activeBlog.views)} views</span>
               </div>
+            </div>
 
-              <div style={styles.contentParagraphs}>
-                {(Array.isArray(activeBlog.content) ? activeBlog.content : [activeBlog.content || ""]).map((p: string, idx: number) => (
-                  <p key={idx} style={styles.paragraph}>
-                    {p}
-                  </p>
+            {/* Excerpt Box */}
+            <div className="p-3.5 rounded-xl bg-[#FAF7F0] border border-amber-200/70 text-xs sm:text-sm text-[#0C2340] font-medium leading-relaxed">
+              {activeBlog.excerpt}
+            </div>
+
+            {/* Content Paragraphs */}
+            {activeBlog.content && activeBlog.content.length > 0 && (
+              <div className="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                {activeBlog.content.map((p, idx) => (
+                  <p key={idx}>{p}</p>
                 ))}
               </div>
+            )}
 
-              <div style={styles.tagsRow}>
-                {(activeBlog.tags || []).map((t: string) => (
-                  <span key={t} style={styles.tag}>
+            {/* Tags */}
+            {activeBlog.tags && activeBlog.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {activeBlog.tags.map((t, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium"
+                  >
                     #{t}
                   </span>
                 ))}
               </div>
-            </div>
+            )}
 
-            <div style={styles.modalFooter}>
+            <div className="pt-3 border-t border-slate-100 flex justify-end">
               <button
                 type="button"
-                style={styles.footerCloseBtn}
                 onClick={() => setActiveBlog(null)}
+                className="px-5 py-2 rounded-xl bg-[#0C2340] text-white text-xs font-bold cursor-pointer hover:bg-[#163863]"
               >
                 Close Article
               </button>
@@ -211,370 +696,4 @@ export const MemberBlogsPage: React.FC = () => {
       )}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    paddingBottom: '36px',
-  },
-  heroBanner: {
-    backgroundColor: '#06294D',
-    borderRadius: '16px',
-    padding: '28px 32px',
-    color: '#FFFFFF',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '24px',
-    boxShadow: '0 6px 20px rgba(1, 31, 57, 0.15)',
-  },
-  heroLeft: {
-    flex: 1,
-    minWidth: '320px',
-  },
-  heroBadge: {
-    display: 'inline-block',
-    fontSize: '10.5px',
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    color: '#FAD465',
-    backgroundColor: 'rgba(250, 212, 101, 0.15)',
-    padding: '3px 10px',
-    borderRadius: '6px',
-    marginBottom: '8px',
-  },
-  heroTitle: {
-    fontFamily: '"Playfair Display", Georgia, serif',
-    fontSize: '26px',
-    fontWeight: 700,
-    color: '#FFFFFF',
-    margin: '0 0 8px 0',
-  },
-  heroSub: {
-    fontSize: '13px',
-    color: '#DCE4EC',
-    lineHeight: 1.5,
-    margin: 0,
-    maxWidth: '650px',
-  },
-  heroRight: {
-    display: 'flex',
-  },
-  heroStatBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    borderRadius: '12px',
-    padding: '16px 24px',
-    textAlign: 'center',
-  },
-  heroStatVal: {
-    fontFamily: '"Playfair Display", Georgia, serif',
-    fontSize: '26px',
-    fontWeight: 700,
-    color: '#FAD465',
-  },
-  heroStatLbl: {
-    fontSize: '11px',
-    color: '#CBD5E0',
-    marginTop: '2px',
-  },
-
-  /* Controls */
-  controlsCard: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #DCE4EC',
-    borderRadius: '14px',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-  },
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: '#FAF7F0',
-    border: '1px solid #CBD5E1',
-    borderRadius: '8px',
-    padding: '8px 14px',
-  },
-  searchInput: {
-    border: 'none',
-    outline: 'none',
-    backgroundColor: 'transparent',
-    fontSize: '13px',
-    color: '#1E293B',
-    width: '100%',
-  },
-  categoriesRow: {
-    display: 'flex',
-    gap: '8px',
-    overflowX: 'auto',
-  },
-  chip: {
-    padding: '6px 14px',
-    borderRadius: '20px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    color: '#475569',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'all 0.15s ease',
-  },
-  chipActive: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#FAD465',
-    color: '#0B2F52',
-  },
-
-  /* Blogs Grid */
-  blogsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #DCE4EC',
-    borderRadius: '14px',
-    overflow: 'hidden',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)',
-    display: 'flex',
-    flexDirection: 'column',
-    cursor: 'pointer',
-    transition: 'transform 0.15s ease',
-  },
-  cardImageWrap: {
-    position: 'relative',
-    height: '160px',
-    backgroundColor: '#011F39',
-  },
-  cardImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  categoryBadge: {
-    position: 'absolute',
-    top: '12px',
-    left: '12px',
-    backgroundColor: '#06294D',
-    color: '#FAD465',
-    fontSize: '10.5px',
-    fontWeight: 700,
-    padding: '3px 8px',
-    borderRadius: '4px',
-  },
-  featuredBadge: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    backgroundColor: '#F59E0B',
-    color: '#FFFFFF',
-    fontSize: '10px',
-    fontWeight: 700,
-    padding: '2px 8px',
-    borderRadius: '4px',
-  },
-  cardContent: {
-    padding: '18px',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    gap: '10px',
-  },
-  cardTitle: {
-    margin: 0,
-    fontFamily: '"Playfair Display", Georgia, serif',
-    fontSize: '16px',
-    fontWeight: 700,
-    color: '#0B2F52',
-    lineHeight: 1.3,
-  },
-  cardExcerpt: {
-    margin: 0,
-    fontSize: '12.5px',
-    color: '#64748B',
-    lineHeight: 1.5,
-  },
-  cardMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    fontSize: '11.5px',
-    color: '#94A3B8',
-    marginTop: 'auto',
-    paddingTop: '8px',
-  },
-  metaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-  },
-  cardFooter: {
-    borderTop: '1px solid #F1F5F9',
-    paddingTop: '10px',
-    marginTop: '4px',
-  },
-  readMoreText: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    color: '#0B2F52',
-    fontSize: '12.5px',
-    fontWeight: 700,
-  },
-
-  /* Empty State */
-  emptyState: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #DCE4EC',
-    borderRadius: '14px',
-    padding: '48px 24px',
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    margin: '12px 0 6px 0',
-    fontSize: '17px',
-    fontWeight: 700,
-    color: '#0B2F52',
-  },
-  emptySub: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#64748B',
-    maxWidth: '420px',
-  },
-
-  /* Modal */
-  modalBackdrop: {
-    position: 'fixed',
-    inset: 0,
-    backgroundColor: 'rgba(1, 31, 57, 0.65)',
-    backdropFilter: 'blur(4px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 80,
-    padding: '16px',
-  },
-  modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
-    maxWidth: '680px',
-    width: '100%',
-    maxHeight: '85vh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
-  },
-  modalHeader: {
-    padding: '16px 24px',
-    borderBottom: '1px solid #E2E8F0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FAF7F0',
-  },
-  modalCatBadge: {
-    fontSize: '11px',
-    fontWeight: 700,
-    color: '#06294D',
-    backgroundColor: '#FEF3C7',
-    padding: '3px 8px',
-    borderRadius: '4px',
-  },
-  modalCloseBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    borderRadius: '6px',
-  },
-  modalBody: {
-    padding: '24px 28px',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  modalArticleTitle: {
-    margin: 0,
-    fontFamily: '"Playfair Display", Georgia, serif',
-    fontSize: '22px',
-    fontWeight: 700,
-    color: '#0B2F52',
-    lineHeight: 1.3,
-  },
-  modalMetaRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '12px',
-    color: '#64748B',
-  },
-  modalExcerptBox: {
-    backgroundColor: '#FAF7F0',
-    borderLeft: '4px solid #FAD465',
-    borderRadius: '0 8px 8px 0',
-    padding: '12px 16px',
-  },
-  modalExcerptText: {
-    margin: 0,
-    fontSize: '13.5px',
-    color: '#334155',
-    fontWeight: 500,
-    lineHeight: 1.5,
-    fontStyle: 'italic',
-  },
-  contentParagraphs: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  paragraph: {
-    margin: 0,
-    fontSize: '13.5px',
-    color: '#334155',
-    lineHeight: 1.65,
-  },
-  tagsRow: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap',
-    paddingTop: '6px',
-  },
-  tag: {
-    fontSize: '11px',
-    color: '#64748B',
-    backgroundColor: '#F1F5F9',
-    padding: '3px 8px',
-    borderRadius: '4px',
-  },
-  modalFooter: {
-    padding: '14px 24px',
-    borderTop: '1px solid #E2E8F0',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    backgroundColor: '#F8FAFC',
-  },
-  footerCloseBtn: {
-    padding: '8px 18px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    color: '#475569',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
 };

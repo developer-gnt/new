@@ -184,22 +184,37 @@ export const authStore = new AuthStore();
  * and navigates safely to /login?logout=success.
  */
 export async function executeSignOut(navigate?: (to: string, options?: any) => void): Promise<void> {
-  try {
-    await authStore.logout();
-  } catch (err) {
-    console.warn('Error during authStore logout:', err);
-    authService.clearSession();
-  }
-
+  // 1. Immediately purge all local storage tokens & user sessions synchronously
+  authService.clearSession();
   try {
     userAuthStore.signOut();
   } catch (err) {
     console.warn('Error during userAuthStore signOut:', err);
   }
 
-  // Ensure storage is completely purged
-  authService.clearSession();
+  // 2. Clear any lingering auth keys
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem('hrsjm_auth_token');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('hrsjm_refresh_token');
+      localStorage.removeItem('hrsjm_user_profile');
+      localStorage.removeItem('hrsjm_user_role');
+      localStorage.removeItem('hrsjm_last_app_no');
+      sessionStorage.clear();
+    } catch {
+      // ignore
+    }
+  }
 
+  // 3. Notify backend (non-blocking with timeout)
+  try {
+    await authStore.logout();
+  } catch (err) {
+    console.warn('Error during authStore logout:', err);
+  }
+
+  // 4. Dispatch logout event and navigate to login
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('hrsjm:auth:logout'));
     if (navigate) {

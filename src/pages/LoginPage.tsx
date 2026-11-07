@@ -234,7 +234,7 @@ export const LoginPage: React.FC = () => {
       {/* ════════════════════════════════════════════════════════════
           LEFT HERO SECTION: Editorial Mission Showcase (Desktop)
       ════════════════════════════════════════════════════════════ */}
-      <section className="lg:w-1/2 xl:w-7/12 bg-[#011F39] relative flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-12 xl:p-16 text-white min-h-[300px] lg:min-h-screen">
+      <section className="lg:w-1/2 xl:w-7/12 bg-[#011F39] relative flex flex-col justify-between gap-6 sm:gap-8 overflow-y-auto p-6 sm:p-8 lg:p-10 xl:p-12 text-white min-h-[300px] lg:min-h-screen">
         {/* Background Documentary Rally Imagery with Dark Overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -249,7 +249,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Top Header / National Seal */}
-        <div className="relative z-10 space-y-4">
+        <div className="relative z-10 shrink-0 space-y-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <Link to="/home" className="flex items-center gap-3.5 group cursor-pointer">
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 p-1.5 border border-white/20 backdrop-blur-md shadow-lg group-hover:border-[#FAD465]/50 transition-colors shrink-0">
@@ -294,11 +294,11 @@ export const LoginPage: React.FC = () => {
           )}
         </div>
 
-        {/* Center Editorial Headlines & Mission Pillars (Hidden on very short mobile screens) */}
-        <div className="relative z-10 my-8 lg:my-auto space-y-6 max-w-xl">
+        {/* Center Editorial Headlines & Mission Pillars (Guaranteed vertical flow without overlap) */}
+        <div className="relative z-10 py-2 sm:py-4 space-y-5 xl:space-y-6 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FAD465]/15 text-[#FAD465] border border-[#FAD465]/30">
             <Sparkles size={13} />
-            Constitutional Human Rights Network
+            <span>Constitutional Human Rights Network</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black font-serif tracking-tight text-white leading-[1.18]">
@@ -390,7 +390,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Hero Footer */}
-        <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
+        <div className="relative z-10 shrink-0 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
           <div>Regd. Societies Registration Act XXI of 1860</div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
