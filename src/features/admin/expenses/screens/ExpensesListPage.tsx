@@ -103,7 +103,7 @@ export const ExpensesListPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6 min-w-0">
       {/* Top Header Card */}
       <div className="bg-white rounded-xl border border-[#DCE4EC] px-6 py-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -146,7 +146,7 @@ export const ExpensesListPage: React.FC = () => {
       />
 
       {/* Unified Data Table & Filter Workspace */}
-      <div className="bg-white rounded-xl border border-[#DCE4EC] shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#DCE4EC] shadow-xs overflow-hidden w-full min-w-0">
         {/* Primary Status Filter Tabs */}
         <ExpenseStatusTabs
           activeStatus={activeStatus}
@@ -167,41 +167,45 @@ export const ExpensesListPage: React.FC = () => {
           totalFilteredCount={filteredVouchers.length}
         />
 
-        {/* Table Content */}
-        <ExpenseListHeader />
+        {/* Table Content with controlled horizontal scrolling container */}
+        <div className="overflow-x-auto w-full">
+          <div className="min-w-[960px]">
+            <ExpenseListHeader />
 
-        {filteredVouchers.length > 0 ? (
-          <div>
-            {filteredVouchers.map((v) => (
-              <ExpenseCard
-                key={v.id}
-                voucher={v}
-                onPress={handleVoucherClick}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="p-12 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-[#EDF2F7] text-[#06294D] flex items-center justify-center mx-auto mb-2">
-              <AlertCircle size={26} />
-            </div>
-            <h3 className="font-['Playfair_Display',Georgia,serif] font-bold text-lg text-[#0B2F52]">
-              No Expense Vouchers Found
-            </h3>
-            <p className="text-xs text-[#718096] max-w-sm mx-auto leading-relaxed">
-              No vouchers match the current search or category filters. Try clearing filters or record a new expense.
-            </p>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] transition-colors cursor-pointer"
-              >
-                Clear All Filters
-              </button>
+            {filteredVouchers.length > 0 ? (
+              <div>
+                {filteredVouchers.map((v) => (
+                  <ExpenseCard
+                    key={v.id}
+                    voucher={v}
+                    onPress={handleVoucherClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 text-center space-y-3">
+                <div className="w-14 h-14 rounded-full bg-[#EDF2F7] text-[#06294D] flex items-center justify-center mx-auto mb-2">
+                  <AlertCircle size={26} />
+                </div>
+                <h3 className="font-['Playfair_Display',Georgia,serif] font-bold text-lg text-[#0B2F52]">
+                  No Expense Vouchers Found
+                </h3>
+                <p className="text-xs text-[#718096] max-w-sm mx-auto leading-relaxed">
+                  No vouchers match the current search or category filters. Try clearing filters or record a new expense.
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] transition-colors cursor-pointer"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Cancel Modal */}

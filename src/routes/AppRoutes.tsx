@@ -177,6 +177,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/blogs" element={<UserBlogsPage />} />
           <Route path="/articles" element={<UserBlogsPage />} />
           <Route path="/donations" element={<UserDonationsPage />} />
+          <Route path="/donate" element={<UserDonationsPage />} />
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
@@ -270,6 +271,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="certificate" element={<MemberCertificatePage />} />
           <Route path="renew" element={<MemberRenewalPage />} />
           <Route path="causes" element={<MemberCausesPage />} />
+          <Route path="donate" element={<UserDonationsPage isMember={true} />} />
+          <Route path="donations" element={<UserDonationsPage isMember={true} />} />
           <Route path="passbook" element={<MemberPassbookPage />} />
           <Route path="transactions" element={<UserTransactionsPage />} />
           <Route path="support" element={<MemberSupportPage />} />

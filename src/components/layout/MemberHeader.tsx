@@ -154,7 +154,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
         <button
           type="button"
           style={styles.donateBtn}
-          onClick={() => navigate('/member/causes')}
+          onClick={() => navigate('/member/donate')}
           aria-label="Donate Now to Social Causes"
         >
           <Heart size={14} color="#0B2F52" fill="#0B2F52" />
