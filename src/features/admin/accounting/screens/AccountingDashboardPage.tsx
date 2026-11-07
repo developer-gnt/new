@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  ExternalLink,
 } from 'lucide-react';
 import { accountingStore } from '../store/accountingStore';
 import {
@@ -72,9 +73,21 @@ export const AccountingDashboardPage: React.FC = () => {
 
   // Passbook / Ledger Sub-States
   const [ledgerMode, setLedgerMode] = useState<MainAccountingMode>('PASSBOOK');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
+
+  // React to search param updates
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) {
+      setSearchQuery(q);
+    }
+    const t = searchParams.get('tab') as AccountingActiveTab;
+    if (t && (t === 'passbook' || t === 'accounts' || t === 'journals')) {
+      setActiveTab(t);
+    }
+  }, [searchParams]);
 
   // Modals state
   const [createAccountModalVisible, setCreateAccountModalVisible] = useState(false);
@@ -354,7 +367,46 @@ export const AccountingDashboardPage: React.FC = () => {
                             >
                               {/* Date & Voucher No */}
                               <td className="px-4 py-3 align-top">
-                                <div className="font-mono text-xs font-bold text-[#011F39]">{tx.entry_number}</div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-xs font-bold text-[#011F39]">{tx.entry_number}</span>
+                                  {tx.category_tag === 'EXPENSE' || tx.reference_type === 'MANUAL_EXPENSE' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/expenses/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Expense Voucher"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : tx.category_tag === 'DONATION' || tx.reference_type === 'DONATION_PAYMENT' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/donations/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Donation Record"
+                                      className="text-slate-400 hover:text-amber-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : tx.category_tag === 'MEMBERSHIP_FEE' || tx.reference_type === 'MEMBERSHIP_PAYMENT' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate('/admin/members')}
+                                      title="Open Members Directory"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/receipts/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Receipt Voucher"
+                                      className="text-slate-400 hover:text-emerald-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  )}
+                                </div>
                                 <div className="text-[11px] text-slate-500 font-medium mt-0.5">
                                   {formatLedgerDate(tx.entry_date)}
                                 </div>

@@ -98,6 +98,24 @@ export const CalendarDatePicker: React.FC<CalendarDatePickerProps> = ({
   const [viewYear, setViewYear] = useState<number>(initialYearMonth.year);
   const [viewMonth, setViewMonth] = useState<number>(initialYearMonth.month);
 
+  // View mode switcher: 'days' | 'months' | 'years' | 'decades'
+  const [viewMode, setViewMode] = useState<'days' | 'months' | 'years' | 'decades'>('days');
+  const [decadeStart, setDecadeStart] = useState<number>(() =>
+    Math.floor(initialYearMonth.year / 10) * 10
+  );
+
+  // Keep decade aligned with viewYear
+  useEffect(() => {
+    setDecadeStart(Math.floor(viewYear / 10) * 10);
+  }, [viewYear]);
+
+  // Reset view mode on popover close
+  useEffect(() => {
+    if (!isOpen) {
+      setViewMode('days');
+    }
+  }, [isOpen]);
+
   // Click outside and Escape key listener
   useEffect(() => {
     if (!isOpen) return;
@@ -122,15 +140,42 @@ export const CalendarDatePicker: React.FC<CalendarDatePickerProps> = ({
     };
   }, [isOpen]);
 
-  // Generate Year options
+  // Generate Year & Decade options
   const startYear = parseInt(minDate.split('-')[0], 10) || 1920;
-  const yearOptions = useMemo(() => {
-    const list: number[] = [];
-    for (let y = CURRENT_YEAR; y >= startYear; y--) {
-      list.push(y);
+  const startDecade = Math.floor(startYear / 10) * 10;
+  const currentDecade = Math.floor(CURRENT_YEAR / 10) * 10;
+
+  // 12-year grid for decade view: from (decadeStart - 1) to (decadeStart + 10)
+  const decadeGridYears = useMemo(() => {
+    const list: Array<{
+      year: number;
+      isCurrentDecade: boolean;
+      isDisabled: boolean;
+      isUnderAge: boolean;
+    }> = [];
+    for (let y = decadeStart - 1; y <= decadeStart + 10; y++) {
+      const isSelectable = y >= startYear && y <= CURRENT_YEAR;
+      const isUnderAge = effectiveMaxDate
+        ? y > parseInt(effectiveMaxDate.split('-')[0], 10)
+        : false;
+      list.push({
+        year: y,
+        isCurrentDecade: y >= decadeStart && y <= decadeStart + 9,
+        isDisabled: !isSelectable,
+        isUnderAge,
+      });
     }
     return list;
-  }, [startYear]);
+  }, [decadeStart, startYear, effectiveMaxDate]);
+
+  // Available decades for direct switching
+  const availableDecades = useMemo(() => {
+    const list: number[] = [];
+    for (let d = currentDecade; d >= startDecade; d -= 10) {
+      list.push(d);
+    }
+    return list;
+  }, [currentDecade, startDecade]);
 
   // Calculate days in current view month
   const calendarDays = useMemo(() => {
@@ -346,116 +391,298 @@ export const CalendarDatePicker: React.FC<CalendarDatePickerProps> = ({
       {/* INTERACTIVE CALENDAR DROPDOWN POPOVER                          */}
       {/* ------------------------------------------------------------- */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-2 z-50 w-full sm:w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 animate-in fade-in zoom-in-95 duration-150">
-          {/* Calendar Header: Month & Year Controls */}
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              aria-label="Previous Month"
-              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
-            >
-              <ChevronLeft size={18} />
-            </button>
+        <div className="absolute left-0 top-full mt-2 z-50 w-full sm:w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150 select-none">
+          {/* VIEW MODE: DAYS */}
+          {viewMode === 'days' && (
+            <div className="animate-in fade-in duration-100">
+              {/* Calendar Header: Month & Year Controls */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  aria-label="Previous Month"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
+                >
+                  <ChevronLeft size={18} />
+                </button>
 
-            <div className="flex items-center gap-2">
-              {/* Month Dropdown */}
-              <select
-                value={viewMonth}
-                onChange={(e) => setViewMonth(Number(e.target.value))}
-                aria-label="Select month"
-                className="bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#011F39]"
-              >
-                {MONTH_NAMES.map((name, idx) => (
-                  <option key={name} value={idx}>
-                    {name}
-                  </option>
+                <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/70 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('months')}
+                    aria-label="Select month"
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-[#0B2F52] hover:bg-white hover:shadow-xs transition cursor-pointer"
+                  >
+                    {MONTH_NAMES[viewMonth]}
+                  </button>
+                  <span className="text-slate-300 text-xs px-0.5 font-light">|</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDecadeStart(Math.floor(viewYear / 10) * 10);
+                      setViewMode('years');
+                    }}
+                    aria-label="Select year"
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-[#0B2F52] hover:bg-white hover:shadow-xs transition cursor-pointer"
+                  >
+                    {viewYear}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  aria-label="Next Month"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Weekday Names Header */}
+              <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
+                {WEEKDAY_NAMES.map((weekday) => (
+                  <span
+                    key={weekday}
+                    className="text-[11px] font-bold text-slate-400 uppercase tracking-wider py-1"
+                  >
+                    {weekday}
+                  </span>
                 ))}
-              </select>
+              </div>
 
-              {/* Year Dropdown */}
-              <select
-                value={viewYear}
-                onChange={(e) => setViewYear(Number(e.target.value))}
-                aria-label="Select year"
-                className="bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#011F39]"
-              >
-                {yearOptions.map((year) => {
-                  const isEligibleYear =
-                    effectiveMaxDate &&
-                    year <= parseInt(effectiveMaxDate.split('-')[0], 10);
+              {/* Calendar Days Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((item, idx) => {
+                  const isSelected = value === item.isoString;
+                  const isToday = TODAY_ISO === item.isoString;
+
                   return (
-                    <option key={year} value={year}>
-                      {year} {!isEligibleYear ? '(Under 18)' : ''}
-                    </option>
+                    <button
+                      key={`${item.isoString}-${idx}`}
+                      type="button"
+                      disabled={item.isDisabled}
+                      onClick={() => {
+                        if (!item.isDisabled) handleSelectDate(item.isoString);
+                      }}
+                      className={`h-9 w-full rounded-xl text-xs font-semibold flex items-center justify-center transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#011F39] text-[#FAD465] font-bold shadow-md ring-2 ring-[#011F39]/20'
+                          : item.isDisabled
+                          ? 'text-slate-300 opacity-30 cursor-not-allowed bg-transparent'
+                          : !item.isCurrentMonth
+                          ? 'text-slate-400 opacity-50 hover:bg-slate-50'
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-[#011F39]'
+                      } ${
+                        isToday && !isSelected
+                          ? 'border border-[#FAD465] font-bold text-[#011F39]'
+                          : ''
+                      }`}
+                    >
+                      {item.day}
+                    </button>
                   );
                 })}
-              </select>
+              </div>
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              aria-label="Next Month"
-              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          {/* Weekday Names Header */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
-            {WEEKDAY_NAMES.map((weekday) => (
-              <span
-                key={weekday}
-                className="text-[11px] font-bold text-slate-400 uppercase tracking-wider py-1"
-              >
-                {weekday}
-              </span>
-            ))}
-          </div>
-
-          {/* Calendar Days Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((item, idx) => {
-              const isSelected = value === item.isoString;
-              const isToday = TODAY_ISO === item.isoString;
-
-              return (
+          {/* VIEW MODE: MONTHS SELECTOR */}
+          {viewMode === 'months' && (
+            <div className="animate-in fade-in duration-100">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
                 <button
-                  key={`${item.isoString}-${idx}`}
                   type="button"
-                  disabled={item.isDisabled}
-                  onClick={() => {
-                    if (!item.isDisabled) handleSelectDate(item.isoString);
-                  }}
-                  className={`h-9 w-full rounded-xl text-xs font-semibold flex items-center justify-center transition cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#011F39] text-[#FAD465] font-bold shadow-md ring-2 ring-[#011F39]/20'
-                      : item.isDisabled
-                      ? 'text-slate-300 opacity-30 cursor-not-allowed bg-transparent'
-                      : !item.isCurrentMonth
-                      ? 'text-slate-400 opacity-60 hover:bg-slate-50'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-[#011F39]'
-                  } ${
-                    isToday && !isSelected
-                      ? 'border border-[#FAD465] font-bold text-[#011F39]'
-                      : ''
-                  }`}
+                  onClick={() => setViewYear((y) => y - 1)}
+                  aria-label="Previous Year"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
                 >
-                  {item.day}
+                  <ChevronLeft size={18} />
                 </button>
-              );
-            })}
-          </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDecadeStart(Math.floor(viewYear / 10) * 10);
+                    setViewMode('years');
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold text-[#0B2F52] bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/60 transition cursor-pointer"
+                >
+                  <span>Year {viewYear}</span>
+                  <ChevronDown size={13} className="text-slate-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewYear((y) => y + 1)}
+                  aria-label="Next Year"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] transition cursor-pointer"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* 12 Months Grid: 3 cols x 4 rows */}
+              <div className="grid grid-cols-3 gap-2 py-1">
+                {MONTH_NAMES.map((name, idx) => {
+                  const isSelected = viewMonth === idx;
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        setViewMonth(idx);
+                        setViewMode('days');
+                      }}
+                      className={`h-11 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center ${
+                        isSelected
+                          ? 'bg-[#011F39] text-[#FAD465] font-bold shadow-md ring-2 ring-[#011F39]/20'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 hover:text-[#011F39] border border-slate-200/70'
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW MODE: YEARS SELECTOR */}
+          {viewMode === 'years' && (
+            <div className="animate-in fade-in duration-100">
+              {/* Header: Decade Pagination */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setDecadeStart((d) => Math.max(startDecade, d - 10))}
+                  disabled={decadeStart <= startDecade}
+                  aria-label="Previous Decade"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('decades')}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold text-[#0B2F52] bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/60 transition cursor-pointer"
+                >
+                  <span>{decadeStart} – {decadeStart + 9}</span>
+                  <ChevronDown size={13} className="text-slate-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDecadeStart((d) => Math.min(currentDecade, d + 10))}
+                  disabled={decadeStart >= currentDecade}
+                  aria-label="Next Decade"
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[#011F39] disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* 12 Years Grid: 3 cols x 4 rows */}
+              <div className="grid grid-cols-3 gap-2 py-1">
+                {decadeGridYears.map((item) => {
+                  const isSelected = viewYear === item.year;
+                  return (
+                    <button
+                      key={item.year}
+                      type="button"
+                      disabled={item.isDisabled}
+                      onClick={() => {
+                        if (!item.isDisabled) {
+                          setViewYear(item.year);
+                          setViewMode('days');
+                        }
+                      }}
+                      className={`h-11 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center justify-center ${
+                        isSelected
+                          ? 'bg-[#011F39] text-[#FAD465] font-bold shadow-md ring-2 ring-[#011F39]/20'
+                          : item.isDisabled
+                          ? 'text-slate-300 opacity-30 cursor-not-allowed border border-transparent'
+                          : !item.isCurrentDecade
+                          ? 'text-slate-400 opacity-60 hover:bg-slate-50 border border-dashed border-slate-200'
+                          : item.isUnderAge
+                          ? 'bg-amber-50/70 text-amber-900 border border-amber-200/80 hover:bg-amber-100'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 hover:text-[#011F39] border border-slate-200/70'
+                      }`}
+                    >
+                      <span>{item.year}</span>
+                      {item.isUnderAge && item.isCurrentDecade && (
+                        <span className="text-[9px] font-medium text-amber-700 leading-none mt-0.5">
+                          &lt;18 yrs
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW MODE: DECADES SELECTOR */}
+          {viewMode === 'decades' && (
+            <div className="animate-in fade-in duration-100">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('years')}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-[#011F39] px-2 py-1 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <ChevronLeft size={15} />
+                  <span>Years</span>
+                </button>
+                <span className="text-xs font-bold text-[#0B2F52]">
+                  Select Decade
+                </span>
+                <span className="w-12" />
+              </div>
+
+              {/* Decades Grid: 3 cols x 4 rows */}
+              <div className="grid grid-cols-3 gap-2 py-1">
+                {availableDecades.map((dec) => {
+                  const isSelected = decadeStart === dec;
+                  return (
+                    <button
+                      key={dec}
+                      type="button"
+                      onClick={() => {
+                        setDecadeStart(dec);
+                        setViewMode('years');
+                      }}
+                      className={`h-11 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center ${
+                        isSelected
+                          ? 'bg-[#011F39] text-[#FAD465] font-bold shadow-md ring-2 ring-[#011F39]/20'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 hover:text-[#011F39] border border-slate-200/70'
+                      }`}
+                    >
+                      {dec}s
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Footer Shortcuts & Action Toolbar */}
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            {minAge && minAge > 0 ? (
+            {viewMode !== 'days' ? (
+              <button
+                type="button"
+                onClick={() => setViewMode('days')}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-[#011F39] px-2 py-1 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+              >
+                <ChevronLeft size={13} />
+                <span>Calendar</span>
+              </button>
+            ) : minAge && minAge > 0 ? (
               <button
                 type="button"
                 onClick={handleSet18Cutoff}
-                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 transition cursor-pointer"
               >
                 <Clock size={12} />
                 <span>18 Years Cutoff</span>
@@ -464,21 +691,21 @@ export const CalendarDatePicker: React.FC<CalendarDatePickerProps> = ({
               <span className="text-[11px] text-slate-400">Select Date</span>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => {
                   onChange('');
                   setIsOpen(false);
                 }}
-                className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100 transition cursor-pointer"
+                className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 px-2.5 py-1 rounded-lg hover:bg-slate-100 transition cursor-pointer"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-[11px] font-bold text-[#011F39] hover:bg-[#011F39]/10 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                className="text-[11px] font-bold text-[#011F39] hover:bg-[#011F39]/10 px-3 py-1 rounded-lg transition cursor-pointer"
               >
                 Close
               </button>

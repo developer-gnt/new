@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
+  BookOpen,
 } from 'lucide-react';
 import type {
   ReceiptEntryItem,
@@ -392,6 +393,15 @@ export const ReceiptsListPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/accounting')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] text-xs font-bold rounded-xl transition cursor-pointer"
+          >
+            <BookOpen size={13} />
+            <span>General Ledger</span>
+          </button>
+
           <button
             type="button"
             onClick={handleRefresh}

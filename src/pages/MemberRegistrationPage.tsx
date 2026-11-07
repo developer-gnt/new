@@ -416,8 +416,8 @@ export const MemberRegistrationPage: React.FC = () => {
 
     if (!address.addressLine1.trim()) {
       errors.addressLine1 = 'Address line 1 is required';
-    } else if (address.addressLine1.trim().length < 5) {
-      errors.addressLine1 = 'Address must be at least 5 characters';
+    } else if (address.addressLine1.trim().length < 3) {
+      errors.addressLine1 = 'Address must be at least 3 characters';
     }
 
     if (!address.state.trim()) {
@@ -436,6 +436,9 @@ export const MemberRegistrationPage: React.FC = () => {
     }
 
     setAddressErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      window.scrollTo({ top: 150, behavior: 'smooth' });
+    }
     return Object.keys(errors).length === 0;
   };
 
@@ -1550,6 +1553,21 @@ export const MemberRegistrationPage: React.FC = () => {
                   Please provide your current address details for membership verification and kit delivery.
                 </p>
               </div>
+
+              {/* Error banner if validation failed */}
+              {Object.keys(addressErrors).length > 0 && (
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-1">
+                  <div className="flex items-center gap-2 font-bold text-rose-900">
+                    <AlertCircle size={15} className="text-rose-600 shrink-0" />
+                    <span>Please complete the required address fields to proceed:</span>
+                  </div>
+                  <ul className="list-disc list-inside text-[11.5px] text-rose-700 pl-1 space-y-0.5 font-medium">
+                    {Object.values(addressErrors).map((msg, i) => (
+                      <li key={i}>{msg}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Address Line 1 */}
               <div>

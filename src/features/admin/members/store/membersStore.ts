@@ -170,7 +170,18 @@ class MembersStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            // Strip any mock/dummy documents that were previously hardcoded on new member creation
+            return parsed.map((m: Member) => {
+              if (Array.isArray(m.documents)) {
+                return {
+                  ...m,
+                  documents: m.documents.filter(
+                    (d) => !(d.name === 'Identification Document' && d.fileSize === '1.2 MB' && !d.url)
+                  ),
+                };
+              }
+              return m;
+            });
           }
         }
       }
@@ -297,15 +308,10 @@ class MembersStore {
         notes: 'Initial welcome kit queued for dispatch upon membership registration.',
         items: ['Physical ID Card', 'Welcome Lanyard', 'Official NGO Badge', 'Constitution Handbook'],
       },
-      documents: [
-        {
-          id: `doc-${Date.now()}`,
-          name: 'Identification Document',
-          type: 'application/pdf',
-          fileSize: '1.2 MB',
-          uploadedAt: nowIso.split('T')[0],
-        },
-      ],
+      documents:
+        (payload as any).documents && Array.isArray((payload as any).documents) && (payload as any).documents.length > 0
+          ? (payload as any).documents
+          : [],
       adminNotes: payload.admin_notes || 'Registered through Admin Web Portal',
     };
 

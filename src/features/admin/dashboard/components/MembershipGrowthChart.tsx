@@ -1,17 +1,160 @@
-import React, { useState } from 'react';
-import { TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { TrendingUp, RefreshCw } from 'lucide-react';
+import { apiClient } from '@/services/apiClient';
 import type { GrowthPoint } from '../data/dashboardDemoData';
 import { DEMO_GROWTH_DATA } from '../data/dashboardDemoData';
 
-export const MembershipGrowthChart: React.FC = () => {
-  const [range, setRange] = useState<'7d' | '30d' | '6m' | '1y'>('6m');
-  const [hoveredPoint, setHoveredPoint] = useState<GrowthPoint | null>(null);
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const points = DEMO_GROWTH_DATA[range] || DEMO_GROWTH_DATA['6m'];
-  const minVal = Math.min(...points.map((p) => p.members));
-  const maxVal = Math.max(...points.map((p) => p.members));
-  const paddingY = (maxVal - minVal) * 0.15 || 20;
-  const floorVal = Math.floor(minVal - paddingY);
+export interface MembershipGrowthChartProps {
+  initialGrowth?: { month: string; total: number }[];
+  totalMembers?: number;
+  activeMembers?: number;
+}
+
+interface ExtendedGrowthPoint extends GrowthPoint {
+  fullLabel?: string;
+}
+
+const parseMonthlyGrowth = (growthList: { month: string; total: number }[]): ExtendedGrowthPoint[] => {
+  return growthList.map((g) => {
+    const parts = (g.month || '').split('-');
+    const mIndex = parseInt(parts[1] || '1', 10) - 1;
+    const shortLabel = MONTH_NAMES[mIndex] || g.month;
+    return {
+      label: shortLabel,
+      fullLabel: `${MONTH_NAMES[mIndex] || ''} ${parts[0] || ''}`.trim(),
+      members: Number(g.total) || 0,
+    };
+  });
+};
+
+const computeDailyGrowthFromMembers = (
+  members: any[],
+  daysCount: number,
+  sampleInterval = 1
+): ExtendedGrowthPoint[] => {
+  const withMemb = members.filter((m) => m && (m.membership || m.membershipNumber || m.status));
+  const now = new Date();
+  const points: ExtendedGrowthPoint[] = [];
+
+  for (let i = daysCount - 1; i >= 0; i -= sampleInterval) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    d.setHours(23, 59, 59, 999);
+    const count = withMemb.filter((m) => new Date(m.created_at) <= d).length;
+
+    const label =
+      daysCount <= 7
+        ? d.toLocaleDateString('en-US', { weekday: 'short' })
+        : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const fullLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    points.push({ label, fullLabel, members: count });
+  }
+
+  return points;
+};
+
+export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
+  initialGrowth,
+  totalMembers,
+  activeMembers,
+}) => {
+  const [range, setRange] = useState<'7d' | '30d' | '6m' | '1y'>('6m');
+  const [hoveredPoint, setHoveredPoint] = useState<ExtendedGrowthPoint | null>(null);
+  const [cachedData, setCachedData] = useState<Record<string, ExtendedGrowthPoint[]>>(() => {
+    const initial: Record<string, ExtendedGrowthPoint[]> = {};
+    if (initialGrowth && initialGrowth.length > 0) {
+      initial['6m'] = parseMonthlyGrowth(initialGrowth);
+    }
+    return initial;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const [membersCount, setMembersCount] = useState<{ total?: number; active?: number }>({
+    total: totalMembers,
+    active: activeMembers,
+  });
+
+  // Sync when initial props arrive or change
+  useEffect(() => {
+    if (initialGrowth && initialGrowth.length > 0) {
+      const parsed = parseMonthlyGrowth(initialGrowth);
+      setCachedData((prev) => ({ ...prev, '6m': parsed }));
+      setIsLiveConnected(true);
+    }
+  }, [initialGrowth]);
+
+  useEffect(() => {
+    if (totalMembers !== undefined || activeMembers !== undefined) {
+      setMembersCount({ total: totalMembers, active: activeMembers });
+    }
+  }, [totalMembers, activeMembers]);
+
+  // Load data for the requested range from live API
+  const loadDataForRange = useCallback(
+    async (selectedRange: '7d' | '30d' | '6m' | '1y') => {
+      // If already cached, no need to refetch immediately
+      if (cachedData[selectedRange] && cachedData[selectedRange].length > 0) {
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        if (selectedRange === '6m' || selectedRange === '1y') {
+          const growthMonths = selectedRange === '1y' ? 12 : 6;
+          const res = await apiClient.get<any>('/admin/dashboard', { params: { growthMonths } });
+          const data = (res as any)?.data || res;
+          if (data?.memberGrowth && Array.isArray(data.memberGrowth) && data.memberGrowth.length > 0) {
+            const parsed = parseMonthlyGrowth(data.memberGrowth);
+            setCachedData((prev) => ({ ...prev, [selectedRange]: parsed }));
+            setIsLiveConnected(true);
+            if (data.memberships) {
+              setMembersCount({
+                total: data.memberships.total,
+                active: data.memberships.active,
+              });
+            }
+          }
+        } else {
+          // '7d' or '30d': fetch live member roster to aggregate daily cumulative counts
+          const res = await apiClient.get<any>('/admin/members', { params: { limit: 100 } });
+          const data = (res as any)?.data || res;
+          const items = data?.items || (Array.isArray(data) ? data : []);
+          if (items.length > 0) {
+            const daysCount = selectedRange === '7d' ? 7 : 30;
+            const interval = selectedRange === '7d' ? 1 : 5;
+            const parsed = computeDailyGrowthFromMembers(items, daysCount, interval);
+            setCachedData((prev) => ({ ...prev, [selectedRange]: parsed }));
+            setIsLiveConnected(true);
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not sync live member growth for range ${selectedRange}:`, err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [cachedData]
+  );
+
+  useEffect(() => {
+    loadDataForRange(range);
+  }, [range, loadDataForRange]);
+
+  // Determine current active points list (live data or fallback)
+  const points: ExtendedGrowthPoint[] = useMemo(() => {
+    if (cachedData[range] && cachedData[range].length >= 2) {
+      return cachedData[range];
+    }
+    return (DEMO_GROWTH_DATA[range] || DEMO_GROWTH_DATA['6m']) as ExtendedGrowthPoint[];
+  }, [cachedData, range]);
+
+  const minVal = points.length > 0 ? Math.min(...points.map((p) => p.members)) : 0;
+  const maxVal = points.length > 0 ? Math.max(...points.map((p) => p.members)) : 10;
+  const paddingY = Math.max(2, (maxVal - minVal) * 0.15 || 5);
+  const floorVal = Math.max(0, Math.floor(minVal - paddingY));
   const ceilVal = Math.ceil(maxVal + paddingY);
 
   const width = 640;
@@ -24,8 +167,15 @@ export const MembershipGrowthChart: React.FC = () => {
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
 
-  const getX = (index: number) => padLeft + (index / (points.length - 1)) * chartW;
-  const getY = (val: number) => padTop + chartH - ((val - floorVal) / (ceilVal - floorVal)) * chartH;
+  const getX = (index: number) => {
+    if (points.length <= 1) return padLeft + chartW / 2;
+    return padLeft + (index / (points.length - 1)) * chartW;
+  };
+
+  const getY = (val: number) => {
+    const rangeY = ceilVal - floorVal || 1;
+    return padTop + chartH - ((val - floorVal) / rangeY) * chartH;
+  };
 
   const coordinates = points.map((p, idx) => ({
     x: getX(idx),
@@ -38,23 +188,45 @@ export const MembershipGrowthChart: React.FC = () => {
     return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
   }, '');
 
-  const areaPath = `${linePath} L ${coordinates[coordinates.length - 1].x} ${
-    padTop + chartH
-  } L ${coordinates[0].x} ${padTop + chartH} Z`;
+  const areaPath =
+    coordinates.length > 0
+      ? `${linePath} L ${coordinates[coordinates.length - 1].x} ${
+          padTop + chartH
+        } L ${coordinates[0].x} ${padTop + chartH} Z`
+      : '';
 
-  const latestVal = points[points.length - 1].members;
+  const latestVal = points.length > 0 ? points[points.length - 1].members : 0;
+  const displayActive = membersCount.active ?? latestVal;
+  const displayTotal = membersCount.total;
 
   return (
     <div style={styles.card}>
       <div style={styles.headerRow}>
         <div style={styles.titleWrap}>
-          <div style={styles.badge}>
-            <TrendingUp size={16} color="#06294D" />
-            <span style={styles.badgeLabel}>Growth Trajectory</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={styles.badge}>
+              <TrendingUp size={16} color="#06294D" />
+              <span style={styles.badgeLabel}>Growth Trajectory</span>
+            </div>
+            {isLiveConnected && (
+              <span style={styles.liveBadge}>
+                <span style={styles.liveDot} />
+                Live API
+              </span>
+            )}
+            {isLoading && (
+              <RefreshCw size={13} className="animate-spin" style={{ color: '#06294D' }} />
+            )}
           </div>
           <h3 style={styles.title}>Membership Expansion Trend</h3>
           <p style={styles.subtitle}>
-            Verified membership roster: <strong>{latestVal.toLocaleString()}</strong> active members
+            Verified membership roster: <strong>{displayActive.toLocaleString()}</strong> active members
+            {displayTotal !== undefined && displayTotal !== displayActive && (
+              <span style={{ color: '#718096', fontSize: '12px' }}>
+                {' '}
+                ({displayTotal.toLocaleString()} registered total)
+              </span>
+            )}
           </p>
         </div>
 
@@ -120,27 +292,31 @@ export const MembershipGrowthChart: React.FC = () => {
           })}
 
           {/* Fill Area Under Curve */}
-          <path d={areaPath} fill="url(#growthAreaGrad)" />
+          {areaPath && <path d={areaPath} fill="url(#growthAreaGrad)" />}
 
           {/* Trendline */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#06294D"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#06294D"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
 
           {/* Accent Gold Trendline Glow */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#FAD465"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#FAD465"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
 
           {/* Data Points */}
           {coordinates.map((pt) => (
@@ -159,12 +335,7 @@ export const MembershipGrowthChart: React.FC = () => {
                 strokeWidth="2.5"
                 style={{ transition: 'r 0.15s ease' }}
               />
-              <circle
-                cx={pt.x}
-                cy={pt.y}
-                r={2}
-                fill="#FAD465"
-              />
+              <circle cx={pt.x} cy={pt.y} r={2} fill="#FAD465" />
 
               {/* X Axis Labels */}
               <text
@@ -185,8 +356,8 @@ export const MembershipGrowthChart: React.FC = () => {
         {/* Hover Tooltip Overlay */}
         {hoveredPoint && (
           <div style={styles.tooltip}>
-            <span style={styles.tooltipLabel}>{hoveredPoint.label}:</span>
-            <span style={styles.tooltipVal}>{hoveredPoint.members} members</span>
+            <span style={styles.tooltipLabel}>{hoveredPoint.fullLabel || hoveredPoint.label}:</span>
+            <span style={styles.tooltipVal}>{hoveredPoint.members.toLocaleString()} members</span>
           </div>
         )}
       </div>
@@ -230,6 +401,24 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#06294D',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
+  },
+  liveBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    backgroundColor: '#DCFCE7',
+    color: '#15803D',
+    padding: '2px 8px',
+    borderRadius: '999px',
+    fontSize: '10.5px',
+    fontWeight: 700,
+    letterSpacing: '0.02em',
+  },
+  liveDot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: '#16A34A',
   },
   title: {
     fontSize: '20px',

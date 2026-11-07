@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useTransition } from 'react';
-import { Gift, Plus, Download, RotateCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Gift, Plus, Download, RotateCw, BookOpen } from 'lucide-react';
 import { useDonationsStore, donationsStore } from '../store/donationsStore';
 import { DonationStatsCards } from '../components/DonationStatsCards';
 import { DonationCategoryTabs } from '../components/DonationCategoryTabs';
@@ -20,6 +21,7 @@ import type {
 } from '../types/donations.types';
 
 export const DonationsListPage: React.FC = () => {
+  const navigate = useNavigate();
   const store = useDonationsStore();
   const [, startTransition] = useTransition();
 
@@ -222,6 +224,14 @@ export const DonationsListPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/accounting')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition-colors cursor-pointer"
+          >
+            <BookOpen className="h-4 w-4 text-[#011F39]" />
+            <span>General Ledger</span>
+          </button>
           <button
             type="button"
             onClick={handleRefresh}

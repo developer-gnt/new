@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -18,6 +19,8 @@ import {
   ArrowUpRight,
   RefreshCw,
   Printer,
+  Scale,
+  ExternalLink,
 } from 'lucide-react';
 import { transactionsService } from '../services/transactionsService';
 import type {
@@ -39,6 +42,7 @@ const CATEGORY_TABS: { label: string; value: TransactionCategoryCode }[] = [
 
 export const UserTransactionsPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<TransactionCategoryCode>('ALL');
@@ -673,6 +677,28 @@ export const UserTransactionsPage: React.FC = () => {
                       Donation Amount: <strong>₹{selectedTxn.amount.toLocaleString('en-IN')}</strong> • Allowable 50% IT Deduction: <strong>₹{Math.round(selectedTxn.amount * 0.5).toLocaleString('en-IN')}</strong>. Validated under Section 80G(5)(vi) (URN: AABTH4589KF20214).
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Admin General Ledger Audit Link */}
+              {(user?.roles?.includes('SUPER_ADMIN') || user?.roles?.includes('ADMIN') || user?.roles?.includes('STAFF')) && (
+                <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                  <div className="flex items-center gap-2">
+                    <Scale size={14} className="text-[#011F39]" />
+                    <span className="text-[11px] font-semibold text-slate-700">General Ledger Audit Entry:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const id = selectedTxn.transaction_id || selectedTxn.id;
+                      setSelectedTxn(null);
+                      navigate(`/admin/accounting?search=${id}`);
+                    }}
+                    className="text-[11px] font-bold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Open in Ledger</span>
+                    <ExternalLink size={11} />
+                  </button>
                 </div>
               )}
             </div>

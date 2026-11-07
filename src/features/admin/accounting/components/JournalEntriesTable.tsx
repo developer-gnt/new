@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState, useMemo } from 'react';
-import { Search, Plus, RotateCcw, ListFilter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, RotateCcw, ListFilter, ExternalLink } from 'lucide-react';
 import type { JournalEntryItem } from '../types/accounting.types';
 import { formatINR } from '../types/accounting.types';
 
@@ -19,6 +20,7 @@ export const JournalEntriesTable: React.FC<JournalEntriesTableProps> = ({
   onViewLines,
   onReverseEntry,
 }) => {
+  const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<StatusTab>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -296,6 +298,40 @@ export const JournalEntriesTable: React.FC<JournalEntriesTableProps> = ({
                     {/* Actions */}
                     <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                        {entry.reference_type && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (entry.reference_type === 'MANUAL_EXPENSE') {
+                                navigate(`/admin/expenses/${entry.reference_id || entry.entry_number}`);
+                              } else if (entry.reference_type === 'DONATION_PAYMENT') {
+                                navigate(`/admin/donations/${entry.reference_id || entry.entry_number}`);
+                              } else if (entry.reference_type === 'MEMBERSHIP_PAYMENT') {
+                                navigate('/admin/members');
+                              } else {
+                                navigate(`/admin/receipts/${entry.reference_id || entry.entry_number}`);
+                              }
+                            }}
+                            title="Open Source Payment Record"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '5px 10px',
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              borderRadius: '6px',
+                              border: '1px solid #DBE5EE',
+                              backgroundColor: '#EDF2F7',
+                              color: '#06294D',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <ExternalLink size={12} />
+                            <span>Source</span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => onViewLines(entry)}

@@ -416,12 +416,14 @@ export const UserMembershipPage: React.FC = () => {
 
             {/* Stepper Indicators */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-colors ${
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   currentStep === 1
-                    ? 'bg-[#06294D] text-white border-[#06294D]'
+                    ? 'bg-[#06294D] text-[#FAD465] border-[#06294D] shadow-xs'
                     : currentStep > 1
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-slate-50 text-slate-400 border-slate-200'
                 }`}
               >
@@ -429,39 +431,47 @@ export const UserMembershipPage: React.FC = () => {
                   1
                 </span>
                 <span>Personal</span>
-              </div>
+              </button>
 
               <span className="text-slate-300">→</span>
 
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-colors ${
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(2);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   currentStep === 2
-                    ? 'bg-[#06294D] text-white border-[#06294D]'
+                    ? 'bg-[#06294D] text-[#FAD465] border-[#06294D] shadow-xs'
                     : currentStep > 2
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-slate-50 text-slate-400 border-slate-200'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
                   2
                 </span>
-                <span>Address & ID</span>
-              </div>
+                <span>Address &amp; ID</span>
+              </button>
 
               <span className="text-slate-300">→</span>
 
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-colors ${
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(3);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   currentStep === 3
-                    ? 'bg-[#06294D] text-white border-[#06294D]'
-                    : 'bg-slate-50 text-slate-400 border-slate-200'
+                    ? 'bg-[#06294D] text-[#FAD465] border-[#06294D] shadow-xs'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
                   3
                 </span>
-                <span>Fee & Docs</span>
-              </div>
+                <span>Fee &amp; Docs</span>
+              </button>
             </div>
           </div>
 
