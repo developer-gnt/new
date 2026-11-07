@@ -129,7 +129,7 @@ export const SeekerRequestsPage: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] text-xs font-bold rounded-xl shadow-xs transition"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>+ Apply</span>
+            <span>Apply for Aid</span>
           </Link>
         </div>
       </div>
@@ -292,7 +292,7 @@ export const SeekerRequestsPage: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] text-xs font-bold rounded-xl shadow-xs transition"
               >
                 <Plus size={15} strokeWidth={2.5} />
-                <span>+ Submit Application</span>
+                <span>Submit Application</span>
               </Link>
             </div>
           </div>

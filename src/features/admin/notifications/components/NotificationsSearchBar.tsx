@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, CheckCheck, Plus, Filter } from 'lucide-react';
+import { Search, CheckCheck, Filter, X } from 'lucide-react';
 
 interface NotificationsSearchBarProps {
   searchQuery: string;
@@ -7,9 +7,10 @@ interface NotificationsSearchBarProps {
   priorityFilter: string;
   onPriorityChange: (p: string) => void;
   onMarkAllRead: () => void;
-  onCreateBroadcast: () => void;
+  onCreateBroadcast?: () => void;
   unreadCount: number;
   isBroadcastView: boolean;
+  totalFilteredCount?: number;
 }
 
 export const NotificationsSearchBar: React.FC<NotificationsSearchBarProps> = ({
@@ -18,184 +19,84 @@ export const NotificationsSearchBar: React.FC<NotificationsSearchBarProps> = ({
   priorityFilter,
   onPriorityChange,
   onMarkAllRead,
-  onCreateBroadcast,
   unreadCount,
   isBroadcastView,
+  totalFilteredCount,
 }) => {
   return (
-    <div style={styles.container}>
-      {/* Search Input */}
-      <div style={styles.searchWrap}>
-        <Search size={16} color="#94A3B8" style={styles.searchIcon} />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={
-            isBroadcastView
-              ? 'Search announcements by subject or target...'
-              : 'Search notifications by title or description...'
-          }
-          style={styles.searchInput}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => onSearchChange('')}
-            style={styles.clearBtn}
-            title="Clear search"
-          >
-            ✕
-          </button>
-        )}
-      </div>
+    <div className="bg-white rounded-xl border border-slate-200/90 p-3 sm:p-4 shadow-xs mb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Left Filter Controls */}
+        <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={
+                isBroadcastView
+                  ? 'Search announcements by subject or target...'
+                  : 'Search notifications by title or description...'
+              }
+              className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
 
-      {/* Filter and Actions Group */}
-      <div style={styles.actionsWrap}>
-        {/* Priority Filter */}
-        <div style={styles.filterWrap}>
-          <Filter size={14} color="#64748B" style={styles.filterIcon} />
-          <select
-            value={priorityFilter}
-            onChange={(e) => onPriorityChange(e.target.value)}
-            style={styles.select}
-          >
-            <option value="ALL">All Priorities</option>
-            <option value="URGENT">Urgent Alerts</option>
-            <option value="HIGH">High Priority</option>
-            <option value="NORMAL">Normal Priority</option>
-          </select>
+          {/* Priority Filter */}
+          {!isBroadcastView && (
+            <div className="relative flex items-center">
+              <select
+                value={priorityFilter}
+                onChange={(e) => onPriorityChange(e.target.value)}
+                className="h-9 pl-7 pr-3 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#011F39] cursor-pointer appearance-none"
+              >
+                <option value="ALL">All Priorities</option>
+                <option value="URGENT">Urgent Alerts</option>
+                <option value="HIGH">High Priority</option>
+                <option value="NORMAL">Normal Priority</option>
+              </select>
+              <Filter size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+            </div>
+          )}
+
+          {/* Mark All Read Button */}
+          {!isBroadcastView && (
+            <button
+              type="button"
+              onClick={onMarkAllRead}
+              disabled={unreadCount === 0}
+              className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-xs font-semibold border transition-colors ${
+                unreadCount === 0
+                  ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 cursor-pointer shadow-2xs'
+              }`}
+              title="Mark all notifications as read"
+            >
+              <CheckCheck size={14} className={unreadCount > 0 ? 'text-[#011F39]' : 'text-slate-400'} />
+              <span>Mark All Read</span>
+            </button>
+          )}
         </div>
 
-        {/* Mark All Read Button (inbox view) */}
-        {!isBroadcastView && (
-          <button
-            type="button"
-            onClick={onMarkAllRead}
-            disabled={unreadCount === 0}
-            style={{
-              ...styles.secondaryBtn,
-              opacity: unreadCount === 0 ? 0.6 : 1,
-              cursor: unreadCount === 0 ? 'not-allowed' : 'pointer',
-            }}
-            title="Mark all notifications as read"
-          >
-            <CheckCheck size={15} color="#06294D" />
-            <span>Mark All Read</span>
-          </button>
+        {/* Right Info: Total Count */}
+        {typeof totalFilteredCount === 'number' && (
+          <div className="text-xs text-slate-500 font-medium shrink-0 self-end md:self-center">
+            Showing <strong className="text-slate-800">{totalFilteredCount}</strong> items
+          </div>
         )}
-
-        {/* New Broadcast Announcement Button */}
-        <button
-          type="button"
-          onClick={onCreateBroadcast}
-          style={styles.primaryBtn}
-          title="Create central circular announcement"
-        >
-          <Plus size={16} color="#011F39" strokeWidth={2.5} />
-          <span>New Announcement</span>
-        </button>
       </div>
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '16px',
-    flexWrap: 'wrap',
-    marginBottom: '20px',
-  },
-  searchWrap: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: '280px',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '12px',
-    pointerEvents: 'none',
-  },
-  searchInput: {
-    width: '100%',
-    padding: '9px 36px 9px 36px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    fontSize: '13.5px',
-    color: '#0F172A',
-    outline: 'none',
-    boxSizing: 'border-box',
-    backgroundColor: '#FFFFFF',
-  },
-  clearBtn: {
-    position: 'absolute',
-    right: '10px',
-    background: 'none',
-    border: 'none',
-    color: '#94A3B8',
-    cursor: 'pointer',
-    fontSize: '12px',
-    padding: '4px',
-  },
-  actionsWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexWrap: 'wrap',
-  },
-  filterWrap: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  filterIcon: {
-    position: 'absolute',
-    left: '10px',
-    pointerEvents: 'none',
-  },
-  select: {
-    padding: '9px 12px 9px 30px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    fontSize: '12.5px',
-    color: '#334155',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  secondaryBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 14px',
-    borderRadius: '8px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #CBD5E1',
-    color: '#06294D',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.15s',
-  },
-  primaryBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 16px',
-    borderRadius: '8px',
-    backgroundColor: '#FAD465',
-    border: 'none',
-    color: '#011F39',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(250, 212, 101, 0.4)',
-    transition: 'all 0.15s',
-  },
-};
-

@@ -20,28 +20,27 @@ export const NotificationsFilterTabs: React.FC<NotificationsFilterTabsProps> = (
   unreadCount,
 }) => {
   return (
-    <div style={styles.container}>
+    <div className="space-y-3.5 mb-5">
       {/* Primary Module Switcher (Inbox vs Broadcasts) */}
-      <div style={styles.primaryTabs}>
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => onSelectMainTab('INBOX')}
-          style={{
-            ...styles.primaryTabBtn,
-            backgroundColor: mainTab === 'INBOX' ? '#06294D' : '#FFFFFF',
-            color: mainTab === 'INBOX' ? '#FFFFFF' : '#475569',
-            borderColor: mainTab === 'INBOX' ? '#06294D' : '#CBD5E1',
-          }}
+          className={`inline-flex items-center gap-2 px-4 py-3 border-b-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer -mb-px ${
+            mainTab === 'INBOX'
+              ? 'border-[#011F39] text-[#011F39]'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
         >
-          <Inbox size={15} color={mainTab === 'INBOX' ? '#FAD465' : '#64748B'} />
+          <Inbox size={16} className={mainTab === 'INBOX' ? 'text-[#011F39]' : 'text-slate-400'} />
           <span>My Notifications Inbox</span>
           {unreadCount > 0 && (
             <span
-              style={{
-                ...styles.counterBadge,
-                backgroundColor: mainTab === 'INBOX' ? '#FAD465' : '#EF4444',
-                color: mainTab === 'INBOX' ? '#011F39' : '#FFFFFF',
-              }}
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                mainTab === 'INBOX'
+                  ? 'bg-[#011F39] text-[#FAD465]'
+                  : 'bg-rose-500 text-white'
+              }`}
             >
               {unreadCount}
             </span>
@@ -51,90 +50,92 @@ export const NotificationsFilterTabs: React.FC<NotificationsFilterTabsProps> = (
         <button
           type="button"
           onClick={() => onSelectMainTab('BROADCASTS')}
-          style={{
-            ...styles.primaryTabBtn,
-            backgroundColor: mainTab === 'BROADCASTS' ? '#06294D' : '#FFFFFF',
-            color: mainTab === 'BROADCASTS' ? '#FFFFFF' : '#475569',
-            borderColor: mainTab === 'BROADCASTS' ? '#06294D' : '#CBD5E1',
-          }}
+          className={`inline-flex items-center gap-2 px-4 py-3 border-b-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer -mb-px ${
+            mainTab === 'BROADCASTS'
+              ? 'border-[#011F39] text-[#011F39]'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
         >
-          <Radio size={15} color={mainTab === 'BROADCASTS' ? '#FAD465' : '#64748B'} />
+          <Radio size={16} className={mainTab === 'BROADCASTS' ? 'text-[#011F39]' : 'text-slate-400'} />
           <span>Broadcast Announcements</span>
         </button>
       </div>
 
       {/* Inbox Sub-filters (Only shown when viewing Inbox) */}
       {mainTab === 'INBOX' && (
-        <div style={styles.subTabsRow}>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             type="button"
             onClick={() => onSelectInboxTab('ALL')}
-            style={{
-              ...styles.subTabBtn,
-              borderBottomColor: inboxTab === 'ALL' ? '#06294D' : 'transparent',
-              color: inboxTab === 'ALL' ? '#06294D' : '#64748B',
-              fontWeight: inboxTab === 'ALL' ? 700 : 500,
-            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              inboxTab === 'ALL'
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
-            <Bell size={14} />
+            <Bell size={13} />
             <span>All Alerts</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectInboxTab('UNREAD')}
-            style={{
-              ...styles.subTabBtn,
-              borderBottomColor: inboxTab === 'UNREAD' ? '#06294D' : 'transparent',
-              color: inboxTab === 'UNREAD' ? '#06294D' : '#64748B',
-              fontWeight: inboxTab === 'UNREAD' ? 700 : 500,
-            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              inboxTab === 'UNREAD'
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
             <span>Unread Only</span>
             {unreadCount > 0 && (
-              <span style={styles.unreadPill}>{unreadCount}</span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full leading-tight ${
+                  inboxTab === 'UNREAD'
+                    ? 'bg-[#FAD465] text-[#011F39]'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {unreadCount}
+              </span>
             )}
           </button>
 
           <button
             type="button"
             onClick={() => onSelectInboxTab('APPLICATIONS')}
-            style={{
-              ...styles.subTabBtn,
-              borderBottomColor: inboxTab === 'APPLICATIONS' ? '#06294D' : 'transparent',
-              color: inboxTab === 'APPLICATIONS' ? '#06294D' : '#64748B',
-              fontWeight: inboxTab === 'APPLICATIONS' ? 700 : 500,
-            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              inboxTab === 'APPLICATIONS'
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
-            <FileText size={14} />
+            <FileText size={13} />
             <span>Applications & Members</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectInboxTab('SUPPORT')}
-            style={{
-              ...styles.subTabBtn,
-              borderBottomColor: inboxTab === 'SUPPORT' ? '#06294D' : 'transparent',
-              color: inboxTab === 'SUPPORT' ? '#06294D' : '#64748B',
-              fontWeight: inboxTab === 'SUPPORT' ? 700 : 500,
-            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              inboxTab === 'SUPPORT'
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
-            <MessageSquare size={14} />
+            <MessageSquare size={13} />
             <span>Support & Complaints</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectInboxTab('FINANCE')}
-            style={{
-              ...styles.subTabBtn,
-              borderBottomColor: inboxTab === 'FINANCE' ? '#06294D' : 'transparent',
-              color: inboxTab === 'FINANCE' ? '#06294D' : '#64748B',
-              fontWeight: inboxTab === 'FINANCE' ? 700 : 500,
-            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              inboxTab === 'FINANCE'
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
-            <HeartHandshake size={14} />
+            <HeartHandshake size={13} />
             <span>Donations & Accounting</span>
           </button>
         </div>
@@ -142,64 +143,3 @@ export const NotificationsFilterTabs: React.FC<NotificationsFilterTabsProps> = (
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    marginBottom: '20px',
-  },
-  primaryTabs: {
-    display: 'flex',
-    gap: '12px',
-    flexWrap: 'wrap',
-  },
-  primaryTabBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '9px 18px',
-    borderRadius: '8px',
-    border: '1px solid',
-    fontSize: '13.5px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  counterBadge: {
-    fontSize: '11px',
-    fontWeight: 700,
-    padding: '2px 7px',
-    borderRadius: '12px',
-  },
-  subTabsRow: {
-    display: 'flex',
-    gap: '16px',
-    borderBottom: '1px solid #E2E8F0',
-    overflowX: 'auto',
-    paddingBottom: '2px',
-  },
-  subTabBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '8px 4px 12px',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    backgroundColor: 'transparent',
-    fontSize: '13px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'all 0.15s',
-  },
-  unreadPill: {
-    backgroundColor: '#EF4444',
-    color: '#FFFFFF',
-    fontSize: '10px',
-    fontWeight: 700,
-    padding: '1px 6px',
-    borderRadius: '10px',
-  },
-};
-

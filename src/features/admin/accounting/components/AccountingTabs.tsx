@@ -23,43 +23,29 @@ export const AccountingTabs: React.FC<AccountingTabsProps> = ({
     label: string;
     icon: typeof BookOpen;
     count: number;
-    description: string;
   }> = [
     {
       id: 'passbook',
       label: 'General Ledger / Passbook',
       icon: BookOpen,
       count: txCount,
-      description: 'Running transaction history & balances',
     },
     {
       id: 'accounts',
       label: 'Chart of Accounts',
       icon: Network,
       count: accountCount,
-      description: 'Hierarchical 5-tier account registry',
     },
     {
       id: 'journals',
       label: 'Journal Vouchers',
       icon: FileCheck,
       count: journalCount,
-      description: 'Balanced double-entry postings',
     },
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        borderBottom: '2px solid #E5E7EB',
-        marginBottom: '24px',
-        paddingBottom: '0',
-        overflowX: 'auto',
-      }}
-    >
+    <div className="flex items-center gap-2 border-b border-slate-200 mb-6 overflow-x-auto scrollbar-none">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -69,34 +55,20 @@ export const AccountingTabs: React.FC<AccountingTabsProps> = ({
             key={tab.id}
             type="button"
             onClick={() => onSelectTab(tab.id)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 18px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              borderBottom: isActive ? '3px solid #011F39' : '3px solid transparent',
-              color: isActive ? '#011F39' : '#6B7280',
-              fontWeight: isActive ? 700 : 500,
-              fontSize: '14px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
-              marginBottom: '-2px',
-            }}
+            className={`inline-flex items-center gap-2 px-4 py-3 border-b-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer -mb-px ${
+              isActive
+                ? 'border-[#011F39] text-[#011F39]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+            }`}
           >
-            <Icon size={18} color={isActive ? '#011F39' : '#6B7280'} />
+            <Icon size={16} className={isActive ? 'text-[#011F39]' : 'text-slate-400'} />
             <span>{tab.label}</span>
             <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                padding: '2px 7px',
-                borderRadius: '10px',
-                backgroundColor: isActive ? '#011F39' : '#F3F4F6',
-                color: isActive ? '#FAD465' : '#4B5563',
-              }}
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                isActive
+                  ? 'bg-[#011F39] text-[#FAD465]'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
             >
               {tab.count}
             </span>

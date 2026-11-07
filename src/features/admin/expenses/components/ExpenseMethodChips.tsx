@@ -19,7 +19,7 @@ export const ExpenseMethodChips: React.FC<ExpenseMethodChipsProps> = ({
   ];
 
   return (
-    <div style={styles.scroll}>
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-5 scrollbar-none">
       {methods.map((m) => {
         const isSelected = activeMethod === m.key;
         return (
@@ -27,13 +27,11 @@ export const ExpenseMethodChips: React.FC<ExpenseMethodChipsProps> = ({
             key={m.key}
             type="button"
             onClick={() => onSelectMethod(m.key)}
-            style={{
-              ...styles.chip,
-              backgroundColor: isSelected ? '#EFF6FF' : '#F8FAFC',
-              color: isSelected ? '#1D4ED8' : '#64748B',
-              borderColor: isSelected ? '#93C5FD' : '#E2E8F0',
-              fontWeight: isSelected ? 600 : 500,
-            }}
+            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer border ${
+              isSelected
+                ? 'bg-sky-50 text-sky-800 border-sky-300 font-semibold'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
           >
             {m.label}
           </button>
@@ -41,26 +39,4 @@ export const ExpenseMethodChips: React.FC<ExpenseMethodChipsProps> = ({
       })}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  scroll: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    overflowX: 'auto',
-    paddingBottom: '4px',
-    marginBottom: '16px',
-  },
-  chip: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    border: '1px solid',
-    fontSize: '12px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'all 0.15s ease',
-  },
 };

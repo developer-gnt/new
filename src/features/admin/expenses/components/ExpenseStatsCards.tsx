@@ -14,129 +14,101 @@ export const ExpenseStatsCards: React.FC<ExpenseStatsCardsProps> = ({
   activeStatus,
   onSelectStatus,
 }) => {
-  const cards = [
+  const cards: Array<{
+    key: string;
+    statusTarget: string;
+    label: string;
+    value: string;
+    subtitle: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    iconBg: string;
+    iconColor: string;
+    isFilterable: boolean;
+  }> = [
     {
       key: 'TOTAL_EXPENSES',
       statusTarget: 'ALL',
       label: 'Total Expenses',
       value: formatINR(stats.totalAmount),
+      subtitle: 'Net posted organizational spend',
       icon: CreditCard,
-      surfaceBg: '#FEF2F2',
-      iconBg: '#DC2626',
-      numColor: '#991B1B',
-      labelColor: '#B91C1C',
-      borderColor: '#FECACA',
+      iconBg: 'bg-[#FAF7F0] border border-[#DCE4EC]',
+      iconColor: 'text-[#C9971A]',
+      isFilterable: false,
     },
     {
       key: 'ALL',
       statusTarget: 'ALL',
-      label: 'Total Records',
+      label: 'Total Vouchers',
       value: String(stats.all),
+      subtitle: 'All expenditure vouchers',
       icon: FileText,
-      surfaceBg: '#EFF6FF',
-      iconBg: '#06294D',
-      numColor: '#0B2F52',
-      labelColor: '#34516D',
-      borderColor: '#BFDBFE',
+      iconBg: 'bg-[#EDF2F7] border border-[#DBE5EE]',
+      iconColor: 'text-[#06294D]',
+      isFilterable: true,
     },
     {
       key: 'POSTED',
       statusTarget: 'POSTED',
       label: 'Posted Records',
       value: String(stats.posted),
+      subtitle: 'Audited & ledger-posted',
       icon: CheckCircle2,
-      surfaceBg: '#F0FDF4',
-      iconBg: '#16A34A',
-      numColor: '#15803D',
-      labelColor: '#16A34A',
-      borderColor: '#BBF7D0',
+      iconBg: 'bg-[#EDF2F7] border border-[#DBE5EE]',
+      iconColor: 'text-[#06294D]',
+      isFilterable: true,
     },
     {
       key: 'CANCELLED',
       statusTarget: 'CANCELLED',
       label: 'Cancelled',
       value: String(stats.cancelled),
+      subtitle: 'Voided payment vouchers',
       icon: X,
-      surfaceBg: '#FFF7ED',
-      iconBg: '#EA580C',
-      numColor: '#C2410C',
-      labelColor: '#EA580C',
-      borderColor: '#FED7AA',
+      iconBg: 'bg-[#FAF7F0] border border-[#DCE4EC]',
+      iconColor: 'text-[#718096]',
+      isFilterable: true,
     },
   ];
 
   return (
-    <div style={styles.grid}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {cards.map((c) => {
         const IconComponent = c.icon;
-        const isSelected = activeStatus === c.statusTarget && c.key !== 'TOTAL_EXPENSES';
+        const isSelected = c.isFilterable && activeStatus === c.statusTarget;
 
         return (
-          <div
+          <button
             key={c.key}
-            style={{
-              ...styles.card,
-              backgroundColor: c.surfaceBg,
-              borderColor: isSelected ? c.iconBg : c.borderColor,
-              borderWidth: isSelected ? '2px' : '1px',
-              cursor: onSelectStatus ? 'pointer' : 'default',
-            }}
-            onClick={() => onSelectStatus && onSelectStatus(c.statusTarget)}
-            role={onSelectStatus ? 'button' : undefined}
-            tabIndex={onSelectStatus ? 0 : undefined}
+            type="button"
+            onClick={() => c.isFilterable && onSelectStatus && onSelectStatus(c.statusTarget)}
+            className={`text-left bg-white rounded-xl border p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+              isSelected
+                ? 'border-[#E9B82E] ring-1 ring-[#FAD465]/60 bg-[#FAF7F0]/30 shadow-xs'
+                : 'border-[#DCE4EC] shadow-xs hover:border-[#FAD465] hover:shadow-sm'
+            }`}
           >
-            <div style={{ ...styles.iconCircle, backgroundColor: c.iconBg }}>
-              <IconComponent size={18} color="#FFFFFF" strokeWidth={2.4} />
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-[#718096] uppercase tracking-[0.14em]">
+                {c.label}
+              </span>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconColor}`}
+              >
+                <IconComponent size={18} />
+              </div>
             </div>
-            <div style={styles.info}>
-              <div style={{ ...styles.value, color: c.numColor }}>{c.value}</div>
-              <div style={{ ...styles.label, color: c.labelColor }}>{c.label}</div>
+
+            <div className="font-['Playfair_Display',Georgia,serif] font-bold text-2xl lg:text-3xl text-[#0B2F52] tracking-tight leading-tight mb-1 truncate">
+              {c.value}
             </div>
-          </div>
+
+            <div className="text-[11px] text-[#718096] font-medium truncate">
+              {c.subtitle}
+            </div>
+          </button>
         );
       })}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-    gap: '14px',
-    marginBottom: '20px',
-  },
-  card: {
-    borderRadius: '10px',
-    padding: '16px 20px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    borderStyle: 'solid',
-    transition: 'all 0.15s ease',
-  },
-  iconCircle: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  info: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  value: {
-    fontSize: '20px',
-    fontWeight: 700,
-    fontFamily: 'Inter, sans-serif',
-    lineHeight: 1.2,
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: 600,
-  },
 };

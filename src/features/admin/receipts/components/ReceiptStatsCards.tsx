@@ -1,5 +1,5 @@
 import type React from 'react';
-import { FileText, Heart, TrendingUp, UserCheck } from 'lucide-react';
+import { TrendingUp, Heart, FileText, UserCheck } from 'lucide-react';
 import { formatINR, type ReceiptStatsSummary } from '../types/receipts.types';
 
 interface ReceiptStatsCardsProps {
@@ -16,42 +16,33 @@ export const ReceiptStatsCards: React.FC<ReceiptStatsCardsProps> = ({
   const cards = [
     {
       id: 'ALL',
-      title: 'Total Income',
+      title: 'Total Inward Revenue',
       count: stats.all,
       amount: stats.allAmount,
-      icon: FileText,
-      iconColor: '#1D4ED8',
-      iconBg: '#EFF6FF',
-      iconBorder: '#BFDBFE',
-      cardBg: '#FFFFFF',
-      accentColor: '#1D4ED8',
-      subtitle: 'All inward receipt vouchers',
+      icon: TrendingUp,
+      iconColor: 'text-[#C9971A]',
+      iconBg: 'bg-[#FAF7F0] border border-[#DCE4EC]',
+      subtitle: 'All receipt vouchers',
     },
     {
       id: 'NGO_DONATION',
-      title: 'NGO Donations',
+      title: 'General & NGO Donations',
       count: stats.ngoDonations,
       amount: stats.ngoAmount,
       icon: Heart,
-      iconColor: '#D97706',
-      iconBg: '#FFFBEB',
-      iconBorder: '#FDE68A',
-      cardBg: '#FFFFFF',
-      accentColor: '#D97706',
-      subtitle: 'General support & legal aid',
+      iconColor: 'text-[#06294D]',
+      iconBg: 'bg-[#EDF2F7] border border-[#DBE5EE]',
+      subtitle: 'General mission & legal aid',
     },
     {
       id: 'CAUSE_DONATION',
-      title: 'Cause Donations',
+      title: 'Cause & Emergency Drives',
       count: stats.causeDonations,
       amount: stats.causeAmount,
-      icon: TrendingUp,
-      iconColor: '#DC2626',
-      iconBg: '#FEF2F2',
-      iconBorder: '#FECACA',
-      cardBg: '#FFFFFF',
-      accentColor: '#DC2626',
-      subtitle: 'Emergency & relief drives',
+      icon: FileText,
+      iconColor: 'text-[#06294D]',
+      iconBg: 'bg-[#EDF2F7] border border-[#DBE5EE]',
+      subtitle: 'Targeted humanitarian relief',
     },
     {
       id: 'MEMBERSHIP',
@@ -59,121 +50,57 @@ export const ReceiptStatsCards: React.FC<ReceiptStatsCardsProps> = ({
       count: stats.membershipAndRenewals,
       amount: stats.membershipAndRenewalsAmount,
       icon: UserCheck,
-      iconColor: '#7C3AED',
-      iconBg: '#F5F3FF',
-      iconBorder: '#DDD6FE',
-      cardBg: '#FFFFFF',
-      accentColor: '#7C3AED',
+      iconColor: 'text-[#C9971A]',
+      iconBg: 'bg-[#FAF7F0] border border-[#DCE4EC]',
       subtitle: 'New enrollments & extensions',
     },
   ];
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '16px',
-        marginBottom: '24px',
-      }}
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {cards.map((card) => {
         const Icon = card.icon;
         const isSelected = activeCategory === card.id;
 
         return (
-          <div
+          <button
             key={card.id}
+            type="button"
             onClick={() => onSelectCategory(card.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onSelectCategory(card.id);
-              }
-            }}
-            style={{
-              backgroundColor: card.cardBg,
-              borderRadius: '12px',
-              border: isSelected ? `2px solid ${card.accentColor}` : '1px solid #E5E7EB',
-              padding: '18px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease-in-out',
-              boxShadow: isSelected
-                ? '0 4px 12px rgba(1, 31, 57, 0.08)'
-                : '0 1px 3px rgba(0, 0, 0, 0.04)',
-            }}
+            className={`text-left bg-white rounded-xl border p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+              isSelected
+                ? 'border-[#E9B82E] ring-1 ring-[#FAD465]/60 bg-[#FAF7F0]/30 shadow-xs'
+                : 'border-[#DCE4EC] shadow-xs hover:border-[#FAD465] hover:shadow-sm'
+            }`}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div>
-                <span
-                  style={{
-                    fontSize: '12.5px',
-                    fontWeight: 600,
-                    color: '#6B7280',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  {card.title}
-                </span>
-                <div
-                  style={{
-                    fontSize: '22px',
-                    fontWeight: 700,
-                    color: '#011F39',
-                    marginTop: '4px',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {formatINR(card.amount)}
-                </div>
-              </div>
-
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-[#718096] uppercase tracking-[0.14em]">
+                {card.title}
+              </span>
               <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: card.iconBg,
-                  border: `1px solid ${card.iconBorder}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${card.iconBg} ${card.iconColor}`}
               >
-                <Icon size={20} color={card.iconColor} />
+                <Icon size={18} />
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: '14px',
-                paddingTop: '10px',
-                borderTop: '1px solid #F3F4F6',
-              }}
-            >
-              <span style={{ fontSize: '12px', color: '#6B7280' }}>{card.subtitle}</span>
+            <div className="font-['Playfair_Display',Georgia,serif] font-bold text-2xl lg:text-3xl text-[#0B2F52] tracking-tight leading-tight mb-2 truncate">
+              {formatINR(card.amount)}
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-[#EDF2F7] text-[11px] text-[#718096]">
+              <span className="truncate">{card.subtitle}</span>
               <span
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  backgroundColor: isSelected ? card.accentColor : '#F3F4F6',
-                  color: isSelected ? '#FFFFFF' : '#374151',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                }}
+                className={`px-2 py-0.5 rounded-full font-bold text-[10px] shrink-0 ${
+                  isSelected
+                    ? 'bg-[#06294D] text-[#FAD465]'
+                    : 'bg-[#EDF2F7] text-[#06294D]'
+                }`}
               >
-                {card.count} {card.count === 1 ? 'voucher' : 'vouchers'}
+                {card.count} {card.count === 1 ? 'slip' : 'slips'}
               </span>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>

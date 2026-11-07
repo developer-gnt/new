@@ -1,11 +1,10 @@
 import type React from 'react';
 import { useState, useMemo, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, Receipt } from 'lucide-react';
 import { expensesStore } from '../store/expensesStore';
 import { ExpenseStatsCards } from '../components/ExpenseStatsCards';
 import { ExpenseStatusTabs } from '../components/ExpenseStatusTabs';
-import { ExpenseMethodChips } from '../components/ExpenseMethodChips';
 import { ExpenseSearchBar } from '../components/ExpenseSearchBar';
 import { ExpenseListHeader, ExpenseCard } from '../components/ExpenseCard';
 import { ExpenseCancelModal } from '../components/ExpenseCancelModal';
@@ -104,86 +103,99 @@ export const ExpensesListPage: React.FC = () => {
   };
 
   return (
-    <div style={styles.page}>
-      {/* Top Header & Breadcrumbs */}
-      <div style={styles.topBar}>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Top Header Card */}
+      <div className="bg-white rounded-xl border border-[#DCE4EC] px-6 py-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div style={styles.breadcrumb}>
-            <span>Finance & Accounts</span>
-            <span style={styles.bcSep}>/</span>
-            <span style={styles.bcActive}>Expenses Management</span>
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#718096] uppercase tracking-[0.14em] mb-1">
+            <Receipt size={14} className="text-[#06294D]" />
+            <span>Financial Audit &amp; Disbursement Ledger</span>
           </div>
-          <h1 style={styles.title}>Expenses & Payment Vouchers</h1>
-          <p style={styles.subtitle}>
+          <h1 className="text-2xl sm:text-3xl font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52] leading-tight">
+            Expenses &amp; <span className="text-[#C9971A]">Payment Vouchers</span>
+          </h1>
+          <p className="text-xs text-[#34516D] mt-1 max-w-2xl leading-relaxed">
             Record, track, audit and manage organizational expenditures with automatic double-entry ledger posting.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/admin/expenses/create')}
-          style={styles.recordBtn}
-        >
-          <Plus size={16} strokeWidth={2.4} />
-          <span>Record Expense</span>
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/accounting')}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] transition cursor-pointer"
+          >
+            <span>General Ledger</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/expenses/create')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] shadow-xs transition cursor-pointer"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span>Record Expense</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2x2 Executive KPI Stats Grid */}
+      {/* 4-column Executive KPI Stats Grid */}
       <ExpenseStatsCards
         stats={stats}
         activeStatus={activeStatus}
         onSelectStatus={(st) => setActiveStatus(st)}
       />
 
-      {/* Primary Status Filter Tabs */}
-      <ExpenseStatusTabs
-        activeStatus={activeStatus}
-        onSelectStatus={setActiveStatus}
-        counts={{ all: stats.all, posted: stats.posted, cancelled: stats.cancelled }}
-      />
+      {/* Unified Data Table & Filter Workspace */}
+      <div className="bg-white rounded-xl border border-[#DCE4EC] shadow-xs overflow-hidden">
+        {/* Primary Status Filter Tabs */}
+        <ExpenseStatusTabs
+          activeStatus={activeStatus}
+          onSelectStatus={setActiveStatus}
+          counts={{ all: stats.all, posted: stats.posted, cancelled: stats.cancelled }}
+        />
 
-      {/* Secondary Payment Method Filter Chips */}
-      <ExpenseMethodChips
-        activeMethod={activeMethod}
-        onSelectMethod={setActiveMethod}
-      />
+        {/* Integrated Search Input, Payment Method & Category Toolbar */}
+        <ExpenseSearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          activeMethod={activeMethod}
+          onMethodChange={setActiveMethod}
+          hasActiveFilters={hasActiveFilters}
+          onResetFilters={handleResetFilters}
+          totalFilteredCount={filteredVouchers.length}
+        />
 
-      {/* Search Input & Category Dropdown */}
-      <ExpenseSearchBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        hasActiveFilters={hasActiveFilters}
-        onResetFilters={handleResetFilters}
-        onRecordExpense={() => navigate('/admin/expenses/create')}
-      />
-
-      {/* Table Container */}
-      <div style={styles.listContainer}>
+        {/* Table Content */}
         <ExpenseListHeader />
 
         {filteredVouchers.length > 0 ? (
-          filteredVouchers.map((v) => (
-            <ExpenseCard
-              key={v.id}
-              voucher={v}
-              onPress={handleVoucherClick}
-            />
-          ))
+          <div>
+            {filteredVouchers.map((v) => (
+              <ExpenseCard
+                key={v.id}
+                voucher={v}
+                onPress={handleVoucherClick}
+              />
+            ))}
+          </div>
         ) : (
-          <div style={styles.emptyState}>
-            <AlertCircle size={40} color="#94A3B8" />
-            <h3 style={styles.emptyTitle}>No Expense Vouchers Found</h3>
-            <p style={styles.emptyText}>
-              No vouchers match the current search filters or category. Try clearing filters or record a new expense.
+          <div className="p-12 text-center space-y-3">
+            <div className="w-14 h-14 rounded-full bg-[#EDF2F7] text-[#06294D] flex items-center justify-center mx-auto mb-2">
+              <AlertCircle size={26} />
+            </div>
+            <h3 className="font-['Playfair_Display',Georgia,serif] font-bold text-lg text-[#0B2F52]">
+              No Expense Vouchers Found
+            </h3>
+            <p className="text-xs text-[#718096] max-w-sm mx-auto leading-relaxed">
+              No vouchers match the current search or category filters. Try clearing filters or record a new expense.
             </p>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                style={styles.emptyResetBtn}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] transition-colors cursor-pointer"
               >
                 Clear All Filters
               </button>
@@ -205,101 +217,4 @@ export const ExpensesListPage: React.FC = () => {
       />
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    padding: '24px 32px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-  },
-  topBar: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: '20px',
-    marginBottom: '20px',
-    flexWrap: 'wrap',
-  },
-  breadcrumb: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '12px',
-    color: '#64748B',
-    marginBottom: '6px',
-    fontWeight: 500,
-  },
-  bcSep: {
-    color: '#CBD5E1',
-  },
-  bcActive: {
-    color: '#06294D',
-    fontWeight: 600,
-  },
-  title: {
-    margin: 0,
-    fontSize: '28px',
-    fontWeight: 700,
-    color: '#011F39',
-    fontFamily: 'Playfair Display, Georgia, serif',
-  },
-  subtitle: {
-    margin: '4px 0 0 0',
-    fontSize: '14px',
-    color: '#64748B',
-  },
-  recordBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    backgroundColor: '#06294D',
-    color: '#FFFFFF',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(6, 41, 77, 0.2)',
-  },
-  listContainer: {
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-  },
-  emptyState: {
-    padding: '60px 24px',
-    textAlign: 'center',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderTop: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    margin: '16px 0 6px 0',
-    fontSize: '17px',
-    fontWeight: 700,
-    color: '#1E293B',
-  },
-  emptyText: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#64748B',
-    maxWidth: '440px',
-  },
-  emptyResetBtn: {
-    marginTop: '16px',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    color: '#06294D',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
 };

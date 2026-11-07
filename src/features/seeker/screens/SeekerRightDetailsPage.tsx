@@ -81,7 +81,7 @@ export const SeekerRightDetailsPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {article.highlights.map((h, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-[#34516D] font-medium">
-                <ShieldCheck size={16} className="text-[#0D9488] shrink-0" />
+                <ShieldCheck size={16} className="text-[#C9971A] shrink-0" />
                 <span>{h}</span>
               </div>
             ))}

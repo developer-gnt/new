@@ -7,110 +7,79 @@ interface NotificationsStatsCardsProps {
 }
 
 export const NotificationsStatsCards: React.FC<NotificationsStatsCardsProps> = ({ stats }) => {
+  const cards = [
+    {
+      id: 'total',
+      label: 'Inbox Notifications',
+      value: stats.total,
+      subtitle: 'Total received in administrator inbox',
+      icon: Bell,
+      iconBg: 'bg-[#011F39]/10 text-[#011F39] border-[#011F39]/20',
+      numColor: 'text-slate-900',
+    },
+    {
+      id: 'unread',
+      label: 'Unread Alerts',
+      value: stats.unread,
+      subtitle: 'Awaiting administrative review',
+      icon: CheckCircle2,
+      iconBg: 'bg-amber-100 text-amber-700 border-amber-200',
+      numColor: stats.unread > 0 ? 'text-amber-800' : 'text-slate-900',
+    },
+    {
+      id: 'urgent',
+      label: 'High Priority & Urgent',
+      value: stats.highPriority,
+      subtitle: 'Require expedited grievance attention',
+      icon: AlertTriangle,
+      iconBg: 'bg-rose-100 text-rose-700 border-rose-200',
+      numColor: stats.highPriority > 0 ? 'text-rose-700' : 'text-slate-900',
+    },
+    {
+      id: 'broadcasts',
+      label: 'Announcements Sent',
+      value: stats.broadcastsSent,
+      subtitle: 'Central circulars & broad notifications',
+      icon: Radio,
+      iconBg: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      numColor: 'text-emerald-700',
+    },
+  ];
+
   return (
-    <div style={styles.grid}>
-      {/* Total Alerts */}
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <span style={styles.label}>Inbox Notifications</span>
-          <div style={{ ...styles.iconWrap, backgroundColor: '#EEF2F6' }}>
-            <Bell size={18} color="#06294D" />
-          </div>
-        </div>
-        <div style={styles.val}>{stats.total}</div>
-        <span style={styles.sub}>Total received in administrator inbox</span>
-      </div>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {cards.map((c) => {
+        const IconComponent = c.icon;
+        return (
+          <div
+            key={c.id}
+            className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  {c.label}
+                </span>
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${c.iconBg}`}
+                >
+                  <IconComponent size={18} />
+                </div>
+              </div>
 
-      {/* Unread Alerts */}
-      <div style={{ ...styles.card, borderColor: stats.unread > 0 ? '#FAD465' : '#E2E8F0' }}>
-        <div style={styles.header}>
-          <span style={styles.label}>Unread Alerts</span>
-          <div style={{ ...styles.iconWrap, backgroundColor: '#FEF3C7' }}>
-            <CheckCircle2 size={18} color="#D97706" />
-          </div>
-        </div>
-        <div style={{ ...styles.val, color: stats.unread > 0 ? '#B45309' : '#0F172A' }}>
-          {stats.unread}
-        </div>
-        <span style={styles.sub}>Awaiting administrative review</span>
-      </div>
+              <div
+                className={`font-serif font-bold text-2xl lg:text-3xl tracking-tight leading-none mb-1.5 ${c.numColor}`}
+              >
+                {c.value}
+              </div>
+            </div>
 
-      {/* Urgent & High Priority */}
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <span style={styles.label}>High Priority & Urgent</span>
-          <div style={{ ...styles.iconWrap, backgroundColor: '#FEE2E2' }}>
-            <AlertTriangle size={18} color="#DC2626" />
+            <div className="text-[11px] text-slate-500 font-medium truncate pt-2 border-t border-slate-100 mt-2">
+              {c.subtitle}
+            </div>
           </div>
-        </div>
-        <div style={{ ...styles.val, color: stats.highPriority > 0 ? '#DC2626' : '#0F172A' }}>
-          {stats.highPriority}
-        </div>
-        <span style={styles.sub}>Require expedited grievance attention</span>
-      </div>
-
-      {/* Sent Broadcasts */}
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <span style={styles.label}>Announcements Sent</span>
-          <div style={{ ...styles.iconWrap, backgroundColor: '#ECFDF5' }}>
-            <Radio size={18} color="#059669" />
-          </div>
-        </div>
-        <div style={{ ...styles.val, color: '#059669' }}>{stats.broadcastsSent}</div>
-        <span style={styles.sub}>Central circulars & broad notifications</span>
-      </div>
+        );
+      })}
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    padding: '18px 20px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '10px',
-  },
-  label: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.4px',
-  },
-  iconWrap: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  val: {
-    fontSize: '26px',
-    fontWeight: 800,
-    color: '#011F39',
-    lineHeight: 1.1,
-    marginBottom: '4px',
-  },
-  sub: {
-    fontSize: '11.5px',
-    color: '#94A3B8',
-  },
-};
-

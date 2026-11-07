@@ -13,25 +13,15 @@ export const ReceiptStatusTabs: React.FC<ReceiptStatusTabsProps> = ({
   stats,
 }) => {
   const tabs = [
-    { id: 'ALL', label: 'All Income', count: stats.all },
+    { id: 'ALL', label: 'All Revenue Streams', count: stats.all },
     { id: 'NGO_DONATION', label: 'NGO Donations', count: stats.ngoDonations },
-    { id: 'CAUSE_DONATION', label: 'Cause Donations', count: stats.causeDonations },
-    { id: 'MEMBERSHIP_PAYMENT', label: 'Membership', count: stats.membership },
+    { id: 'CAUSE_DONATION', label: 'Cause Drives', count: stats.causeDonations },
+    { id: 'MEMBERSHIP_PAYMENT', label: 'Membership Fees', count: stats.membership },
     { id: 'RENEWAL_PAYMENT', label: 'Renewals', count: stats.renewals },
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        overflowX: 'auto',
-        borderBottom: '1px solid #E5E7EB',
-        marginBottom: '16px',
-        paddingBottom: '2px',
-      }}
-    >
+    <div className="flex items-center border-b border-[#DBE5EE] px-4 overflow-x-auto scrollbar-none bg-[#FAF7F0]/40">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -39,33 +29,19 @@ export const ReceiptStatusTabs: React.FC<ReceiptStatusTabsProps> = ({
             key={tab.id}
             type="button"
             onClick={() => onSelectTab(tab.id)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              fontSize: '13.5px',
-              fontWeight: isActive ? 600 : 500,
-              color: isActive ? '#011F39' : '#6B7280',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: isActive ? '2px solid #011F39' : '2px solid transparent',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
-              marginBottom: '-1px',
-            }}
+            className={`inline-flex items-center gap-2 py-3.5 px-4 text-xs font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
+              isActive
+                ? 'border-[#E9B82E] text-[#06294D] font-bold bg-white shadow-2xs'
+                : 'border-transparent text-[#718096] hover:text-[#0B2F52] hover:bg-white/60'
+            }`}
           >
             <span>{tab.label}</span>
             <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                padding: '1px 6px',
-                borderRadius: '10px',
-                backgroundColor: isActive ? '#011F39' : '#F3F4F6',
-                color: isActive ? '#FAD465' : '#4B5563',
-              }}
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full leading-tight transition-colors ${
+                isActive
+                  ? 'bg-[#06294D] text-[#FAD465]'
+                  : 'bg-[#EDF2F7] text-[#718096]'
+              }`}
             >
               {tab.count}
             </span>

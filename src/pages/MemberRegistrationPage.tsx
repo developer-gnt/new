@@ -445,16 +445,16 @@ export const MemberRegistrationPage: React.FC = () => {
   const validateStep3 = (): boolean => {
     const errors: Record<string, string> = {};
 
-    if (!documents.identityProof?.isUploaded) {
-      errors.identity = 'Please upload your identity proof (Aadhaar / Voter ID / Passport / PAN)';
-    }
-    if (!documents.addressProof?.isUploaded) {
-      errors.address = 'Please upload your address proof (Electricity Bill / Ration Card / Aadhaar)';
-    }
-    // Qualification Proof is optional
-    if (!documents.photograph?.isUploaded && !personal.profilePhotoUri) {
-      errors.photo = 'Please upload your passport-sized photograph';
-    }
+    // Document uploads are now optional as requested
+    // if (!documents.identityProof?.isUploaded) {
+    //   errors.identity = 'Please upload your identity proof (Aadhaar / Voter ID / Passport / PAN)';
+    // }
+    // if (!documents.addressProof?.isUploaded) {
+    //   errors.address = 'Please upload your address proof (Electricity Bill / Ration Card / Aadhaar)';
+    // }
+    // if (!documents.photograph?.isUploaded && !personal.profilePhotoUri) {
+    //   errors.photo = 'Please upload your passport-sized photograph';
+    // }
 
     if (!agreeTerms) {
       errors.terms = 'Please accept the Terms & Conditions of HRSJM';
@@ -1727,7 +1727,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <FileCheck size={18} className={documents.identityProof ? 'text-emerald-600' : 'text-slate-400'} />
                       <span className="text-xs font-bold text-[#011F39]">
-                        1. Identity Proof <span className="text-rose-500">*</span>
+                        1. Identity Proof <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">Aadhaar, Voter ID, Passport, PAN</span>
@@ -1764,7 +1764,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <MapPin size={18} className={documents.addressProof ? 'text-emerald-600' : 'text-slate-400'} />
                       <span className="text-xs font-bold text-[#011F39]">
-                        2. Address Proof <span className="text-rose-500">*</span>
+                        2. Address Proof <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">Electricity Bill, Ration Card, Bank Passbook</span>
@@ -1838,7 +1838,7 @@ export const MemberRegistrationPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <User size={18} className={documents.photograph || personal.profilePhotoUri ? 'text-emerald-600' : 'text-slate-400'} />
                       <span className="text-xs font-bold text-[#011F39]">
-                        4. Photograph <span className="text-rose-500">*</span>
+                        4. Photograph <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">Passport Size Photograph</span>

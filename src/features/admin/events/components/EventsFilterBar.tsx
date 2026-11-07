@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Search, Plus, Filter, Globe } from 'lucide-react';
+import { Search, Filter, Globe, X, RotateCcw } from 'lucide-react';
 import { EVENT_CATEGORIES } from '../types/events.types';
 
 interface EventsFilterBarProps {
@@ -9,7 +9,8 @@ interface EventsFilterBarProps {
   onCategoryChange: (cat: string) => void;
   selectedFormat: string;
   onFormatChange: (fmt: string) => void;
-  onCreateEvent: () => void;
+  totalFilteredCount?: number;
+  onCreateEvent?: () => void;
 }
 
 export const EventsFilterBar: React.FC<EventsFilterBarProps> = ({
@@ -19,160 +20,97 @@ export const EventsFilterBar: React.FC<EventsFilterBarProps> = ({
   onCategoryChange,
   selectedFormat,
   onFormatChange,
-  onCreateEvent,
+  totalFilteredCount,
 }) => {
+  const hasActiveFilters =
+    Boolean(searchQuery) || selectedCategory !== 'ALL' || selectedFormat !== 'ALL';
+
+  const handleReset = () => {
+    onSearchChange('');
+    onCategoryChange('ALL');
+    onFormatChange('ALL');
+  };
+
   return (
-    <div style={styles.container}>
-      {/* Search Input */}
-      <div style={styles.searchWrap}>
-        <Search size={16} color="#94A3B8" style={styles.searchIcon} />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search events by title, venue, or keywords..."
-          style={styles.searchInput}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => onSearchChange('')}
-            style={styles.clearBtn}
-            title="Clear"
-          >
-            ✕
-          </button>
+    <div className="bg-white rounded-xl border border-slate-200/90 p-3 sm:p-4 shadow-xs mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Left Filter Controls */}
+        <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search events by title, venue, or keywords..."
+              className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Category Dropdown */}
+          <div className="relative flex items-center">
+            <select
+              value={selectedCategory}
+              onChange={(e) => onCategoryChange(e.target.value)}
+              className="h-9 pl-8 pr-3 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#011F39] cursor-pointer appearance-none"
+            >
+              <option value="ALL">All Categories</option>
+              {EVENT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <Filter size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+          </div>
+
+          {/* Format Dropdown */}
+          <div className="relative flex items-center">
+            <select
+              value={selectedFormat}
+              onChange={(e) => onFormatChange(e.target.value)}
+              className="h-9 pl-8 pr-3 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#011F39] cursor-pointer appearance-none"
+            >
+              <option value="ALL">All Formats</option>
+              <option value="IN_PERSON">In-Person (Offline)</option>
+              <option value="ONLINE">Online (Virtual)</option>
+              <option value="HYBRID">Hybrid Mode</option>
+            </select>
+            <Globe size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+          </div>
+
+          {/* Reset Filters Button */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
+              title="Reset all filters"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        {/* Right Info: Filtered Count */}
+        {typeof totalFilteredCount === 'number' && (
+          <div className="text-xs text-slate-500 font-medium shrink-0 self-end md:self-center">
+            Showing <strong className="text-slate-800">{totalFilteredCount}</strong> events
+          </div>
         )}
-      </div>
-
-      {/* Dropdown Filters & Create Event Button */}
-      <div style={styles.actionsWrap}>
-        {/* Category Dropdown */}
-        <div style={styles.selectWrap}>
-          <Filter size={14} color="#64748B" style={styles.selectIcon} />
-          <select
-            value={selectedCategory}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            style={styles.select}
-          >
-            <option value="ALL">All Categories</option>
-            {EVENT_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Format Dropdown */}
-        <div style={styles.selectWrap}>
-          <Globe size={14} color="#64748B" style={styles.selectIcon} />
-          <select
-            value={selectedFormat}
-            onChange={(e) => onFormatChange(e.target.value)}
-            style={styles.select}
-          >
-            <option value="ALL">All Formats</option>
-            <option value="IN_PERSON">In-Person (Offline)</option>
-            <option value="ONLINE">Online (Virtual)</option>
-            <option value="HYBRID">Hybrid Mode</option>
-          </select>
-        </div>
-
-        {/* Create Event Button */}
-        <button
-          type="button"
-          onClick={onCreateEvent}
-          style={styles.createBtn}
-        >
-          <Plus size={16} color="#011F39" strokeWidth={2.5} />
-          <span>Create Event</span>
-        </button>
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '16px',
-    flexWrap: 'wrap',
-    marginBottom: '24px',
-  },
-  searchWrap: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: '280px',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '12px',
-    pointerEvents: 'none',
-  },
-  searchInput: {
-    width: '100%',
-    padding: '9px 36px 9px 36px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    fontSize: '13.5px',
-    color: '#0F172A',
-    outline: 'none',
-    boxSizing: 'border-box',
-    backgroundColor: '#FFFFFF',
-  },
-  clearBtn: {
-    position: 'absolute',
-    right: '10px',
-    background: 'none',
-    border: 'none',
-    color: '#94A3B8',
-    cursor: 'pointer',
-    fontSize: '12px',
-    padding: '4px',
-  },
-  actionsWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexWrap: 'wrap',
-  },
-  selectWrap: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  selectIcon: {
-    position: 'absolute',
-    left: '10px',
-    pointerEvents: 'none',
-  },
-  select: {
-    padding: '9px 12px 9px 30px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    fontSize: '12.5px',
-    color: '#334155',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  createBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 18px',
-    borderRadius: '8px',
-    backgroundColor: '#FAD465',
-    border: 'none',
-    color: '#011F39',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(250, 212, 101, 0.4)',
-  },
 };

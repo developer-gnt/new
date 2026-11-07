@@ -13,7 +13,7 @@ export const SupportStatusTabs: React.FC<SupportStatusTabsProps> = ({
   counts,
 }) => {
   return (
-    <div style={styles.container}>
+    <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-5 scrollbar-none">
       {TICKET_TABS.map((tab) => {
         const isActive = activeTab === tab.key;
         const count = counts[tab.key] ?? 0;
@@ -23,20 +23,19 @@ export const SupportStatusTabs: React.FC<SupportStatusTabsProps> = ({
             key={tab.key}
             type="button"
             onClick={() => onSelectTab(tab.key)}
-            style={{
-              ...styles.tabButton,
-              backgroundColor: isActive ? '#011F39' : 'transparent',
-              color: isActive ? '#FFFFFF' : '#34516D',
-              borderColor: isActive ? '#011F39' : '#DCE4EC',
-            }}
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer ${
+              isActive
+                ? 'bg-[#011F39] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+            }`}
           >
             <span>{tab.label}</span>
             <span
-              style={{
-                ...styles.badge,
-                backgroundColor: isActive ? '#FAD465' : '#EDF2F7',
-                color: isActive ? '#011F39' : '#34516D',
-              }}
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-full leading-tight ${
+                isActive
+                  ? 'bg-[#FAD465] text-[#011F39]'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
             >
               {count}
             </span>
@@ -46,34 +45,3 @@ export const SupportStatusTabs: React.FC<SupportStatusTabsProps> = ({
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    gap: '8px',
-    overflowX: 'auto',
-    paddingBottom: '4px',
-    marginBottom: '20px',
-  },
-  tabButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    border: '1px solid',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    whiteSpace: 'nowrap',
-  },
-  badge: {
-    fontSize: '11px',
-    fontWeight: 700,
-    padding: '2px 7px',
-    borderRadius: '10px',
-    lineHeight: 1.2,
-  },
-};
-

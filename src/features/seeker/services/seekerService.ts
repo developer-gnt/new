@@ -401,7 +401,31 @@ export const seekerService = {
       const raw = localStorage.getItem(LOCAL_SEEKER_REQUESTS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          // Filter out legacy mock/placeholder entries
+          const clean = parsed.filter((r) => {
+            const reason = (r.reason || '').toLowerCase();
+            const desc = (r.description || '').toLowerCase();
+            if (reason.includes('cataract') && desc.includes('cataract')) return false;
+            if (
+              r.id === 'e5a92341-e6e5-4534-970c-1b27efb472a5' ||
+              r.id === '786a0a5f-7f61-457e-a4f7-fb9f77b72c19' ||
+              r.id === '82e286a8-d098-4487-a7a5-e96401913cbe' ||
+              r.id === 'fb332b67-93b7-4e83-89b9-33b4ce62750b' ||
+              r.id === 'aebf3f42-22cc-499e-aa01-f1b45dbcfce2' ||
+              r.id === '2443ceb1-1d64-406f-906d-19c33672e1b2' ||
+              r.id === 'b109a7f9-d6bb-45d5-8dc2-9161f76e9e7c' ||
+              r.id === '76ab104d-7919-433b-b364-bc637e6abf6e'
+            ) {
+              return false;
+            }
+            return true;
+          });
+          if (clean.length !== parsed.length) {
+            this.saveLocalRequests(clean);
+          }
+          return clean;
+        }
       }
     } catch {
       // Fallback

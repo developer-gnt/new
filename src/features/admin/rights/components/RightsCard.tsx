@@ -9,24 +9,24 @@ import {
 
 export const RightsListHeader: React.FC = () => {
   return (
-    <div style={styles.headerRow}>
-      <div style={{ flex: '3 1 300px' }}>
-        <span style={styles.headerText}>Rights Details</span>
+    <div className="hidden md:flex items-center gap-4 px-5 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-t-xl text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+      <div className="flex-1 min-w-[280px]">
+        <span>Rights Details</span>
       </div>
-      <div style={{ flex: '1.2 1 120px' }}>
-        <span style={styles.headerText}>Category</span>
+      <div className="w-36 shrink-0">
+        <span>Category</span>
       </div>
-      <div style={{ flex: '1.2 1 120px' }}>
-        <span style={styles.headerText}>Last Updated</span>
+      <div className="w-32 shrink-0">
+        <span>Last Updated</span>
       </div>
-      <div style={{ flex: '1 1 100px' }}>
-        <span style={styles.headerText}>Status</span>
+      <div className="w-28 shrink-0">
+        <span>Status</span>
       </div>
-      <div style={{ flex: '0.8 1 80px' }}>
-        <span style={styles.headerText}>Views</span>
+      <div className="w-20 shrink-0 text-right">
+        <span>Views</span>
       </div>
-      <div style={{ flex: '0.5 1 50px', textAlign: 'right' }}>
-        <span style={styles.headerText}>Action</span>
+      <div className="w-12 shrink-0 text-right">
+        <span>Action</span>
       </div>
     </div>
   );
@@ -47,8 +47,8 @@ export const RightsCard: React.FC<RightsCardProps> = ({
 
   return (
     <div
-      style={styles.cardRow}
       onClick={() => onPress(article)}
+      className="group flex flex-col md:flex-row md:items-center gap-4 px-5 py-3.5 bg-white hover:bg-slate-50/80 border-x border-b border-slate-200/90 first:border-t md:first:border-t-0 last:rounded-b-xl transition-colors cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -56,234 +56,95 @@ export const RightsCard: React.FC<RightsCardProps> = ({
       }}
     >
       {/* Col 1: Rights Details */}
-      <div style={{ ...styles.col, flex: '3 1 300px' }}>
+      <div className="flex items-center gap-3.5 flex-1 min-w-[280px] overflow-hidden">
         {article.thumbnailUrl ? (
           <img
             src={article.thumbnailUrl}
             alt={article.title}
-            style={styles.thumbnail}
+            className="w-14 h-11 rounded-lg object-cover bg-slate-100 shrink-0"
             loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
-          <div style={styles.thumbPlaceholder}>
-            <span style={styles.thumbPlaceholderText}>HRSJM</span>
+          <div className="w-14 h-11 rounded-lg bg-[#011F39] text-[#FAD465] flex items-center justify-center font-bold text-[10px] tracking-wider shrink-0">
+            HRSJM
           </div>
         )}
-        <div style={styles.detailsText}>
-          <div style={styles.title}>{article.title}</div>
-          <div style={styles.description}>{article.description}</div>
+
+        <div className="flex flex-col min-w-0 overflow-hidden">
+          <h3 className="font-serif font-bold text-sm sm:text-base text-slate-900 group-hover:text-[#B45309] transition-colors truncate">
+            {article.title}
+          </h3>
+          <p className="text-xs text-slate-500 truncate leading-snug">
+            {article.description}
+          </p>
         </div>
       </div>
 
-      {/* Col 2: Category */}
-      <div style={{ ...styles.col, flex: '1.2 1 120px' }}>
-        <div style={styles.categoryChip}>
-          <span>{article.category}</span>
+      {/* Mobile Meta Row */}
+      <div className="flex md:contents items-center justify-between gap-3 text-xs pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+        {/* Col 2: Category */}
+        <div className="w-auto md:w-36 shrink-0">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200/80">
+            {article.category}
+          </span>
         </div>
-      </div>
 
-      {/* Col 3: Last Updated */}
-      <div style={{ ...styles.col, flex: '1.2 1 120px' }}>
-        <div style={styles.dateCol}>
-          <span style={styles.dateText}>{article.lastUpdatedDate}</span>
-          <span style={styles.timeText}>{article.lastUpdatedTime}</span>
+        {/* Col 3: Last Updated */}
+        <div className="w-auto md:w-32 shrink-0 flex flex-col">
+          <span className="text-xs font-medium text-slate-800">
+            {article.lastUpdatedDate}
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {article.lastUpdatedTime}
+          </span>
         </div>
-      </div>
 
-      {/* Col 4: Status */}
-      <div style={{ ...styles.col, flex: '1 1 100px' }}>
+        {/* Col 4: Status */}
+        <div className="w-auto md:w-28 shrink-0">
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-2xs"
+            style={{
+              backgroundColor: statusTone.bg,
+              borderColor: statusTone.border,
+              color: statusTone.text,
+            }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: statusTone.dot }}
+            />
+            <span>{RIGHTS_STATUS_LABELS[article.status]}</span>
+          </span>
+        </div>
+
+        {/* Col 5: Views */}
+        <div className="w-auto md:w-20 shrink-0 flex items-center md:justify-end gap-1 text-slate-500">
+          <Eye size={13} className="text-slate-400" />
+          <span className="text-xs font-semibold">{formatRightsViews(article.views)}</span>
+        </div>
+
+        {/* Col 6: Action */}
         <div
-          style={{
-            ...styles.statusBadge,
-            backgroundColor: statusTone.bg,
-            borderColor: statusTone.border,
-            color: statusTone.text,
-          }}
+          className="w-auto md:w-12 shrink-0 flex justify-end"
+          onClick={(e) => e.stopPropagation()}
         >
-          <span style={{ ...styles.statusDot, backgroundColor: statusTone.dot }} />
-          <span>{RIGHTS_STATUS_LABELS[article.status]}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMorePress(article, e);
+            }}
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            title="More actions"
+            aria-label="Actions menu"
+          >
+            <MoreVertical size={16} />
+          </button>
         </div>
-      </div>
-
-      {/* Col 5: Views */}
-      <div style={{ ...styles.col, flex: '0.8 1 80px' }}>
-        <div style={styles.viewsContainer}>
-          <Eye size={14} color="#64748B" />
-          <span style={styles.viewsText}>{formatRightsViews(article.views)}</span>
-        </div>
-      </div>
-
-      {/* Col 6: Action */}
-      <div
-        style={{
-          ...styles.col,
-          flex: '0.5 1 50px',
-          justifyContent: 'flex-end',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onMorePress(article, e);
-          }}
-          style={styles.moreBtn}
-          title="More actions"
-          aria-label="Actions menu"
-        >
-          <MoreVertical size={16} color="#64748B" />
-        </button>
       </div>
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 18px',
-    backgroundColor: '#F8FAFC',
-    borderRadius: '8px 8px 0 0',
-    border: '1px solid #E2E8F0',
-    borderBottom: 'none',
-  },
-  headerText: {
-    fontSize: '12px',
-    fontWeight: 700,
-    color: '#475569',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-    fontFamily: 'Inter, sans-serif',
-  },
-  cardRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '14px 18px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderTop: 'none',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease',
-  },
-  col: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    minWidth: 0,
-  },
-  thumbnail: {
-    width: '64px',
-    height: '48px',
-    borderRadius: '6px',
-    objectFit: 'cover',
-    flexShrink: 0,
-    backgroundColor: '#F1F5F9',
-  },
-  thumbPlaceholder: {
-    width: '64px',
-    height: '48px',
-    borderRadius: '6px',
-    backgroundColor: '#011F39',
-    color: '#FAD465',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 700,
-    fontSize: '11px',
-    flexShrink: 0,
-  },
-  thumbPlaceholderText: {
-    letterSpacing: '0.05em',
-  },
-  detailsText: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '3px',
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  title: {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: '#0F172A',
-    fontFamily: 'Inter, sans-serif',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  description: {
-    fontSize: '12px',
-    color: '#64748B',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  categoryChip: {
-    display: 'inline-flex',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    backgroundColor: '#EFF6FF',
-    color: '#0369A1',
-    fontSize: '12px',
-    fontWeight: 600,
-    border: '1px solid #BAE6FD',
-  },
-  dateCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  dateText: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: '#1E293B',
-  },
-  timeText: {
-    fontSize: '11px',
-    color: '#94A3B8',
-  },
-  statusBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: 600,
-    border: '1px solid',
-  },
-  statusDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-  },
-  viewsContainer: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '5px',
-  },
-  viewsText: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#475569',
-  },
-  moreBtn: {
-    background: 'none',
-    border: 'none',
-    padding: '6px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.15s ease',
-  },
-};
-
