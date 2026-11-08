@@ -27,7 +27,13 @@ import {
   Check,
   Shield,
   Trash2,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  HeartHandshake,
 } from 'lucide-react';
+
+type UserTab = 'profile' | 'documents' | 'security' | 'donations';
 
 const USER_TYPE_CONFIG: Record<
   UserType,
@@ -104,6 +110,9 @@ export const UserDetailsPage: React.FC = () => {
   useSyncExternalStore(usersStore.subscribe, usersStore.getSnapshot);
 
   const user = id ? usersStore.getUserById(id) : undefined;
+
+  // Active Tab
+  const [activeTab, setActiveTab] = useState<UserTab>('profile');
 
   // Modals state
   const [confirmAction, setConfirmAction] = useState<'block' | 'unblock' | 'delete' | null>(null);
@@ -193,6 +202,7 @@ export const UserDetailsPage: React.FC = () => {
 
   const joinedInfo = formatJoined(user.joinedDate);
   const shortId = user.id.replace(/-/g, '').slice(-8).toUpperCase();
+  const docCount = (user.documents || []).length;
 
   return (
     <div style={styles.pageContainer}>
@@ -205,7 +215,7 @@ export const UserDetailsPage: React.FC = () => {
           title="Return to Users Management Directory"
         >
           <ChevronLeft size={18} />
-          <span>Back to Users</span>
+          <span>Back to Users Directory</span>
         </button>
 
         <div style={styles.topActions}>
@@ -213,7 +223,7 @@ export const UserDetailsPage: React.FC = () => {
             type="button"
             onClick={() => setShowPasswordResetModal(true)}
             style={styles.topSecondaryBtn}
-            title="Reset user security password"
+            title="Reset user security credentials"
           >
             <KeyRound size={15} color="#011F39" />
             <span>Reset Password</span>
@@ -231,353 +241,625 @@ export const UserDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Primary User Identity Hero Card */}
+      {/* Primary User Identity Hero Card with Banner */}
       <div style={styles.heroCard}>
-        <div style={styles.heroLeft}>
-          {/* Avatar Container with bulletproof initials fallback */}
-          <div style={styles.avatarWrapper}>
-            {validAvatarUrl && !imgError ? (
-              <img
-                src={validAvatarUrl}
-                alt=""
-                onError={() => setImgError(true)}
-                style={styles.avatarImg}
-              />
-            ) : (
-              <div style={styles.avatarInitials} aria-label={user.name}>
-                {initials}
-              </div>
-            )}
-            <span
-              style={{
-                ...styles.avatarStatusDot,
-                backgroundColor: statusConfig.dot,
-              }}
-              title={`Status: ${statusConfig.label}`}
-            />
+        {/* Subtle Decorative Navy Gradient Banner */}
+        <div style={styles.heroBanner}>
+          <div style={styles.bannerBadge}>
+            <Shield size={13} color="#FAD465" />
+            <span>HRSJM CITIZEN REGISTRY</span>
           </div>
+        </div>
 
-          {/* User Details */}
-          <div style={styles.heroInfo}>
-            <div style={styles.nameRow}>
-              <h1 style={styles.userName}>{user.name}</h1>
-              <div
-                style={styles.idPill}
-                onClick={() => handleCopy(user.id, 'id')}
-                title="Click to copy full User UUID"
-              >
-                <span>ID: #{shortId}</span>
-                {copiedKey === 'id' ? (
-                  <Check size={12} color="#16A34A" />
+        {/* Hero Card Body */}
+        <div style={styles.heroBody}>
+          <div style={styles.heroLeft}>
+            {/* Avatar Container with Gold Accent Ring */}
+            <div style={styles.avatarWrapper}>
+              {validAvatarUrl && !imgError ? (
+                <img
+                  src={validAvatarUrl}
+                  alt=""
+                  onError={() => setImgError(true)}
+                  style={styles.avatarImg}
+                />
+              ) : (
+                <div style={styles.avatarInitials} aria-label={user.name}>
+                  {initials}
+                </div>
+              )}
+              <span
+                style={{
+                  ...styles.avatarStatusDot,
+                  backgroundColor: statusConfig.dot,
+                }}
+                title={`Account Status: ${statusConfig.label}`}
+              />
+            </div>
+
+            {/* User Title & Badges */}
+            <div style={styles.heroInfo}>
+              <div style={styles.nameRow}>
+                <h1 style={styles.userName}>{user.name}</h1>
+                <button
+                  type="button"
+                  style={styles.idPill}
+                  onClick={() => handleCopy(user.id, 'id')}
+                  title="Click to copy full User UUID"
+                >
+                  <span>ID: #{shortId}</span>
+                  {copiedKey === 'id' ? (
+                    <Check size={12} color="#16A34A" />
+                  ) : (
+                    <Copy size={12} color="#64748B" />
+                  )}
+                </button>
+              </div>
+
+              {/* Contact Information Row */}
+              <div style={styles.contactRow}>
+                {user.email ? (
+                  <button
+                    type="button"
+                    style={styles.contactItem}
+                    onClick={() => handleCopy(user.email!, 'email')}
+                    title="Click to copy email address"
+                  >
+                    <Mail size={14} color="#64748B" />
+                    <span>{user.email}</span>
+                    {copiedKey === 'email' ? (
+                      <Check size={11} color="#16A34A" />
+                    ) : (
+                      <Copy size={11} color="#94A3B8" />
+                    )}
+                  </button>
                 ) : (
-                  <Copy size={12} color="#64748B" />
+                  <span style={styles.contactMissing}>No email registered</span>
+                )}
+
+                {user.phone ? (
+                  <button
+                    type="button"
+                    style={styles.contactItem}
+                    onClick={() => handleCopy(user.phone!, 'phone')}
+                    title="Click to copy phone number"
+                  >
+                    <Phone size={14} color="#64748B" />
+                    <span>{user.phone}</span>
+                    {copiedKey === 'phone' ? (
+                      <Check size={11} color="#16A34A" />
+                    ) : (
+                      <Copy size={11} color="#94A3B8" />
+                    )}
+                  </button>
+                ) : (
+                  <span style={styles.contactMissing}>No phone registered</span>
+                )}
+              </div>
+
+              {/* Badges Row */}
+              <div style={styles.badgesRow}>
+                <span
+                  style={{
+                    ...styles.roleBadge,
+                    backgroundColor: typeConfig.bg,
+                    color: typeConfig.text,
+                    borderColor: typeConfig.border,
+                  }}
+                >
+                  <span>{typeConfig.icon}</span>
+                  <span>{typeConfig.label}</span>
+                </span>
+
+                <span
+                  style={{
+                    ...styles.statusBadge,
+                    backgroundColor: statusConfig.bg,
+                    color: statusConfig.text,
+                    borderColor: statusConfig.border,
+                  }}
+                >
+                  <span
+                    style={{
+                      ...styles.statusDot,
+                      backgroundColor: statusConfig.dot,
+                    }}
+                  />
+                  <span>{statusConfig.label}</span>
+                </span>
+
+                {isMember && user.memberId && (
+                  <span style={styles.memberIdBadge}>
+                    <span>🎖️ {user.memberId}</span>
+                  </span>
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Contact Row */}
-            <div style={styles.contactRow}>
-              {user.email ? (
-                <div
-                  style={styles.contactItem}
-                  onClick={() => handleCopy(user.email!, 'email')}
-                  title="Click to copy email"
-                >
-                  <Mail size={14} color="#64748B" />
-                  <span>{user.email}</span>
-                  {copiedKey === 'email' ? (
-                    <Check size={11} color="#16A34A" />
-                  ) : null}
-                </div>
+          {/* Quick Header Right Actions */}
+          <div style={styles.heroRightActions}>
+            <button
+              type="button"
+              onClick={() => navigate(`/admin/users/${user.id}/edit`)}
+              style={styles.heroEditBtn}
+              title="Edit profile information"
+            >
+              <Edit3 size={15} />
+              <span>Edit Details</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setConfirmAction(user.status === 'blocked' ? 'unblock' : 'block')}
+              style={{
+                ...styles.heroStatusBtn,
+                backgroundColor: user.status === 'blocked' ? '#ECFDF5' : '#FEF2F2',
+                borderColor: user.status === 'blocked' ? '#BBF7D0' : '#FECACA',
+                color: user.status === 'blocked' ? '#047857' : '#DC2626',
+              }}
+              title={user.status === 'blocked' ? 'Unblock user account' : 'Suspend / block user account'}
+            >
+              {user.status === 'blocked' ? (
+                <>
+                  <Unlock size={14} />
+                  <span>Unblock</span>
+                </>
               ) : (
-                <span style={styles.contactMissing}>No email provided</span>
+                <>
+                  <Lock size={14} />
+                  <span>Suspend</span>
+                </>
               )}
-
-              {user.phone ? (
-                <div
-                  style={styles.contactItem}
-                  onClick={() => handleCopy(user.phone!, 'phone')}
-                  title="Click to copy phone number"
-                >
-                  <Phone size={14} color="#64748B" />
-                  <span>{user.phone}</span>
-                  {copiedKey === 'phone' ? (
-                    <Check size={11} color="#16A34A" />
-                  ) : null}
-                </div>
-              ) : (
-                <span style={styles.contactMissing}>No phone registered</span>
-              )}
-            </div>
-
-            {/* Badges Row */}
-            <div style={styles.badgesRow}>
-              <span
-                style={{
-                  ...styles.roleBadge,
-                  backgroundColor: typeConfig.bg,
-                  color: typeConfig.text,
-                  borderColor: typeConfig.border,
-                }}
-              >
-                <span>{typeConfig.icon}</span>
-                <span>{typeConfig.label}</span>
-              </span>
-
-              <span
-                style={{
-                  ...styles.statusBadge,
-                  backgroundColor: statusConfig.bg,
-                  color: statusConfig.text,
-                  borderColor: statusConfig.border,
-                }}
-              >
-                <span
-                  style={{
-                    ...styles.statusDot,
-                    backgroundColor: statusConfig.dot,
-                  }}
-                />
-                <span>{statusConfig.label}</span>
-              </span>
-
-              {isMember && user.memberId && (
-                <span style={styles.memberIdBadge}>
-                  <span>🎖️ {user.memberId}</span>
-                </span>
-              )}
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
       {/* 4 Metric Summary Cards in Balanced Row */}
       <div style={styles.metricsGrid} className="user-metrics-grid">
-        {/* Metric 1: System ID */}
-        <div style={styles.metricCard}>
-          <div style={{ ...styles.metricIconBox, backgroundColor: '#EFF6FF', color: '#0284C7' }}>
-            <IdCard size={20} />
+        {/* Metric 1: System Identifier */}
+        <div style={{ ...styles.metricCard, borderTop: '3px solid #0284C7' }}>
+          <div style={styles.metricTopRow}>
+            <span style={styles.metricLabel}>User System ID</span>
+            <div style={{ ...styles.metricIconBox, backgroundColor: '#EFF6FF', color: '#0284C7' }}>
+              <IdCard size={18} />
+            </div>
           </div>
-          <div style={styles.metricContent}>
-            <span style={styles.metricLabel}>
-              {isMember && user.memberId
-                ? 'Member ID'
-                : user.applicationNumber
-                ? 'Application No.'
-                : 'User System ID'}
-            </span>
-            <span style={styles.metricValue}>
-              {isMember && user.memberId
-                ? user.memberId
-                : user.applicationNumber
-                ? user.applicationNumber
-                : `#${shortId}`}
-            </span>
-            <span style={styles.metricSub}>Official Identifier</span>
+          <div style={styles.metricValue}>
+            {isMember && user.memberId
+              ? user.memberId
+              : user.applicationNumber
+              ? user.applicationNumber
+              : `#${shortId}`}
           </div>
+          <span style={styles.metricSub}>Official Identifier</span>
         </div>
 
-        {/* Metric 2: Joined Date */}
-        <div style={styles.metricCard}>
-          <div style={{ ...styles.metricIconBox, backgroundColor: '#FFFBEB', color: '#D97706' }}>
-            <Calendar size={20} />
+        {/* Metric 2: Registration Date */}
+        <div style={{ ...styles.metricCard, borderTop: '3px solid #D97706' }}>
+          <div style={styles.metricTopRow}>
+            <span style={styles.metricLabel}>Registration Date</span>
+            <div style={{ ...styles.metricIconBox, backgroundColor: '#FFFBEB', color: '#D97706' }}>
+              <Calendar size={18} />
+            </div>
           </div>
-          <div style={styles.metricContent}>
-            <span style={styles.metricLabel}>Joined On</span>
-            <span style={styles.metricValue}>{joinedInfo.date}</span>
-            <span style={styles.metricSub}>
-              {joinedInfo.time ? `${joinedInfo.time} IST` : 'Registration date'}
-            </span>
-          </div>
+          <div style={styles.metricValue}>{joinedInfo.date}</div>
+          <span style={styles.metricSub}>
+            {joinedInfo.time ? `${joinedInfo.time} IST` : 'Enrolled date'}
+          </span>
         </div>
 
-        {/* Metric 3: Last Login */}
-        <div style={styles.metricCard}>
-          <div style={{ ...styles.metricIconBox, backgroundColor: '#F0F9FF', color: '#0369A1' }}>
-            <Clock size={20} />
-          </div>
-          <div style={styles.metricContent}>
+        {/* Metric 3: Last Active Session */}
+        <div style={{ ...styles.metricCard, borderTop: '3px solid #011F39' }}>
+          <div style={styles.metricTopRow}>
             <span style={styles.metricLabel}>Last Active</span>
-            <span style={styles.metricValue}>{user.lastLogin || 'Recently'}</span>
-            <span style={styles.metricSub}>Account access log</span>
+            <div style={{ ...styles.metricIconBox, backgroundColor: '#F0F9FF', color: '#0369A1' }}>
+              <Clock size={18} />
+            </div>
           </div>
+          <div style={styles.metricValue}>{user.lastLogin || 'Recently'}</div>
+          <span style={styles.metricSub}>Account access log</span>
         </div>
 
         {/* Metric 4: Total Donations */}
-        <div style={styles.metricCard}>
-          <div style={{ ...styles.metricIconBox, backgroundColor: '#F0FDF4', color: '#16A34A' }}>
-            <CreditCard size={20} />
-          </div>
-          <div style={styles.metricContent}>
+        <div style={{ ...styles.metricCard, borderTop: '3px solid #16A34A' }}>
+          <div style={styles.metricTopRow}>
             <span style={styles.metricLabel}>Total Donations</span>
-            <span style={styles.metricValue}>
-              ₹ {(user.totalDonations ?? 0).toLocaleString('en-IN')}
-            </span>
-            <span style={styles.metricSub}>
-              {user.donationCount ?? 0} {user.donationCount === 1 ? 'donation' : 'donations'}
-            </span>
+            <div style={{ ...styles.metricIconBox, backgroundColor: '#F0FDF4', color: '#16A34A' }}>
+              <CreditCard size={18} />
+            </div>
           </div>
+          <div style={styles.metricValue}>
+            ₹ {(user.totalDonations ?? 0).toLocaleString('en-IN')}
+          </div>
+          <span style={styles.metricSub}>
+            {user.donationCount ?? 0} {user.donationCount === 1 ? 'donation' : 'donations'}
+          </span>
         </div>
       </div>
 
-      {/* Account & Personal Information Card */}
-      <div style={styles.sectionCard}>
-        <div style={styles.sectionHeader}>
-          <div style={styles.sectionHeaderTitle}>
-            <UserIcon size={18} color="#011F39" />
-            <h2 style={styles.sectionTitle}>Account & Personal Information</h2>
+      {/* Navigation Tabs for Profile Sections */}
+      <div style={styles.tabsBar}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          style={{
+            ...styles.tabBtn,
+            backgroundColor: activeTab === 'profile' ? '#011F39' : '#FFFFFF',
+            color: activeTab === 'profile' ? '#FFFFFF' : '#334155',
+            borderColor: activeTab === 'profile' ? '#011F39' : '#DCE4EC',
+          }}
+        >
+          <UserIcon size={15} />
+          <span>Profile & Account</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('documents')}
+          style={{
+            ...styles.tabBtn,
+            backgroundColor: activeTab === 'documents' ? '#011F39' : '#FFFFFF',
+            color: activeTab === 'documents' ? '#FFFFFF' : '#334155',
+            borderColor: activeTab === 'documents' ? '#011F39' : '#DCE4EC',
+          }}
+        >
+          <ShieldCheck size={15} />
+          <span>KYC Documents</span>
+          {docCount > 0 && (
+            <span
+              style={{
+                ...styles.tabCountBadge,
+                backgroundColor: activeTab === 'documents' ? '#FAD465' : '#EDF2F7',
+                color: activeTab === 'documents' ? '#011F39' : '#475569',
+              }}
+            >
+              {docCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('security')}
+          style={{
+            ...styles.tabBtn,
+            backgroundColor: activeTab === 'security' ? '#011F39' : '#FFFFFF',
+            color: activeTab === 'security' ? '#FFFFFF' : '#334155',
+            borderColor: activeTab === 'security' ? '#011F39' : '#DCE4EC',
+          }}
+        >
+          <KeyRound size={15} />
+          <span>Security & Controls</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('donations')}
+          style={{
+            ...styles.tabBtn,
+            backgroundColor: activeTab === 'donations' ? '#011F39' : '#FFFFFF',
+            color: activeTab === 'donations' ? '#FFFFFF' : '#334155',
+            borderColor: activeTab === 'donations' ? '#011F39' : '#DCE4EC',
+          }}
+        >
+          <HeartHandshake size={15} />
+          <span>Donations History</span>
+        </button>
+      </div>
+
+      {/* Tab 1: Profile & Account Information */}
+      {activeTab === 'profile' && (
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionHeaderTitle}>
+              <UserIcon size={18} color="#011F39" />
+              <h2 style={styles.sectionTitle}>Account & Personal Information</h2>
+            </div>
+          </div>
+
+          <div style={styles.fieldsGrid}>
+            {/* Full Name */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Full Legal Name</span>
+              <div style={styles.fieldValueRow}>
+                <UserIcon size={15} color="#123F68" />
+                <span style={{ ...styles.fieldValueText, textTransform: 'capitalize' }}>
+                  {user.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Email Address</span>
+              <div style={styles.fieldValueRow}>
+                <Mail size={15} color="#123F68" />
+                <span style={styles.fieldValueText}>{user.email || '—'}</span>
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Mobile Phone Number</span>
+              <div style={styles.fieldValueRow}>
+                <Phone size={15} color="#123F68" />
+                <span style={styles.fieldValueText}>{user.phone || '—'}</span>
+              </div>
+            </div>
+
+            {/* Role */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Account Role & Privileges</span>
+              <div style={styles.fieldValueRow}>
+                <Shield size={15} color="#123F68" />
+                <span style={styles.fieldValueText}>{typeConfig.label}</span>
+              </div>
+            </div>
+
+            {/* Date of Birth */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Date of Birth</span>
+              <div style={styles.fieldValueRow}>
+                <Calendar size={15} color="#123F68" />
+                <span style={styles.fieldValueText}>{user.dob || 'Not specified'}</span>
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div style={styles.fieldTile}>
+              <span style={styles.fieldLabel}>Gender</span>
+              <div style={styles.fieldValueRow}>
+                <Users size={15} color="#123F68" />
+                <span style={styles.fieldValueText}>{user.gender || 'Not specified'}</span>
+              </div>
+            </div>
+
+            {/* Residential Address */}
+            <div style={{ ...styles.fieldTile, gridColumn: '1 / -1' }}>
+              <span style={styles.fieldLabel}>Residential Address</span>
+              <div style={styles.fieldValueRow}>
+                <MapPin size={16} color="#123F68" style={{ flexShrink: 0 }} />
+                <span style={styles.fieldValueText}>
+                  {user.address || 'No residential address on file'}
+                </span>
+              </div>
+            </div>
+
+            {/* Administrative Remarks */}
+            {user.remarks && (
+              <div style={{ ...styles.fieldTile, gridColumn: '1 / -1' }}>
+                <span style={styles.fieldLabel}>Administrative Remarks & Notes</span>
+                <div style={styles.remarksBox}>
+                  <span>{user.remarks}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+      )}
 
-        <div style={styles.fieldsGrid}>
-          {/* Full Name */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Full Legal Name</span>
-            <div style={styles.fieldValueRow}>
-              <UserIcon size={15} color="#123F68" />
-              <span style={styles.fieldValueText}>{user.name}</span>
+      {/* Tab 2: KYC & Identity Documents */}
+      {activeTab === 'documents' && (
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionHeaderTitle}>
+              <ShieldCheck size={18} color="#011F39" />
+              <h2 style={styles.sectionTitle}>Verification & Identity Documents</h2>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate(`/admin/users/${user.id}/verification`)}
+              style={styles.verificationBtn}
+            >
+              <ShieldCheck size={15} />
+              <span>Open Verification Portal</span>
+            </button>
+          </div>
+
+          {user.documents && user.documents.length > 0 ? (
+            <div style={styles.docsGrid}>
+              {user.documents.map((doc) => (
+                <div key={doc.id} style={styles.docCard}>
+                  <div style={styles.docLeft}>
+                    <div style={styles.docIconBox}>
+                      <FileText size={20} color="#011F39" />
+                    </div>
+                    <div style={styles.docMeta}>
+                      <span style={styles.docTitle}>{doc.title}</span>
+                      <span style={styles.docSub}>
+                        {doc.fileName} • {doc.fileSize || '1.2 MB'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={styles.docActions}>
+                    <span
+                      style={{
+                        ...styles.docBadge,
+                        backgroundColor: doc.verified ? '#ECFDF5' : '#FFFBEB',
+                        color: doc.verified ? '#059669' : '#D97706',
+                        borderColor: doc.verified ? '#BBF7D0' : '#FDE68A',
+                      }}
+                    >
+                      {doc.verified ? 'Verified' : 'Pending'}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setViewingDoc(doc)}
+                      style={styles.viewDocBtn}
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={styles.docsEmptyBox}>
+              <FileText size={34} color="#94A3B8" />
+              <span style={styles.docsEmptyTitle}>No Verification Documents Attached</span>
+              <span style={styles.docsEmptySub}>
+                This user account has not yet submitted Aadhaar, PAN card, or authorized organization identity credentials.
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate(`/admin/users/${user.id}/verification`)}
+                style={styles.emptyVerificationBtn}
+              >
+                <ShieldCheck size={15} />
+                <span>Request or Upload Verification Documents</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab 3: Security & Permissions */}
+      {activeTab === 'security' && (
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionHeaderTitle}>
+              <KeyRound size={18} color="#011F39" />
+              <h2 style={styles.sectionTitle}>Security Credentials & Access Governance</h2>
             </div>
           </div>
 
-          {/* Email */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Email Address</span>
-            <div style={styles.fieldValueRow}>
-              <Mail size={15} color="#123F68" />
-              <span style={styles.fieldValueText}>{user.email || '—'}</span>
+          <div style={styles.securityGrid}>
+            {/* Password Reset Card */}
+            <div style={styles.securityCard}>
+              <div style={styles.securityCardLeft}>
+                <div style={{ ...styles.securityIconCircle, backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>
+                  <KeyRound size={20} />
+                </div>
+                <div>
+                  <h3 style={styles.securityCardTitle}>Account Password</h3>
+                  <p style={styles.securityCardDesc}>
+                    Issue a temporary password or dispatch a password reset link to user's registered email.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPasswordResetModal(true)}
+                style={styles.securityActionBtn}
+              >
+                Reset Password
+              </button>
+            </div>
+
+            {/* Account Status Card */}
+            <div style={styles.securityCard}>
+              <div style={styles.securityCardLeft}>
+                <div
+                  style={{
+                    ...styles.securityIconCircle,
+                    backgroundColor: user.status === 'blocked' ? '#FEF2F2' : '#ECFDF5',
+                    color: user.status === 'blocked' ? '#DC2626' : '#059669',
+                  }}
+                >
+                  {user.status === 'blocked' ? <Lock size={20} /> : <CheckCircle2 size={20} />}
+                </div>
+                <div>
+                  <h3 style={styles.securityCardTitle}>
+                    Account Status: <span style={{ textTransform: 'capitalize' }}>{user.status}</span>
+                  </h3>
+                  <p style={styles.securityCardDesc}>
+                    {user.status === 'blocked'
+                      ? 'Account is currently suspended. User cannot log in or submit applications.'
+                      : 'Account is fully active with normal portal access.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmAction(user.status === 'blocked' ? 'unblock' : 'block')}
+                style={{
+                  ...styles.securityActionBtn,
+                  backgroundColor: user.status === 'blocked' ? '#ECFDF5' : '#FEF2F2',
+                  borderColor: user.status === 'blocked' ? '#BBF7D0' : '#FECACA',
+                  color: user.status === 'blocked' ? '#047857' : '#DC2626',
+                }}
+              >
+                {user.status === 'blocked' ? 'Unblock User' : 'Suspend Account'}
+              </button>
+            </div>
+
+            {/* Danger Zone: Delete User */}
+            <div style={{ ...styles.securityCard, borderColor: '#FEE2E2', backgroundColor: '#FFFDFD' }}>
+              <div style={styles.securityCardLeft}>
+                <div style={{ ...styles.securityIconCircle, backgroundColor: '#FEE2E2', color: '#DC2626' }}>
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 style={{ ...styles.securityCardTitle, color: '#991B1B' }}>Danger Zone: Delete User Record</h3>
+                  <p style={styles.securityCardDesc}>
+                    Permanently delete this citizen profile and associated access tokens. This action is irreversible.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmAction('delete')}
+                style={styles.securityDangerBtn}
+              >
+                <Trash2 size={14} />
+                <span>Delete Account</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Donations & Aid History */}
+      {activeTab === 'donations' && (
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionHeaderTitle}>
+              <HeartHandshake size={18} color="#011F39" />
+              <h2 style={styles.sectionTitle}>Donation & Payment Records</h2>
             </div>
           </div>
 
-          {/* Phone */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Mobile Phone Number</span>
-            <div style={styles.fieldValueRow}>
-              <Phone size={15} color="#123F68" />
-              <span style={styles.fieldValueText}>{user.phone || '—'}</span>
+          <div style={styles.donationsSummaryBox}>
+            <div style={styles.donationStatItem}>
+              <span style={styles.donationStatLabel}>Lifetime Total</span>
+              <span style={styles.donationStatValue}>
+                ₹ {(user.totalDonations ?? 0).toLocaleString('en-IN')}
+              </span>
             </div>
-          </div>
-
-          {/* Role */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Account Role & Access</span>
-            <div style={styles.fieldValueRow}>
-              <Shield size={15} color="#123F68" />
-              <span style={styles.fieldValueText}>{typeConfig.label}</span>
+            <div style={styles.donationStatDivider} />
+            <div style={styles.donationStatItem}>
+              <span style={styles.donationStatLabel}>Completed Donations</span>
+              <span style={styles.donationStatValue}>{user.donationCount ?? 0}</span>
             </div>
-          </div>
-
-          {/* Date of Birth */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Date of Birth</span>
-            <div style={styles.fieldValueRow}>
-              <Calendar size={15} color="#123F68" />
-              <span style={styles.fieldValueText}>{user.dob || 'Not specified'}</span>
-            </div>
-          </div>
-
-          {/* Gender */}
-          <div style={styles.fieldItem}>
-            <span style={styles.fieldLabel}>Gender</span>
-            <div style={styles.fieldValueRow}>
-              <span style={styles.fieldValueText}>{user.gender || 'Not specified'}</span>
-            </div>
-          </div>
-
-          {/* Address */}
-          <div style={{ ...styles.fieldItem, gridColumn: '1 / -1' }}>
-            <span style={styles.fieldLabel}>Residential Address</span>
-            <div style={styles.fieldValueRow}>
-              <MapPin size={15} color="#123F68" style={{ flexShrink: 0 }} />
-              <span style={styles.fieldValueText}>
-                {user.address || 'No registered address on file'}
+            <div style={styles.donationStatDivider} />
+            <div style={styles.donationStatItem}>
+              <span style={styles.donationStatLabel}>80G Tax Exemption Status</span>
+              <span style={styles.donationStatValue}>
+                {user.totalDonations && user.totalDonations > 0 ? 'Eligible' : 'No Receipts'}
               </span>
             </div>
           </div>
 
-          {/* Admin Remarks */}
-          {user.remarks && (
-            <div style={{ ...styles.fieldItem, gridColumn: '1 / -1' }}>
-              <span style={styles.fieldLabel}>Administrative Remarks & Notes</span>
-              <div style={styles.remarksBox}>
-                <span>{user.remarks}</span>
-              </div>
+          <div style={{ marginTop: '20px' }}>
+            <div style={styles.docsEmptyBox}>
+              <CreditCard size={32} color="#94A3B8" />
+              <span style={styles.docsEmptyTitle}>No Recent Payment Transactions</span>
+              <span style={styles.docsEmptySub}>
+                Transaction receipts from payment gateway will automatically synchronize under this profile.
+              </span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-
-      {/* KYC & Identity Verification Documents */}
-      <div style={styles.sectionCard}>
-        <div style={styles.sectionHeader}>
-          <div style={styles.sectionHeaderTitle}>
-            <ShieldCheck size={18} color="#011F39" />
-            <h2 style={styles.sectionTitle}>Verification & Identity Documents</h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate(`/admin/users/${user.id}/verification`)}
-            style={styles.verificationBtn}
-          >
-            <ShieldCheck size={15} />
-            <span>Open Verification Portal</span>
-          </button>
-        </div>
-
-        {user.documents && user.documents.length > 0 ? (
-          <div style={styles.docsGrid}>
-            {user.documents.map((doc) => (
-              <div key={doc.id} style={styles.docCard}>
-                <div style={styles.docLeft}>
-                  <div style={styles.docIconBox}>
-                    <FileText size={20} color="#011F39" />
-                  </div>
-                  <div style={styles.docMeta}>
-                    <span style={styles.docTitle}>{doc.title}</span>
-                    <span style={styles.docSub}>
-                      {doc.fileName} • {doc.fileSize || '1.2 MB'}
-                    </span>
-                  </div>
-                </div>
-
-                <div style={styles.docActions}>
-                  <span
-                    style={{
-                      ...styles.docBadge,
-                      backgroundColor: doc.verified ? '#ECFDF5' : '#FFFBEB',
-                      color: doc.verified ? '#059669' : '#D97706',
-                      borderColor: doc.verified ? '#BBF7D0' : '#FDE68A',
-                    }}
-                  >
-                    {doc.verified ? 'Verified' : 'Pending'}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => setViewingDoc(doc)}
-                    style={styles.viewDocBtn}
-                  >
-                    View
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={styles.docsEmptyBox}>
-            <FileText size={32} color="#94A3B8" />
-            <span style={styles.docsEmptyTitle}>No Verification Documents Uploaded</span>
-            <span style={styles.docsEmptySub}>
-              This user has not yet submitted Aadhaar, PAN or institutional identity credentials.
-            </span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Action Footer Bar */}
       <div style={styles.footerBar}>
         <div style={styles.footerLeft}>
-          {/* Block / Unblock */}
           <button
             type="button"
             onClick={() => setConfirmAction(user.status === 'blocked' ? 'unblock' : 'block')}
@@ -596,12 +878,11 @@ export const UserDetailsPage: React.FC = () => {
             ) : (
               <>
                 <Lock size={15} />
-                <span>Block Account</span>
+                <span>Suspend Account</span>
               </>
             )}
           </button>
 
-          {/* Reset Password */}
           <button
             type="button"
             onClick={() => setShowPasswordResetModal(true)}
@@ -611,7 +892,6 @@ export const UserDetailsPage: React.FC = () => {
             <span>Reset Password</span>
           </button>
 
-          {/* Delete Account */}
           <button
             type="button"
             onClick={() => setConfirmAction('delete')}
@@ -661,7 +941,7 @@ export const UserDetailsPage: React.FC = () => {
 
 const styles: Record<string, React.CSSProperties> = {
   pageContainer: {
-    maxWidth: '1200px',
+    maxWidth: '1240px',
     margin: '0 auto',
     paddingBottom: '40px',
   },
@@ -727,34 +1007,64 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#FFFFFF',
     borderRadius: '16px',
     border: '1px solid #E2E8F0',
-    padding: '24px 28px',
     boxShadow: '0 2px 8px rgba(1, 31, 57, 0.04)',
     marginBottom: '20px',
+    overflow: 'hidden',
+  },
+  heroBanner: {
+    height: '60px',
+    background: 'linear-gradient(135deg, #011F39 0%, #06294D 60%, #123F68 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    padding: '0 24px',
+  },
+  bannerBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '11px',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    color: '#FAD465',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    padding: '4px 10px',
+    borderRadius: '12px',
+    border: '1px solid rgba(250, 212, 101, 0.25)',
+  },
+  heroBody: {
+    padding: '0 28px 24px 28px',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '20px',
+    marginTop: '-36px',
   },
   heroLeft: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     flexWrap: 'wrap',
-    gap: '24px',
+    gap: '22px',
   },
   avatarWrapper: {
     position: 'relative',
-    width: '84px',
-    height: '84px',
+    width: '92px',
+    height: '92px',
     flexShrink: 0,
   },
   avatarImg: {
-    width: '84px',
-    height: '84px',
+    width: '92px',
+    height: '92px',
     borderRadius: '50%',
     objectFit: 'cover',
-    border: '3px solid #EDF2F7',
-    boxShadow: '0 4px 12px rgba(1, 31, 57, 0.08)',
+    border: '4px solid #FFFFFF',
+    boxShadow: '0 4px 14px rgba(1, 31, 57, 0.12)',
     backgroundColor: '#F8FAFC',
   },
   avatarInitials: {
-    width: '84px',
-    height: '84px',
+    width: '92px',
+    height: '92px',
     borderRadius: '50%',
     backgroundColor: '#011F39',
     color: '#FAD465',
@@ -762,16 +1072,16 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 800,
-    fontSize: '30px',
-    border: '3px solid #FAD465',
-    boxShadow: '0 4px 14px rgba(1, 31, 57, 0.15)',
+    fontSize: '32px',
+    border: '4px solid #FFFFFF',
+    boxShadow: '0 6px 16px rgba(1, 31, 57, 0.18)',
     letterSpacing: '0.04em',
     fontFamily: '"Inter", system-ui, sans-serif',
   },
   avatarStatusDot: {
     position: 'absolute',
-    bottom: '2px',
-    right: '2px',
+    bottom: '4px',
+    right: '4px',
     width: '14px',
     height: '14px',
     borderRadius: '50%',
@@ -780,6 +1090,7 @@ const styles: Record<string, React.CSSProperties> = {
   heroInfo: {
     flex: 1,
     minWidth: '260px',
+    paddingBottom: '2px',
   },
   nameRow: {
     display: 'flex',
@@ -795,6 +1106,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#011F39',
     margin: 0,
     lineHeight: 1.2,
+    textTransform: 'capitalize',
   },
   idPill: {
     display: 'inline-flex',
@@ -815,8 +1127,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '16px',
-    marginBottom: '14px',
+    gap: '14px',
+    marginBottom: '12px',
   },
   contactItem: {
     display: 'inline-flex',
@@ -824,6 +1136,9 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '6px',
     fontSize: '13px',
     color: '#475569',
+    backgroundColor: 'transparent',
+    border: 'none',
+    padding: 0,
     cursor: 'pointer',
     transition: 'color 0.15s ease',
   },
@@ -875,6 +1190,39 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#B45309',
     border: '1px solid #FDE68A',
   },
+  heroRightActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    paddingBottom: '2px',
+  },
+  heroEditBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: '1px solid #E9B82E',
+    backgroundColor: '#FAD465',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(250, 212, 101, 0.35)',
+    transition: 'all 0.15s ease',
+  },
+  heroStatusBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    border: '1px solid',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
   metricsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -884,46 +1232,77 @@ const styles: Record<string, React.CSSProperties> = {
   metricCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    borderLeft: '1px solid #E2E8F0',
+    borderRight: '1px solid #E2E8F0',
+    borderBottom: '1px solid #E2E8F0',
     padding: '16px 18px',
     display: 'flex',
-    alignItems: 'flex-start',
-    gap: '14px',
+    flexDirection: 'column',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
     transition: 'all 0.2s ease',
   },
+  metricTopRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '6px',
+  },
   metricIconBox: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
-  metricContent: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
   metricLabel: {
-    fontSize: '11.5px',
-    fontWeight: 600,
+    fontSize: '11px',
+    fontWeight: 700,
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    letterSpacing: '0.06em',
     color: '#64748B',
-    marginBottom: '2px',
   },
   metricValue: {
     fontFamily: '"Inter", system-ui, sans-serif',
-    fontSize: '17px',
+    fontSize: '18px',
     fontWeight: 800,
     color: '#011F39',
     lineHeight: 1.2,
+    margin: '2px 0 4px',
   },
   metricSub: {
-    fontSize: '11px',
+    fontSize: '11.5px',
     color: '#94A3B8',
-    marginTop: '3px',
+  },
+  tabsBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    overflowX: 'auto',
+    marginBottom: '20px',
+    paddingBottom: '2px',
+  },
+  tabBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '9px 18px',
+    borderRadius: '24px',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+  },
+  tabCountBadge: {
+    fontSize: '11px',
+    fontWeight: 700,
+    padding: '1px 6px',
+    borderRadius: '10px',
   },
   sectionCard: {
     backgroundColor: '#FFFFFF',
@@ -958,18 +1337,22 @@ const styles: Record<string, React.CSSProperties> = {
   fieldsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-    gap: '18px 28px',
+    gap: '14px',
   },
-  fieldItem: {
+  fieldTile: {
+    backgroundColor: '#FAF7F0',
+    border: '1px solid #E2E8F0',
+    borderRadius: '10px',
+    padding: '12px 16px',
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
   },
   fieldLabel: {
-    fontSize: '11.5px',
-    fontWeight: 600,
+    fontSize: '11px',
+    fontWeight: 700,
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.05em',
     color: '#64748B',
   },
   fieldValueRow: {
@@ -984,10 +1367,7 @@ const styles: Record<string, React.CSSProperties> = {
     wordBreak: 'break-word',
   },
   remarksBox: {
-    backgroundColor: '#FAF7F0',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    padding: '12px 14px',
+    marginTop: '4px',
     fontSize: '13px',
     color: '#334155',
     lineHeight: 1.5,
@@ -1080,24 +1460,147 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.15s ease',
   },
   docsEmptyBox: {
-    padding: '28px',
+    padding: '36px 24px',
     textAlign: 'center',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '6px',
+    gap: '8px',
     backgroundColor: '#FAF7F0',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: '1px dashed #CBD5E1',
   },
   docsEmptyTitle: {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: '#334155',
+    fontSize: '14.5px',
+    fontWeight: 700,
+    color: '#1E293B',
   },
   docsEmptySub: {
+    fontSize: '12.5px',
+    color: '#64748B',
+    maxWidth: '460px',
+    lineHeight: 1.4,
+  },
+  emptyVerificationBtn: {
+    marginTop: '6px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: '1px solid #BFDBFE',
+    backgroundColor: '#EFF6FF',
+    color: '#1D4ED8',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  securityGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px',
+  },
+  securityCard: {
+    border: '1px solid #E2E8F0',
+    borderRadius: '10px',
+    padding: '16px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '16px',
+    backgroundColor: '#FAF7F0',
+  },
+  securityCardLeft: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '14px',
+    flex: 1,
+    minWidth: '260px',
+  },
+  securityIconCircle: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  securityCardTitle: {
+    fontSize: '14px',
+    fontWeight: 700,
+    color: '#011F39',
+    margin: '0 0 3px 0',
+  },
+  securityCardDesc: {
     fontSize: '12px',
     color: '#64748B',
+    margin: 0,
+    lineHeight: 1.4,
+  },
+  securityActionBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: '1px solid #DCE4EC',
+    backgroundColor: '#FFFFFF',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  securityDangerBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: '1px solid #FECACA',
+    backgroundColor: '#FEF2F2',
+    color: '#DC2626',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  donationsSummaryBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: '16px',
+    backgroundColor: '#FAF7F0',
+    border: '1px solid #E2E8F0',
+    borderRadius: '12px',
+    padding: '18px 24px',
+  },
+  donationStatItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  donationStatLabel: {
+    fontSize: '11.5px',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    color: '#64748B',
+    letterSpacing: '0.04em',
+  },
+  donationStatValue: {
+    fontFamily: '"Inter", system-ui, sans-serif',
+    fontSize: '20px',
+    fontWeight: 800,
+    color: '#011F39',
+  },
+  donationStatDivider: {
+    width: '1px',
+    height: '36px',
+    backgroundColor: '#DCE4EC',
   },
   footerBar: {
     backgroundColor: '#FFFFFF',
