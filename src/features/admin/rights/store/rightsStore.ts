@@ -4,7 +4,6 @@ import type {
   RightsStatsSummary,
   RightsStatus,
 } from '../types/rights.types';
-import { INITIAL_RIGHTS_FIXTURES } from '../data/rightsFixtures';
 import { rightsService } from '../services/rightsService';
 
 const STORAGE_KEY = 'hrsjm_local_rights_v1';

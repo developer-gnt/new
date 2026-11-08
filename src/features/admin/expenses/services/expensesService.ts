@@ -6,7 +6,6 @@ import type {
   VoucherStatus,
 } from '../types/expenses.types';
 import {
-  INITIAL_EXPENSE_FIXTURES,
   OFFICIAL_EXPENSE_TYPES,
   ASSET_PAYMENT_ACCOUNTS,
 } from '../data/expensesFixtures';

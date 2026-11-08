@@ -6,7 +6,6 @@ import type {
   AssistanceDocumentItem,
 } from '../types/assistance.types';
 import { assistanceService } from '../services/assistanceService';
-import { INITIAL_ASSISTANCE_SEEDS } from '../data/assistanceFixtures';
 
 const STORAGE_KEY = 'hrsjm_local_assistance_v1';
 

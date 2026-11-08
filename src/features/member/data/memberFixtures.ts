@@ -14,7 +14,7 @@ export const INITIAL_DEV_MEMBER: MemberProfile = {
   fatherOrSpouseName: '',
   email: '',
   phone: '',
-  avatarUrl: null,
+  avatarUrl: undefined,
   dob: '',
   gender: '',
   bloodGroup: '',

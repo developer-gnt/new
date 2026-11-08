@@ -3,7 +3,6 @@ import type {
   ExpenseEntryItem,
   ExpenseStatsSummary,
 } from '../types/expenses.types';
-import { INITIAL_EXPENSE_FIXTURES } from '../data/expensesFixtures';
 import { expensesService } from '../services/expensesService';
 
 const STORAGE_KEY = 'hrsjm_local_expenses_v1';

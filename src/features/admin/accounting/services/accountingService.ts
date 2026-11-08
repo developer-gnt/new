@@ -8,11 +8,6 @@ import type {
   LedgerSummary,
   AccountCategory,
 } from '../types/accounting.types';
-import {
-  INITIAL_ACCOUNTS,
-  INITIAL_JOURNAL_ENTRIES,
-  INITIAL_LEDGER_TRANSACTIONS,
-} from '../data/accountingFixtures';
 import { apiClient } from '@/api/client';
 
 const ACCOUNTS_STORAGE_KEY = 'hrsjm_local_accounts_v1';

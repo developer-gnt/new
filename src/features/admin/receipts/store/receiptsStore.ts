@@ -4,7 +4,6 @@ import type {
   UpdateReceiptPayload,
 } from '../types/receipts.types';
 import { receiptsService } from '../services/receiptsService';
-import { INITIAL_RECEIPT_ENTRIES } from '../data/receiptsFixtures';
 
 const STORAGE_KEY = 'hrsjm_local_receipts_v1';
 

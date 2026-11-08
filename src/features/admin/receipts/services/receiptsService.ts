@@ -6,7 +6,6 @@ import type {
   UpdateReceiptPayload,
 } from '../types/receipts.types';
 import {
-  INITIAL_RECEIPT_ENTRIES,
   STANDARD_INCOME_ACCOUNTS,
   STANDARD_RECEIVED_IN_ACCOUNTS,
 } from '../data/receiptsFixtures';

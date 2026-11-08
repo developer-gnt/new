@@ -9,7 +9,6 @@ import type {
 import { apiClient } from '@/api';
 import { membersService } from '../services/membersService';
 import { getValidAvatarUrl } from '@/utils/avatar';
-import { INITIAL_MEMBERS_FIXTURES } from '../data/membersFixtures';
 
 export function isExpiringSoon(validTill: string): boolean {
   if (!validTill || validTill.includes('Lifetime')) return false;
