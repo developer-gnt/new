@@ -120,11 +120,11 @@ export const AllUsersDirectoryPage: React.FC = () => {
   const handleExportCsv = () => {
     const headers = [
       'User ID',
-      'Member ID',
+      'ID',
       'Full Name',
       'Email',
       'Phone',
-      'Classification',
+      'Role',
       'Status',
       'Joined Date',
       'City/Address',
@@ -282,10 +282,10 @@ export const AllUsersDirectoryPage: React.FC = () => {
                 <thead>
                   <tr style={styles.tableHeadRow}>
                     <th style={styles.th}>User & Contact</th>
-                    <th style={styles.th}>Classification</th>
+                    <th style={styles.th}>ID</th>
+                    <th style={styles.th}>Role</th>
                     <th style={styles.th}>Status</th>
                     <th style={styles.th}>Joined Date</th>
-                    <th style={styles.th}>Activity</th>
                     <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>

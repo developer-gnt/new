@@ -51,9 +51,13 @@ export function mapBackendMembershipToMember(backend: any): Member {
     personal.email?.trim() ||
     '—';
 
+  const rawNum = (backend.membership_number || appData.membership_number || '').trim();
   const membershipId =
-    backend.membership_number ||
-    `HRSJM${(backend.id || '').replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+    rawNum && /^HRSJM-\d+$/i.test(rawNum)
+      ? rawNum.toUpperCase()
+      : (backend.id && typeof backend.id === 'string' && backend.id.length >= 5
+          ? `HRSJM-${backend.id.replace(/-/g, '').slice(0, 5).toUpperCase()}`
+          : 'HRSJM-00001');
 
   const joinedDate =
     backend.approval_date ||
@@ -277,7 +281,7 @@ class MembersStore {
                 name: u.full_name?.trim() || u.name || 'Member',
                 phone: u.mobile_number || u.phone || '—',
                 email: u.email || '—',
-                membershipId: u.membership_number || `HRSJM2026${String(idx + 1001).padStart(5, '0')}`,
+                membershipId: u.membership_number || `HRSJM-${String(idx + 1).padStart(5, '0')}`,
                 joinedDate: rawDate,
                 validTill: 'Lifetime',
                 status: (u.status || 'ACTIVE').toUpperCase() === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',

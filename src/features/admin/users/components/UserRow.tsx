@@ -17,7 +17,7 @@ const USER_TYPE_LABELS: Record<UserType, string> = {
   member: 'Official Member',
   seeker: 'Donation Seeker',
   donor: 'Patron Donor',
-  general: 'Citizen User',
+  general: 'User',
 };
 
 const USER_TYPE_BADGES: Record<UserType, { bg: string; text: string; border: string }> = {
@@ -196,91 +196,44 @@ export const UserRow: React.FC<UserRowProps> = ({
         </div>
       </td>
 
-      {/* 2. Member / Identity Post & Number */}
+      {/* 2. Identity ID & Classification */}
       <td style={{ padding: '14px 18px', verticalAlign: 'middle' }}>
-        {isMember ? (
-          <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '13px',
-                fontWeight: 700,
-                fontFamily: 'monospace',
-                color: '#06294D',
-                backgroundColor: '#FFFBEB',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                border: '1px solid #FDE68A',
-              }}
-            >
-              <Award size={13} className="text-amber-500" />
-              <span>{user.memberId || `HRSJM-${user.id.slice(0, 8).toUpperCase()}`}</span>
-            </div>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#0284C7', marginTop: '3px' }}>
-              {user.membershipCategory || 'Active Member'}
-            </div>
+        <div>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontSize: '13px',
+              fontWeight: 700,
+              fontFamily: 'monospace',
+              color: isMember ? '#06294D' : '#1E293B',
+              backgroundColor: isMember ? '#FFFBEB' : '#F1F5F9',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: isMember ? '1px solid #FDE68A' : '1px solid #CBD5E1',
+            }}
+          >
+            {isMember && <Award size={13} className="text-amber-500" />}
+            <span>{user.memberId || `HRSJM-${String(user.id).slice(-5)}`}</span>
           </div>
-        ) : user.userType === 'seeker' ? (
-          <div>
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 700,
-                fontFamily: 'monospace',
-                color: '#92400E',
-                backgroundColor: '#FEF3C7',
-                padding: '2px 7px',
-                borderRadius: '6px',
-                display: 'inline-block',
-              }}
-            >
-              {user.applicationNumber || `#${user.id.slice(-6)}`}
-            </div>
-            <div style={{ fontSize: '11px', color: '#B45309', marginTop: '2px' }}>
-              Assistance Applicant
-            </div>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: isMember ? '#0284C7' : '#64748B',
+              marginTop: '3px',
+            }}
+          >
+            {isMember
+              ? (user.membershipCategory || 'Active Member')
+              : user.userType === 'seeker'
+              ? 'Donation Seeker'
+              : user.userType === 'admin'
+              ? 'Executive Staff'
+              : 'Registered User'}
           </div>
-        ) : user.userType === 'admin' ? (
-          <div>
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 700,
-                color: '#6B21A8',
-                backgroundColor: '#F3E8FF',
-                padding: '2px 7px',
-                borderRadius: '6px',
-                display: 'inline-block',
-              }}
-            >
-              ADMIN-CORE
-            </div>
-            <div style={{ fontSize: '11px', color: '#7E22CE', marginTop: '2px' }}>
-              Executive Staff
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#475569',
-                backgroundColor: '#F1F5F9',
-                padding: '2px 7px',
-                borderRadius: '6px',
-                display: 'inline-block',
-              }}
-            >
-              Citizen #{user.id.slice(-6)}
-            </div>
-            <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
-              Registered Citizen
-            </div>
-          </div>
-        )}
+        </div>
       </td>
 
       {/* 3. Role */}
