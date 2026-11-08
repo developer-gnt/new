@@ -5,6 +5,8 @@ import {
   MessageSquare,
   RefreshCw,
   Download,
+  Plus,
+  RotateCcw,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -247,6 +249,20 @@ export const SupportTicketsListPage: React.FC = () => {
     return true;
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('ALL');
+    setSelectedSource('ALL');
+    setFilters({
+      status: 'ALL',
+      category: 'ALL',
+      priority: 'ALL',
+      dateRange: 'ALL',
+      source: 'ALL',
+    });
+    setCurrentPage(1);
+  };
+
   const handleExportCsv = () => {
     const headers = [
       'Ticket ID',
@@ -301,9 +317,21 @@ export const SupportTicketsListPage: React.FC = () => {
         <div style={styles.headerActions}>
           <button
             type="button"
+            onClick={() => setCreateModalVisible(true)}
+            style={styles.newTicketBtn}
+            className="support-header-primary-btn"
+            title="Create a new support ticket or citizen complaint"
+          >
+            <Plus size={16} />
+            <span>New Ticket</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleRefresh}
             style={styles.refreshBtn}
-            title="Refresh tickets"
+            className="support-header-secondary-btn"
+            title="Refresh tickets list"
           >
             <RefreshCw
               size={15}
@@ -318,6 +346,7 @@ export const SupportTicketsListPage: React.FC = () => {
             type="button"
             onClick={handleExportCsv}
             style={styles.exportBtn}
+            className="support-header-secondary-btn"
             title="Export filtered tickets to CSV"
           >
             <Download size={15} />
@@ -372,7 +401,7 @@ export const SupportTicketsListPage: React.FC = () => {
         }}
         activeFilterCount={activeFiltersCount}
         onOpenFilterModal={() => setFilterModalVisible(true)}
-        onOpenCreateModal={() => setCreateModalVisible(true)}
+        onResetFilters={handleResetFilters}
       />
 
       {/* Tickets List Area */}
@@ -387,6 +416,27 @@ export const SupportTicketsListPage: React.FC = () => {
               ? 'Try adjusting your search criteria or resetting filters.'
               : 'No tickets currently registered under this status category.'}
           </p>
+          <div style={{ marginTop: '16px' }}>
+            {searchQuery || activeFiltersCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                style={styles.emptyResetBtn}
+              >
+                <RotateCcw size={14} />
+                <span>Reset All Filters</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCreateModalVisible(true)}
+                style={styles.emptyCreateBtn}
+              >
+                <Plus size={15} />
+                <span>Create New Ticket</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div>
@@ -529,12 +579,28 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
+    flexWrap: 'wrap',
+  },
+  newTicketBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '7px',
+    padding: '9px 18px',
+    borderRadius: '8px',
+    border: '1px solid #E9B82E',
+    backgroundColor: '#FAD465',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 2px 8px rgba(250, 212, 101, 0.4)',
+    transition: 'all 0.15s ease',
   },
   refreshBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 14px',
+    padding: '9px 15px',
     borderRadius: '8px',
     border: '1px solid #DCE4EC',
     backgroundColor: '#FFFFFF',
@@ -542,12 +608,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
   },
   exportBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 14px',
+    padding: '9px 15px',
     borderRadius: '8px',
     border: '1px solid #DCE4EC',
     backgroundColor: '#FFFFFF',
@@ -555,6 +623,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
   },
   successBanner: {
     backgroundColor: '#F0FDF4',
@@ -572,6 +642,34 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #DCE4EC',
     padding: '48px 24px',
     textAlign: 'center',
+  },
+  emptyResetBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 18px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    backgroundColor: '#F1F5F9',
+    color: '#34516D',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  emptyCreateBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 18px',
+    borderRadius: '8px',
+    border: '1px solid #E9B82E',
+    backgroundColor: '#FAD465',
+    color: '#011F39',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   },
   emptyIconCircle: {
     width: '64px',

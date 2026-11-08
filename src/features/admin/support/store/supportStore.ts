@@ -5,7 +5,6 @@ import type {
   TicketStatsData,
   TicketStatus,
 } from '../types/support.types';
-import { INITIAL_SUPPORT_MESSAGES, INITIAL_SUPPORT_TICKETS } from '../data/supportFixtures';
 import { supportService } from '../services/supportService';
 
 const STORAGE_KEY_TICKETS = 'hrsjm_local_support_tickets_v1';
@@ -48,14 +47,14 @@ class SupportStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            return parsed.filter((t: any) => t.id && !t.id.startsWith('tkt-00'));
           }
         }
       }
     } catch {
       // Fallback
     }
-    return [...INITIAL_SUPPORT_TICKETS];
+    return [];
   }
 
   private loadPersistedMessages(): Record<string, SupportTicketMessage[]> {
@@ -72,7 +71,7 @@ class SupportStore {
     } catch {
       // Fallback
     }
-    return { ...INITIAL_SUPPORT_MESSAGES };
+    return {};
   }
 
   private persist(): void {
@@ -150,21 +149,13 @@ class SupportStore {
     try {
       const res = await supportService.list({ limit: 100 });
       const items = res?.items || (Array.isArray(res) ? res : []);
-      if (Array.isArray(items) && items.length > 0) {
-        const localMap = new Map<string, SupportTicket>();
-        this.tickets.forEach((t) => localMap.set(t.id, t));
-        items.forEach((remote: SupportTicket) => {
-          localMap.set(remote.id, {
-            ...localMap.get(remote.id),
-            ...remote,
-          });
-        });
-        this.tickets = Array.from(localMap.values());
+      if (Array.isArray(items)) {
+        this.tickets = items;
         this.sortInternal();
         this.notify();
       }
     } catch {
-      // Offline fallback: use local fixtures
+      // In offline mode, retain real local items only
     }
   }
 

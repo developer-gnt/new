@@ -5,8 +5,8 @@ import type {
   CreateAssistanceRequestPayload,
   AssistanceDocumentItem,
 } from '../types/assistance.types';
-import { INITIAL_ASSISTANCE_SEEDS } from '../data/assistanceFixtures';
 import { assistanceService } from '../services/assistanceService';
+import { INITIAL_ASSISTANCE_SEEDS } from '../data/assistanceFixtures';
 
 const STORAGE_KEY = 'hrsjm_local_assistance_v1';
 
@@ -40,14 +40,21 @@ class AssistanceStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            return parsed.filter(
+              (r: any) =>
+                r.id &&
+                !r.id.startsWith('ast-00') &&
+                r.full_name !== 'Aftab Shaikh' &&
+                r.full_name !== 'Pooja Deshmukh' &&
+                r.full_name !== 'Mohammed Rehan'
+            );
           }
         }
       }
     } catch {
       // Fallback
     }
-    return [...INITIAL_ASSISTANCE_SEEDS];
+    return [];
   }
 
   private persist(): void {
@@ -123,30 +130,14 @@ class AssistanceStore {
   public async fetchRequests(): Promise<void> {
     try {
       const res = await assistanceService.list({ limit: 100 });
-      const remoteItems = res.items;
-      if (Array.isArray(remoteItems) && remoteItems.length > 0) {
-        const localMap = new Map<string, AssistanceRequest>();
-        this.requests.forEach((r) => localMap.set(r.id, r));
-
-        remoteItems.forEach((remote) => {
-          const existing = localMap.get(remote.id);
-          if (existing) {
-            localMap.set(remote.id, {
-              ...existing,
-              ...remote,
-              documents: existing.documents && existing.documents.length > 0 ? existing.documents : remote.documents,
-            });
-          } else {
-            localMap.set(remote.id, remote);
-          }
-        });
-
-        this.requests = Array.from(localMap.values());
+      const remoteItems = res?.items || (Array.isArray(res) ? res : []);
+      if (Array.isArray(remoteItems)) {
+        this.requests = remoteItems;
         this.sortInternal();
         this.notify();
       }
     } catch {
-      // In offline / dev mode, retain local store items
+      // In offline mode, retain real local items only
     }
   }
 

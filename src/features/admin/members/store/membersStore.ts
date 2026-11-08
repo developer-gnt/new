@@ -6,8 +6,25 @@ import type {
   CreateMemberPayload,
   UpdateMemberPayload,
 } from '../types/members.types';
-import { INITIAL_MEMBERS_FIXTURES } from '../data/membersFixtures';
+import { apiClient } from '@/api';
 import { membersService } from '../services/membersService';
+import { getValidAvatarUrl } from '@/utils/avatar';
+import { INITIAL_MEMBERS_FIXTURES } from '../data/membersFixtures';
+
+export function isExpiringSoon(validTill: string): boolean {
+  if (!validTill || validTill.includes('Lifetime')) return false;
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(validTill);
+    target.setHours(0, 0, 0, 0);
+    const diff = target.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days >= 0 && days <= 30;
+  } catch {
+    return false;
+  }
+}
 
 const STORAGE_KEY = 'hrsjm_local_members_v1';
 
@@ -62,9 +79,7 @@ export function mapBackendMembershipToMember(backend: any): Member {
       const expiry = new Date(backend.expiry_date).getTime();
       const now = Date.now();
       const daysLeft = (expiry - now) / (1000 * 60 * 60 * 24);
-      if (daysLeft >= 0 && daysLeft <= 30) {
-        status = 'EXPIRING_SOON';
-      } else if (daysLeft < 0) {
+      if (daysLeft < 0) {
         status = 'INACTIVE';
       } else {
         status = 'ACTIVE';
@@ -121,7 +136,7 @@ export function mapBackendMembershipToMember(backend: any): Member {
     joinedDate,
     validTill,
     status,
-    photo: user.avatar || undefined,
+    photo: getValidAvatarUrl(user.avatar || appData.avatar || personal.avatar || personal.avatar_url) || undefined,
     categoryName: category.name || appData.category_name || 'District Unit',
     categoryId: backend.category_id || category.id,
     amount: category.fee || backend.amount || undefined,
@@ -170,14 +185,32 @@ class MembersStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            const realOnly = parsed.filter(
+              (m: any) =>
+                m.id &&
+                !m.id.startsWith('mem-00') &&
+                !m.id.startsWith('mem-010') &&
+                m.email !== 'meenakshi@gmail.com' &&
+                m.email !== 'faiza@gmail.com' &&
+                m.email !== 'imran@gmail.com' &&
+                m.email !== 'neha@gmail.com' &&
+                m.email !== 'karan@gmail.com' &&
+                m.email !== 'shabana@gmail.com' &&
+                m.name !== 'Adv. Meenakshi Sundaram' &&
+                m.name !== 'Dr. Vikramaditya Rathore'
+            );
+            return realOnly.map((m: Member) => ({
+              ...m,
+              status: m.status === 'EXPIRING_SOON' ? 'ACTIVE' : m.status,
+              photo: getValidAvatarUrl(m.photo) || undefined,
+            }));
           }
         }
       }
     } catch {
-      // Fallback to initial seeds
+      // Fallback
     }
-    return [...INITIAL_MEMBERS_FIXTURES];
+    return [];
   }
 
   private persist(): void {
@@ -226,10 +259,14 @@ class MembersStore {
     let pending = 0;
 
     for (const m of this.members) {
-      if (m.status === 'ACTIVE') active++;
-      else if (m.status === 'EXPIRING_SOON') expiringSoon++;
-      else if (m.status === 'INACTIVE') inactive++;
-      else if (m.status === 'PENDING') pending++;
+      if (m.status === 'ACTIVE' || m.status === 'EXPIRING_SOON') {
+        active++;
+        if (isExpiringSoon(m.validTill)) expiringSoon++;
+      } else if (m.status === 'INACTIVE') {
+        inactive++;
+      } else if (m.status === 'PENDING') {
+        pending++;
+      }
     }
 
     return {
@@ -243,15 +280,66 @@ class MembersStore {
 
   public async fetchMembers(): Promise<void> {
     try {
-      const res = await membersService.list({ limit: 100 });
-      const items = res?.items || (Array.isArray(res) ? res : []);
-      if (Array.isArray(items)) {
-        this.members = items.map(mapBackendMembershipToMember);
-        this.sortInternal();
-        this.notify();
+      let mappedMembers: Member[] = [];
+      try {
+        const res = await membersService.list({ limit: 100 });
+        const items = res?.items || (Array.isArray(res) ? res : []);
+        if (Array.isArray(items) && items.length > 0) {
+          mappedMembers = items.map(mapBackendMembershipToMember);
+        }
+      } catch (err) {
+        console.warn('GET /memberships call failed, trying /users fallback:', err);
       }
+
+      // If no memberships returned or endpoint failed, fetch real users with role MEMBER from backend /users
+      if (mappedMembers.length === 0) {
+        try {
+          const usersRes = await apiClient.get<any>('/users?limit=100');
+          const userItems = usersRes?.items || usersRes?.data?.items || (Array.isArray(usersRes) ? usersRes : []);
+          if (Array.isArray(userItems)) {
+            const memberUsers = userItems.filter((u: any) =>
+              u.roles?.some((r: any) => (r.name || r.code || r)?.toUpperCase() === 'MEMBER') ||
+              u.user_roles?.some((ur: any) => (ur.role?.name || ur.role?.code)?.toUpperCase() === 'MEMBER')
+            );
+            mappedMembers = memberUsers.map((u: any, idx: number) => {
+              const rawDate = u.created_at || new Date().toISOString();
+              return {
+                id: u.id,
+                userId: u.id,
+                name: u.full_name?.trim() || u.name || 'Member',
+                phone: u.mobile_number || u.phone || '—',
+                email: u.email || '—',
+                membershipId: u.membership_number || `HRSJM2026${String(idx + 1001).padStart(5, '0')}`,
+                joinedDate: rawDate,
+                validTill: 'Lifetime',
+                status: (u.status || 'ACTIVE').toUpperCase() === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
+                photo: u.avatar || undefined,
+                categoryName: 'General Member',
+                categoryId: undefined,
+                amount: 800,
+                gender: u.gender,
+                dob: u.dob,
+                qualification: u.qualification,
+                fatherName: u.father_name,
+                address: u.address || u.address_line1,
+                city: u.city,
+                state: u.state,
+                pincode: u.pincode,
+                documents: [],
+              };
+            });
+          }
+        } catch (e) {
+          console.warn('GET /users call failed:', e);
+        }
+      }
+
+      this.members = mappedMembers;
+      this.sortInternal();
+      this.notify();
     } catch {
-      // In offline / dev mode, retain local store items
+      this.members = [];
+      this.notify();
     }
   }
 
