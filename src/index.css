@@ -574,3 +574,17 @@ html, body {
   background-color: #06294D !important;
   box-shadow: 0 4px 12px rgba(1, 31, 57, 0.3) !important;
 }
+
+/* 5. User Details & Management Polish */
+.user-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .user-metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 14px;
+  }
+}

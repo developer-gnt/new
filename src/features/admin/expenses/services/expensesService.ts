@@ -6,7 +6,6 @@ import type {
   VoucherStatus,
 } from '../types/expenses.types';
 import {
-  INITIAL_EXPENSE_FIXTURES,
   OFFICIAL_EXPENSE_TYPES,
   ASSET_PAYMENT_ACCOUNTS,
 } from '../data/expensesFixtures';
@@ -55,8 +54,8 @@ export const expensesService = {
       };
     } catch {
       return {
-        items: [...INITIAL_EXPENSE_FIXTURES],
-        total: INITIAL_EXPENSE_FIXTURES.length,
+        items: [],
+        total: 0,
         page: 1,
         totalPages: 1,
       };
@@ -68,7 +67,7 @@ export const expensesService = {
       const data = await apiClient.get<any>(`${API_BASE}/${id}`);
       return data?.data ?? data;
     } catch {
-      return INITIAL_EXPENSE_FIXTURES.find((e) => e.id === id);
+      return undefined;
     }
   },
 

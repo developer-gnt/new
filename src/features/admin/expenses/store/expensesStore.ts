@@ -3,7 +3,6 @@ import type {
   ExpenseEntryItem,
   ExpenseStatsSummary,
 } from '../types/expenses.types';
-import { INITIAL_EXPENSE_FIXTURES } from '../data/expensesFixtures';
 import { expensesService } from '../services/expensesService';
 
 const STORAGE_KEY = 'hrsjm_local_expenses_v1';
@@ -33,20 +32,7 @@ class ExpensesStore {
   }
 
   private loadPersisted(): ExpenseEntryItem[] {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      }
-    } catch {
-      // Ignore quota/parse errors
-    }
-    return [...INITIAL_EXPENSE_FIXTURES];
+    return [];
   }
 
   private persist(): void {
