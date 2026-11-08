@@ -34,26 +34,6 @@ class AssistanceStore {
   }
 
   private loadPersisted(): AssistanceRequest[] {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.filter(
-              (r: any) =>
-                r.id &&
-                !r.id.startsWith('ast-00') &&
-                r.full_name !== 'Aftab Shaikh' &&
-                r.full_name !== 'Pooja Deshmukh' &&
-                r.full_name !== 'Mohammed Rehan'
-            );
-          }
-        }
-      }
-    } catch {
-      // Fallback
-    }
     return [];
   }
 
@@ -241,7 +221,7 @@ class AssistanceStore {
   }
 
   public resetToFixtures(): void {
-    this.requests = [...INITIAL_ASSISTANCE_SEEDS];
+    this.requests = [];
     this.sortInternal();
     this.notify();
   }

@@ -8,6 +8,7 @@ import type {
   DateRange,
 } from '../types/donations.types';
 import {
+  INITIAL_DONATIONS as SEED_DONATIONS,
   createDonationReceipt as makeReceipt,
   isWithinDateRange as checkDateRange,
 } from '../data/donationsFixtures';

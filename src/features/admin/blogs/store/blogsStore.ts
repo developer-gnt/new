@@ -8,6 +8,7 @@ import type {
   BlogStatus,
   CreateBlogFormState,
 } from '../types/blog.types';
+import { INITIAL_BLOGS_FIXTURES } from '../data/blogsFixtures';
 import { blogsService } from '../services/blogsService';
 
 const STORAGE_KEY = 'hrsjm_local_blogs_v1';

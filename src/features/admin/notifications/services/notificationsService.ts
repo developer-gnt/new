@@ -5,6 +5,7 @@ import type {
   NotificationItem,
   NotificationStats,
 } from '../types/notifications.types';
+import { INITIAL_BROADCASTS, INITIAL_NOTIFICATIONS } from '../data/notificationsFixtures';
 
 const NOTIFICATIONS_STORAGE_KEY = 'hrsjm_admin_notifications_v1';
 const BROADCASTS_STORAGE_KEY = 'hrsjm_admin_broadcasts_v1';

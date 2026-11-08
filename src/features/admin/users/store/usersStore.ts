@@ -8,6 +8,7 @@ import type {
   UserStatus,
 } from '../types/user.types';
 import { usersService } from '../services/usersService';
+import { getValidAvatarUrl } from '@/utils/avatar';
 
 const STORAGE_KEY = 'hrsjm_registered_users';
 
@@ -46,7 +47,10 @@ class UsersStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            return parsed;
+            return parsed.map((item: UserItem) => ({
+              ...item,
+              avatarUrl: getValidAvatarUrl(item.avatarUrl) || undefined,
+            }));
           }
         }
       }
@@ -174,7 +178,7 @@ class UsersStore {
             status,
             membershipCategory: u.membership_category || (isMember ? 'Active Member' : undefined),
             membershipStatus: u.membership_status || (isMember ? 'ACTIVE' : undefined),
-            avatarUrl: u.avatar_url || u.avatar || undefined,
+            avatarUrl: getValidAvatarUrl(u.avatar_url || u.avatar) || undefined,
             joinedDate: u.created_at || new Date().toISOString(),
             lastLogin: u.last_login_at
               ? new Date(u.last_login_at).toLocaleString()

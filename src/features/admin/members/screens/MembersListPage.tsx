@@ -15,7 +15,7 @@ import type {
   MemberSortOption,
   MembershipCategoryItem,
 } from '../types/members.types';
-import { membersStore } from '../store/membersStore';
+import { membersStore, isExpiringSoon } from '../store/membersStore';
 import { STANDARD_MEMBERSHIP_CATEGORIES } from '../data/membersFixtures';
 import { membersService } from '../services/membersService';
 import { MembersStatsCards } from '../components/MembersStatsCards';
@@ -93,10 +93,14 @@ export const MembersListPage: React.FC = () => {
     let pending = 0;
 
     for (const m of members) {
-      if (m.status === 'ACTIVE') active++;
-      else if (m.status === 'EXPIRING_SOON') expiringSoon++;
-      else if (m.status === 'INACTIVE') inactive++;
-      else if (m.status === 'PENDING') pending++;
+      if (m.status === 'ACTIVE' || m.status === 'EXPIRING_SOON') {
+        active++;
+        if (isExpiringSoon(m.validTill)) expiringSoon++;
+      } else if (m.status === 'INACTIVE') {
+        inactive++;
+      } else if (m.status === 'PENDING') {
+        pending++;
+      }
     }
 
     return {
@@ -113,8 +117,16 @@ export const MembersListPage: React.FC = () => {
     let result = [...members];
 
     // Status Tab filter
-    if (selectedTab !== 'ALL') {
-      result = result.filter((m) => m.status === selectedTab);
+    if (selectedTab === 'ACTIVE') {
+      result = result.filter((m) => m.status === 'ACTIVE' || m.status === 'EXPIRING_SOON');
+    } else if (selectedTab === 'EXPIRING_SOON') {
+      result = result.filter(
+        (m) => (m.status === 'ACTIVE' || m.status === 'EXPIRING_SOON') && isExpiringSoon(m.validTill)
+      );
+    } else if (selectedTab === 'INACTIVE') {
+      result = result.filter((m) => m.status === 'INACTIVE');
+    } else if (selectedTab === 'PENDING') {
+      result = result.filter((m) => m.status === 'PENDING');
     }
 
     // Category filter
@@ -424,7 +436,7 @@ export const MembersListPage: React.FC = () => {
                 <th style={thStyle}>Contact</th>
                 <th style={thStyle}>Category / Post</th>
                 <th style={thStyle}>Validity & Dates</th>
-                <th style={thStyle}>Welcome Kit</th>
+                <th style={thStyle}>Days Left</th>
                 <th style={thStyle}>Status</th>
                 <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
               </tr>

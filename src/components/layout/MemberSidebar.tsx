@@ -122,7 +122,7 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                             </span>
                           )}
 
-                          {!collapsed && item.badge && (
+                          {!collapsed && !isActive && item.badge && (
                             <span
                               style={{
                                 ...styles.badge,

@@ -4,7 +4,6 @@ import type {
   EventUiStatus,
   CreateEventFormState,
 } from '../types/events.types';
-import { INITIAL_EVENTS_FIXTURES } from '../data/eventsFixtures';
 import { eventsService } from '../services/eventsService';
 
 const STORAGE_KEY = 'hrsjm_local_events_v1';
@@ -39,14 +38,14 @@ class EventsStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            return parsed.filter((e: any) => e.id && !e.id.startsWith('evt-00'));
           }
         }
       }
     } catch {
       // Fallback
     }
-    return [...INITIAL_EVENTS_FIXTURES];
+    return [];
   }
 
   private persist(): void {

@@ -179,37 +179,6 @@ class MembersStore {
   }
 
   private loadPersisted(): Member[] {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const realOnly = parsed.filter(
-              (m: any) =>
-                m.id &&
-                !m.id.startsWith('mem-00') &&
-                !m.id.startsWith('mem-010') &&
-                m.email !== 'meenakshi@gmail.com' &&
-                m.email !== 'faiza@gmail.com' &&
-                m.email !== 'imran@gmail.com' &&
-                m.email !== 'neha@gmail.com' &&
-                m.email !== 'karan@gmail.com' &&
-                m.email !== 'shabana@gmail.com' &&
-                m.name !== 'Adv. Meenakshi Sundaram' &&
-                m.name !== 'Dr. Vikramaditya Rathore'
-            );
-            return realOnly.map((m: Member) => ({
-              ...m,
-              status: m.status === 'EXPIRING_SOON' ? 'ACTIVE' : m.status,
-              photo: getValidAvatarUrl(m.photo) || undefined,
-            }));
-          }
-        }
-      }
-    } catch {
-      // Fallback
-    }
     return [];
   }
 
@@ -529,7 +498,7 @@ class MembersStore {
   }
 
   public resetToFixtures(): void {
-    this.members = [...INITIAL_MEMBERS_FIXTURES];
+    this.members = [];
     this.sortInternal();
     this.notify();
   }

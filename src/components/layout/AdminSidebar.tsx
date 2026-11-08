@@ -1,9 +1,10 @@
-import type React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
 import { HrsjmLogo } from '../common/HrsjmLogo';
 import { useUnreadCount } from '@/features/admin/notifications/store/notificationsStore';
+import { useAdminNavBadges } from './adminNavBadgesStore';
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -18,7 +19,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   mobileOpen,
   onCloseMobile,
 }) => {
+  const location = useLocation();
   const unreadCount = useUnreadCount();
+  const { getEffectiveBadge, clearBadge } = useAdminNavBadges();
+
+  // Reset badges automatically when navigating to or viewing the corresponding admin module
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/admin/membership-applications') ||
+      location.pathname.startsWith('/admin/applications')
+    ) {
+      clearBadge('membership_applications');
+    } else if (location.pathname.startsWith('/admin/support')) {
+      clearBadge('complaints');
+    } else if (location.pathname.startsWith('/admin/notifications')) {
+      clearBadge('notifications');
+    }
+  }, [location.pathname, clearBadge]);
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -68,18 +85,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <div style={styles.groupItems}>
                 {group.items.map((item) => {
                   const Icon = item.icon;
-                  const effectiveBadge =
-                    item.id === 'notifications'
-                      ? unreadCount > 0
-                        ? String(unreadCount)
-                        : undefined
-                      : item.badge;
                   return (
                     <NavLink
                       key={item.id}
                       to={item.path}
                       onClick={() => {
                         if (mobileOpen) onCloseMobile();
+                        clearBadge(item.id);
                       }}
                       style={({ isActive }) => ({
                         ...styles.navLink,
@@ -89,43 +101,46 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       })}
                       title={collapsed ? item.title : undefined}
                     >
-                      {({ isActive }) => (
-                        <>
-                          {/* Active Indicator Strip */}
-                          {isActive && <div style={styles.activeStrip} />}
+                      {({ isActive }) => {
+                        const effectiveBadge = getEffectiveBadge(item, unreadCount, isActive);
+                        return (
+                          <>
+                            {/* Active Indicator Strip */}
+                            {isActive && <div style={styles.activeStrip} />}
 
-                          <Icon
-                            size={18}
-                            color={isActive ? '#FAD465' : '#DBE5EE'}
-                            strokeWidth={isActive ? 2.2 : 1.8}
-                            style={{ flexShrink: 0 }}
-                          />
+                            <Icon
+                              size={18}
+                              color={isActive ? '#FAD465' : '#DBE5EE'}
+                              strokeWidth={isActive ? 2.2 : 1.8}
+                              style={{ flexShrink: 0 }}
+                            />
 
-                          {!collapsed && (
-                            <span
-                              style={{
-                                ...styles.linkText,
-                                color: isActive ? '#FFFFFF' : '#DBE5EE',
-                                fontWeight: isActive ? 600 : 400,
-                              }}
-                            >
-                              {item.title}
-                            </span>
-                          )}
+                            {!collapsed && (
+                              <span
+                                style={{
+                                  ...styles.linkText,
+                                  color: isActive ? '#FFFFFF' : '#DBE5EE',
+                                  fontWeight: isActive ? 600 : 400,
+                                }}
+                              >
+                                {item.title}
+                              </span>
+                            )}
 
-                          {!collapsed && effectiveBadge && (
-                            <span
-                              style={{
-                                ...styles.badge,
-                                backgroundColor: isActive ? '#FAD465' : 'rgba(250, 212, 101, 0.2)',
-                                color: isActive ? '#011F39' : '#FAD465',
-                              }}
-                            >
-                              {effectiveBadge}
-                            </span>
-                          )}
-                        </>
-                      )}
+                            {!collapsed && effectiveBadge && (
+                              <span
+                                style={{
+                                  ...styles.badge,
+                                  backgroundColor: isActive ? '#FAD465' : 'rgba(250, 212, 101, 0.2)',
+                                  color: isActive ? '#011F39' : '#FAD465',
+                                }}
+                              >
+                                {effectiveBadge}
+                              </span>
+                            )}
+                          </>
+                        );
+                      }}
                     </NavLink>
                   );
                 })}

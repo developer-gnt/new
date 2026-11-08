@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { UserItem, UserType, UserStatus } from '../types/user.types';
 import { Eye, Edit3, ShieldCheck, KeyRound, Lock, Unlock, Phone, Mail, Award, CheckCircle2 } from 'lucide-react';
+import { getValidAvatarUrl } from '@/utils/avatar';
 
 interface UserRowProps {
   user: UserItem;
@@ -41,6 +42,13 @@ export const UserRow: React.FC<UserRowProps> = ({
   onResetPassword,
   onToggleStatus,
 }) => {
+  const [imgError, setImgError] = useState(false);
+  const validAvatarUrl = useMemo(() => getValidAvatarUrl(user.avatarUrl), [user.avatarUrl]);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [user.avatarUrl]);
+
   const isMember = user.userType === 'member';
   const typeStyle = USER_TYPE_BADGES[user.userType] || USER_TYPE_BADGES.general;
   const statusStyle = STATUS_STYLES[user.status] || STATUS_STYLES.active;
@@ -80,10 +88,11 @@ export const UserRow: React.FC<UserRowProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Avatar */}
           <div style={{ position: 'relative', flexShrink: 0 }}>
-            {user.avatarUrl ? (
+            {validAvatarUrl && !imgError ? (
               <img
-                src={user.avatarUrl}
-                alt={user.name}
+                src={validAvatarUrl}
+                alt=""
+                onError={() => setImgError(true)}
                 style={{
                   width: '42px',
                   height: '42px',
@@ -91,6 +100,7 @@ export const UserRow: React.FC<UserRowProps> = ({
                   objectFit: 'cover',
                   border: isMember ? '2px solid #FAD465' : '1px solid #DBE5EE',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
+                  backgroundColor: '#F1F5F9',
                 }}
               />
             ) : (

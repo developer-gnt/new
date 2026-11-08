@@ -6,6 +6,7 @@ import type {
   RightsStatsSummary,
   RightsStatus,
 } from '../types/rights.types';
+import { INITIAL_RIGHTS_FIXTURES } from '../data/rightsFixtures';
 
 export interface BackendRightItem {
   id: string;

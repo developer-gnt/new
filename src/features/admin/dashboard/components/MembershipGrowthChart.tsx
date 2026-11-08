@@ -1,18 +1,55 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
-import type { GrowthPoint } from '../data/dashboardDemoData';
-import { DEMO_GROWTH_DATA } from '../data/dashboardDemoData';
 
-export const MembershipGrowthChart: React.FC = () => {
-  const [range, setRange] = useState<'7d' | '30d' | '6m' | '1y'>('6m');
+export interface GrowthPoint {
+  label: string;
+  members: number;
+}
+
+interface MembershipGrowthChartProps {
+  growthData?: { month: string; total: number }[];
+  currentCount?: number;
+}
+
+export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
+  growthData,
+  currentCount = 0,
+}) => {
   const [hoveredPoint, setHoveredPoint] = useState<GrowthPoint | null>(null);
 
-  const points = DEMO_GROWTH_DATA[range] || DEMO_GROWTH_DATA['6m'];
-  const minVal = Math.min(...points.map((p) => p.members));
-  const maxVal = Math.max(...points.map((p) => p.members));
-  const paddingY = (maxVal - minVal) * 0.15 || 20;
-  const floorVal = Math.floor(minVal - paddingY);
+  const formatMonthLabel = (m: string) => {
+    try {
+      const parts = m.split('-');
+      if (parts.length === 2) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+        return d.toLocaleString('en-US', { month: 'short' });
+      }
+    } catch {
+      // Ignore
+    }
+    return m;
+  };
+
+  const points: GrowthPoint[] =
+    growthData && growthData.length > 0
+      ? growthData.map((d) => ({
+          label: formatMonthLabel(d.month),
+          members: d.total,
+        }))
+      : [
+          { label: 'Q1', members: 0 },
+          { label: 'Q2', members: 0 },
+          { label: 'Q3', members: 0 },
+          { label: 'Current', members: currentCount },
+        ];
+
+  const minVal = points.length > 0 ? Math.min(...points.map((p) => p.members)) : 0;
+  const maxVal = points.length > 0 ? Math.max(...points.map((p) => p.members)) : 0;
+  const paddingY = Math.max((maxVal - minVal) * 0.15, 5);
+  const floorVal = Math.max(0, Math.floor(minVal - paddingY));
   const ceilVal = Math.ceil(maxVal + paddingY);
+  const valRange = ceilVal - floorVal || 1;
 
   const width = 640;
   const height = 240;
@@ -24,8 +61,11 @@ export const MembershipGrowthChart: React.FC = () => {
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
 
-  const getX = (index: number) => padLeft + (index / (points.length - 1)) * chartW;
-  const getY = (val: number) => padTop + chartH - ((val - floorVal) / (ceilVal - floorVal)) * chartH;
+  const getX = (index: number) => {
+    if (points.length <= 1) return padLeft + chartW / 2;
+    return padLeft + (index / (points.length - 1)) * chartW;
+  };
+  const getY = (val: number) => padTop + chartH - ((val - floorVal) / valRange) * chartH;
 
   const coordinates = points.map((p, idx) => ({
     x: getX(idx),
@@ -38,11 +78,14 @@ export const MembershipGrowthChart: React.FC = () => {
     return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
   }, '');
 
-  const areaPath = `${linePath} L ${coordinates[coordinates.length - 1].x} ${
-    padTop + chartH
-  } L ${coordinates[0].x} ${padTop + chartH} Z`;
+  const lastCoord = coordinates[coordinates.length - 1];
+  const firstCoord = coordinates[0];
+  const areaPath =
+    coordinates.length > 1
+      ? `${linePath} L ${lastCoord.x} ${padTop + chartH} L ${firstCoord.x} ${padTop + chartH} Z`
+      : '';
 
-  const latestVal = points[points.length - 1].members;
+  const latestVal = coordinates.length > 0 ? coordinates[coordinates.length - 1].members : currentCount;
 
   return (
     <div style={styles.card}>
@@ -56,23 +99,6 @@ export const MembershipGrowthChart: React.FC = () => {
           <p style={styles.subtitle}>
             Verified membership roster: <strong>{latestVal.toLocaleString()}</strong> active members
           </p>
-        </div>
-
-        {/* Range Selector Pill Group */}
-        <div style={styles.rangeGroup}>
-          {(['7d', '30d', '6m', '1y'] as const).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              style={{
-                ...styles.rangeBtn,
-                ...(range === r ? styles.rangeBtnActive : {}),
-              }}
-            >
-              {r.toUpperCase()}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -120,7 +146,7 @@ export const MembershipGrowthChart: React.FC = () => {
           })}
 
           {/* Fill Area Under Curve */}
-          <path d={areaPath} fill="url(#growthAreaGrad)" />
+          {areaPath && <path d={areaPath} fill="url(#growthAreaGrad)" />}
 
           {/* Trendline */}
           <path
@@ -159,12 +185,7 @@ export const MembershipGrowthChart: React.FC = () => {
                 strokeWidth="2.5"
                 style={{ transition: 'r 0.15s ease' }}
               />
-              <circle
-                cx={pt.x}
-                cy={pt.y}
-                r={2}
-                fill="#FAD465"
-              />
+              <circle cx={pt.x} cy={pt.y} r={2} fill="#FAD465" />
 
               {/* X Axis Labels */}
               <text
@@ -199,16 +220,18 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#FFFFFF',
     border: '1px solid #DCE4EC',
     borderRadius: '12px',
-    padding: '24px',
+    padding: '22px',
     boxShadow: '0 2px 8px -2px rgba(1, 31, 57, 0.05)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   headerRow: {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '16px',
-    marginBottom: '20px',
+    marginBottom: '18px',
+    gap: '12px',
   },
   titleWrap: {
     display: 'flex',
@@ -219,79 +242,55 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#EDF2F7',
-    padding: '3px 10px',
-    borderRadius: '999px',
+    backgroundColor: '#F0F5FA',
+    padding: '4px 10px',
+    borderRadius: '6px',
     width: 'fit-content',
+    marginBottom: '4px',
   },
   badgeLabel: {
     fontSize: '11px',
     fontWeight: 700,
     color: '#06294D',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.05em',
   },
   title: {
-    fontSize: '20px',
+    fontSize: '16px',
     fontWeight: 700,
     color: '#0B2F52',
-    margin: '4px 0 0 0',
-  },
-  subtitle: {
-    fontSize: '13px',
-    color: '#34516D',
     margin: 0,
   },
-  rangeGroup: {
-    display: 'flex',
-    gap: '4px',
-    backgroundColor: '#FAF7F0',
-    border: '1px solid #DCE4EC',
-    padding: '3px',
-    borderRadius: '8px',
-  },
-  rangeBtn: {
-    padding: '5px 12px',
-    fontSize: '12px',
-    fontWeight: 600,
-    border: 'none',
-    backgroundColor: 'transparent',
+  subtitle: {
+    fontSize: '12.5px',
     color: '#718096',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  rangeBtnActive: {
-    backgroundColor: '#06294D',
-    color: '#FAD465',
-    boxShadow: '0 1px 3px rgba(1, 31, 57, 0.2)',
+    margin: 0,
   },
   svgContainer: {
     position: 'relative',
     width: '100%',
+    marginTop: 'auto',
   },
   tooltip: {
     position: 'absolute',
     top: '12px',
-    right: '24px',
-    backgroundColor: '#011F39',
+    right: '12px',
+    backgroundColor: '#06294D',
     color: '#FFFFFF',
     padding: '6px 12px',
     borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: 500,
-    boxShadow: '0 4px 12px rgba(1, 31, 57, 0.25)',
+    fontSize: '11.5px',
     display: 'flex',
-    gap: '6px',
     alignItems: 'center',
-    border: '1px solid #FAD465',
+    gap: '6px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    pointerEvents: 'none',
   },
   tooltipLabel: {
     color: '#FAD465',
     fontWeight: 600,
   },
   tooltipVal: {
-    color: '#FFFFFF',
     fontWeight: 700,
   },
 };
