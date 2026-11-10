@@ -94,7 +94,7 @@ export const DonationReceiptModal: React.FC<DonationReceiptModalProps> = ({
               />
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-lg sm:text-xl font-black font-serif text-[#011F39] tracking-wide leading-tight">
-                  HUMAN RIGHTS SANRAKSHAN JAN MANCH
+                  Human Rights &  Social Justice Mission
                 </h2>
                 <div className="text-xs font-bold text-amber-700 mt-0.5">
                   मानव अधिकार एवं सामाजिक न्याय संरक्षण ट्रस्ट
@@ -238,7 +238,7 @@ export const DonationReceiptModal: React.FC<DonationReceiptModalProps> = ({
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-900 leading-relaxed mb-4">
               <span className="font-bold">🏛️ Tax Exemption Certificate under Section 80G:</span>
               <p className="mt-0.5 text-[10.5px] text-amber-800">
-                Donations to Human Rights Sanrakshan Jan Manch are eligible for tax deduction under Section 80G(5)(vi) of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AABTH4589KF20214</strong> dated 12/04/2021. No commercial return, goods, or services were provided in consideration of this contribution.
+                Donations to Human Rights &  Social Justice Mission are eligible for tax deduction under Section 80G(5)(vi) of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AABTH4589KF20214</strong> dated 12/04/2021. No commercial return, goods, or services were provided in consideration of this contribution.
               </p>
             </div>
 
@@ -257,7 +257,7 @@ export const DonationReceiptModal: React.FC<DonationReceiptModalProps> = ({
               <div className="text-right">
                 <div className="font-serif italic font-bold text-slate-800 text-sm">K. S. Rathore</div>
                 <div className="font-bold text-[11px] text-[#011F39]">Authorized Signatory / National Treasurer</div>
-                <div className="text-[9px] text-slate-400">Human Rights Sanrakshan Jan Manch</div>
+                <div className="text-[9px] text-slate-400">Human Rights &  Social Justice Mission</div>
               </div>
             </div>
 

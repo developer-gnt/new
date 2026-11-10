@@ -77,7 +77,7 @@ export const DonationReceiptPage: React.FC = () => {
         {/* Trust Header */}
         <div className="text-center border-b-2 border-[#011F39] pb-4 mb-5">
           <h1 className="text-2xl font-bold font-serif text-[#011F39] tracking-wide">
-            HUMAN RIGHTS SANRAKSHAN JAN MANCH
+            Human Rights &  Social Justice Mission
           </h1>
           <p className="text-sm font-semibold text-slate-700 mt-1">
             मानव अधिकार एवं सामाजिक न्याय संरक्षण ट्रस्ट
@@ -181,7 +181,7 @@ export const DonationReceiptPage: React.FC = () => {
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 leading-relaxed">
           <span className="font-bold">🏛️ Tax Exemption Notice under Section 80G:</span>
           <p className="mt-0.5 text-[11px] text-amber-800">
-            Donations to Human Rights Sanrakshan Jan Manch are eligible for tax deduction under Section 80G of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AAATH1234KF20214</strong> dated 12/04/2021.
+            Donations to Human Rights &  Social Justice Mission are eligible for tax deduction under Section 80G of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AAATH1234KF20214</strong> dated 12/04/2021.
           </p>
         </div>
 

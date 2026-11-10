@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { executeSignOut } from '@/features/auth/store/authStore';
 import { ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react';
 import { MEMBER_NAV_GROUPS } from './memberNavItems';
+import { useMemberUnreadCount } from '../../features/member/store/memberNotificationsStore';
 
 interface MemberSidebarProps {
   collapsed: boolean;
@@ -18,6 +19,7 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
   onCloseMobile,
 }) => {
   const navigate = useNavigate();
+  const unreadCount = useMemberUnreadCount();
 
   const handleSignOut = async () => {
     if (mobileOpen) onCloseMobile();
@@ -134,17 +136,33 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
                             </span>
                           )}
 
-                          {!collapsed && item.badge && (
-                            <span
-                              style={{
-                                ...styles.badge,
-                                backgroundColor: isActive ? '#FAD465' : 'rgba(250, 212, 101, 0.2)',
-                                color: isActive ? '#011F39' : '#FAD465',
-                              }}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
+                          {(() => {
+                            const effectiveBadge =
+                              item.id === 'notifications'
+                                ? unreadCount > 0
+                                  ? unreadCount > 99
+                                    ? '99+'
+                                    : String(unreadCount)
+                                  : undefined
+                                : item.badge;
+
+                            return (
+                              !collapsed &&
+                              effectiveBadge && (
+                                <span
+                                  style={{
+                                    ...styles.badge,
+                                    backgroundColor: isActive
+                                      ? '#FAD465'
+                                      : 'rgba(250, 212, 101, 0.2)',
+                                    color: isActive ? '#011F39' : '#FAD465',
+                                  }}
+                                >
+                                  {effectiveBadge}
+                                </span>
+                              )
+                            );
+                          })()}
                         </>
                       )}
                     </NavLink>

@@ -179,7 +179,7 @@ export const transactionsService = {
       });
 
       const payload = res?.data || res;
-      if (Array.isArray(payload?.items) && payload.items.length > 0) {
+      if (Array.isArray(payload?.items)) {
         const calculatedTax80G = payload.items
           .filter((i: any) => (i.status === 'Success' || i.status_code === 'SUCCESS') && (i.category_code === 'DONATION' || i.related_info?.tax_exemption_eligible))
           .reduce((acc: number, i: any) => acc + (Number(i.amount) || 0), 0);
@@ -313,7 +313,7 @@ export const transactionsService = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(6, 41, 77);
-    doc.text('HUMAN RIGHTS SANRAKSHAN JAN MANCH', W / 2, 26, { align: 'center' });
+    doc.text('Human Rights &  Social Justice Mission', W / 2, 26, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
@@ -514,7 +514,7 @@ export const transactionsService = {
     doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
     doc.text('Authorized Finance Secretary', W - 30, 258, { align: 'right' });
-    doc.text('National Human Rights Sanrakshan Jan Manch', W - 30, 262, { align: 'right' });
+    doc.text('National Human Rights &  Social Justice Mission', W - 30, 262, { align: 'right' });
 
     // Save PDF
     const filename = `HRSJM_${receiptNo.replace(/\//g, '_')}.pdf`;

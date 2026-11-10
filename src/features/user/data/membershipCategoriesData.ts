@@ -43,8 +43,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     id: 'state-active-member',
     postName: 'State Active Member',
     qualification: 'Minimum 8th Class',
-    fee: '₹ 800',
-    feeAmount: 800,
+    fee: '₹ 900',
+    feeAmount: 900,
     validity: '1 Year',
     checklistItems: [
       'Appointment Letter',
@@ -217,7 +217,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
   {
     id: 'national-legal-council-cell',
     postName: 'National Legal Council Cell',
-    qualification: 'Advocate / Retd. Judge',
+    qualification: 'National Legal Council Cell',
     fee: '₹ 10,000',
     feeAmount: 10000,
     validity: '10 Years',

@@ -78,7 +78,7 @@ export const IdCardSvgPreview: React.FC<IdCardSvgPreviewProps> = ({
               <div style={styles.headerBrandRow}>
                 <HrsjmLogo size="sm" variant="light" showWordmark={false} showIcon={true} />
                 <div style={styles.brandTitles}>
-                  <div style={styles.trustNameEn}>HUMAN RIGHTS SANRAKSHAN JAN MANCH</div>
+                  <div style={styles.trustNameEn}>Human Rights &  Social Justice Mission</div>
                   <div style={styles.trustNameHi}>मानव अधिकार · सामाजिक न्याय संरक्षण ट्रस्ट</div>
                   <div style={styles.trustRegd}>Regd No. HR/0092/2019 · Central Secretariat</div>
                 </div>
@@ -213,7 +213,7 @@ export const IdCardSvgPreview: React.FC<IdCardSvgPreviewProps> = ({
               <div style={styles.termsBox}>
                 <ul style={styles.termsList}>
                   <li>This credential certifies the holder as an accredited administrative officer of HRSJM.</li>
-                  <li>The card remains the exclusive property of Human Rights Sanrakshan Jan Manch.</li>
+                  <li>The card remains the exclusive property of Human Rights &  Social Justice Mission.</li>
                   <li>Unauthorized reproduction, duplication, or tampering is strictly prohibited by law.</li>
                   <li>In case of loss or damage, report immediately to the Central Secretariat.</li>
                 </ul>

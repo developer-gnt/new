@@ -10,7 +10,7 @@ export const CATEGORY_UUID_MAP: Record<string, string> = {
   'state-active-member': '917ff128-555c-40df-b9dc-e07d050b3c90',
   'state-unit-post': 'c658b0ee-68bf-4648-b3d4-664a7c7010e3',
   'state-unit': '4febe0bf-c03a-4217-b11b-a7fef8b6f11c',
-  // Letter Pad Dignitaries
+  // Letter Pad Posts
   'lion-of-state': '82f72f9c-b79e-470d-8160-f29b392e28b4',
   'counselor-of-state': '8fc6d22b-24d3-4401-a750-cb9eec279c24',
   'counsellor-of-state': '8fc6d22b-24d3-4401-a750-cb9eec279c24',
@@ -58,8 +58,8 @@ export const DISTRICT_STATE_POSTS: MembershipPostData[] = [
     level: 'state',
     postName: 'State Active Member',
     qualification: 'Minimum 8th Class',
-    fee: '₹ 800',
-    feeAmount: 800,
+    fee: '₹ 900',
+    feeAmount: 900,
     validity: '1 Year',
     checklistItems: [
       'Appointment Letter',
@@ -232,7 +232,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     slug: 'national-legal-council-cell',
     level: 'national',
     postName: 'National Legal Council Cell',
-    qualification: 'Advocate / Law Graduate (LL.B)',
+    qualification: 'Advocate / Retd. Judge',
     fee: '₹ 10,000',
     feeAmount: 10000,
     validity: '10 Years',
@@ -306,7 +306,7 @@ export const NATIONAL_LEVEL_POSTS: MembershipPostData[] = [
     id: '269d6f50-775d-4085-b482-99a8924abb1d',
     slug: 'national-executive-council',
     level: 'national',
-    postName: 'National Executive Council Member',
+    postName: 'National Political Council Cell',
     qualification: 'Prominent Human Rights Activist / Graduate',
     fee: '₹ 10,000',
     feeAmount: 10000,
