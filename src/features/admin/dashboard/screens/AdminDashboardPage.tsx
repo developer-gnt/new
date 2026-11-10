@@ -107,7 +107,7 @@ export const AdminDashboardPage: React.FC = () => {
       {/* View State Logic Renderings */}
       {viewState === 'loading' && (
         <div style={styles.contentGrid}>
-          <div style={styles.statCardsGrid}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SkeletonCard height={120} />
             <SkeletonCard height={120} />
             <SkeletonCard height={120} />
@@ -148,7 +148,7 @@ export const AdminDashboardPage: React.FC = () => {
       {viewState === 'normal' && (
         <div style={styles.normalViewWrapper}>
           {/* 4 Primary Top Metrics */}
-          <div style={styles.statCardsGrid}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <DashboardStatCard
               title="Total Members"
               value={dashboardData?.memberships ? dashboardData.memberships.total.toLocaleString('en-IN') : '33'}
@@ -337,8 +337,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   statCardsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '18px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '16px',
   },
   twoColumnGrid: {
     display: 'grid',

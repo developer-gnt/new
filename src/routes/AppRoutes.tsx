@@ -179,6 +179,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/donations" element={<UserDonationsPage />} />
           <Route path="/causes" element={<MemberCausesPage />} />
           <Route path="/user/causes" element={<MemberCausesPage />} />
+          <Route path="/donate" element={<UserDonationsPage />} />
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
@@ -272,6 +273,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="certificate" element={<MemberCertificatePage />} />
           <Route path="renew" element={<MemberRenewalPage />} />
           <Route path="causes" element={<MemberCausesPage />} />
+          <Route path="donate" element={<UserDonationsPage isMember={true} />} />
+          <Route path="donations" element={<UserDonationsPage isMember={true} />} />
           <Route path="passbook" element={<MemberPassbookPage />} />
           <Route path="transactions" element={<UserTransactionsPage />} />
           <Route path="support" element={<MemberSupportPage />} />
@@ -298,6 +301,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="rights" element={<SeekerRightsPage />} />
           <Route path="rights/:id" element={<SeekerRightDetailsPage />} />
           <Route path="events" element={<SeekerEventsPage />} />
+          <Route path="about" element={<UserAboutPage />} />
+          <Route path="news" element={<UserNewsPage />} />
           <Route path="support" element={<SeekerSupportPage />} />
           <Route path="support/create" element={<SeekerCreateTicketPage />} />
           <Route path="complaint" element={<SeekerCreateTicketPage />} />
