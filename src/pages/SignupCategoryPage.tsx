@@ -8,10 +8,8 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  Sparkles,
   ShieldCheck,
 } from 'lucide-react';
-import hrsjmLogo from '../assets/hrsjm_logo.png';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -111,11 +109,6 @@ export const SignupCategoryPage: React.FC = () => {
           </Link>
 
           <Link to="/" className="flex items-center gap-2.5">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Official Crest"
-              className="w-8 h-8 object-contain shrink-0"
-            />
             <div className="flex flex-col">
               <span className="text-sm font-black tracking-wider text-white font-serif leading-none">
                 HRSJM
@@ -240,8 +233,7 @@ export const SignupCategoryPage: React.FC = () => {
                 >
                   {/* Popular Banner */}
                   {type.isPopular && (
-                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#06294D] text-[#FAD465] text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                      <Sparkles size={11} />
+                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#06294D] text-[#FAD465] text-[10px] font-black uppercase tracking-wider flex items-center shadow-sm">
                       <span>Recommended Cadre</span>
                     </div>
                   )}

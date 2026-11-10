@@ -28,7 +28,6 @@ import {
 import { authStore } from '../features/auth/store/authStore';
 import { userAuthStore } from '../features/user/store/userAuthStore';
 import { ApiError } from '../services/apiClient';
-import hrsjmLogo from '../assets/hrsjm_logo.png';
 import memberRallyImg from '../assets/images/member-hero-rally.jpg';
 
 export const LoginPage: React.FC = () => {
@@ -252,13 +251,6 @@ export const LoginPage: React.FC = () => {
         <div className="relative z-10 shrink-0 space-y-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <Link to="/home" className="flex items-center gap-3.5 group cursor-pointer">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 p-1.5 border border-white/20 backdrop-blur-md shadow-lg group-hover:border-[#FAD465]/50 transition-colors shrink-0">
-                <img
-                  src={hrsjmLogo}
-                  alt="HRSJM Official Seal"
-                  className="w-full h-full object-contain drop-shadow-md"
-                />
-              </div>
               <div>
                 <div className="text-sm sm:text-base font-extrabold tracking-wider text-white font-serif flex items-center gap-2">
                   <span>HRSJM</span>

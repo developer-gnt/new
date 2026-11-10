@@ -23,6 +23,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { transactionsService } from '../services/transactionsService';
+import { printOfficialDonationReceipt } from '../../admin/donations/utils/donationReceiptGenerator';
 import type {
   TransactionCategoryCode,
   TransactionStatusCode,
@@ -878,7 +879,27 @@ export const UserTransactionsPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    if (receiptModalTxn.category_code === 'DONATION' || receiptModalTxn.related_info?.tax_exemption_eligible) {
+                      printOfficialDonationReceipt({
+                        id: receiptModalTxn.id,
+                        receiptNumber: receiptModalTxn.receipt_number || `HRSJM/80G/2026-27/${receiptModalTxn.transaction_id.slice(-6).toUpperCase()}`,
+                        receiptDate: receiptModalTxn.payment_date || receiptModalTxn.created_at,
+                        donorName: user?.full_name || 'HRSJM Contributor',
+                        donorMobile: user?.mobile_number,
+                        donorEmail: user?.email,
+                        donorPan: (user as any)?.pan_number,
+                        cause: receiptModalTxn.title || receiptModalTxn.purpose || 'General Relief Fund',
+                        amount: receiptModalTxn.amount,
+                        paymentMethod: receiptModalTxn.payment_method || 'Cashfree PG (Verified)',
+                        transactionId: receiptModalTxn.transaction_id,
+                        status: receiptModalTxn.status,
+                        source: 'Website Official Portal',
+                      });
+                    } else {
+                      handleDownloadReceipt(receiptModalTxn);
+                    }
+                  }}
                   className="px-3.5 py-2 text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer size={14} />

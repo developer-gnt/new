@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Heart,
   ShieldCheck,
@@ -9,56 +10,74 @@ import {
   QrCode,
   Building,
   ArrowRight,
+  UserCheck,
+  Baby,
+  Scale,
+  FileSearch,
+  GraduationCap,
+  Briefcase,
+  Clock,
+  ShieldAlert,
+  Building2,
+  HeartHandshake,
+  FileText,
+  Users,
 } from 'lucide-react';
 import { donationsService } from '../../admin/donations/services/donationsService';
-import { assistanceService } from '../../admin/assistance/services/assistanceService';
-import type { Donation } from '../../admin/donations/types/donations.types';
+import type { Donation, DonationReceiptModel } from '../../admin/donations/types/donations.types';
+import { DonationReceiptModal } from '../../admin/donations/components/DonationReceiptModal';
 import { useUserAuth } from '../store/userAuthStore';
 import { cashfreeService } from '../../payments';
+import { HELP_TOPICS } from '../data/helpTopicsData';
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
-const CAUSES = [
-  'General Human Rights Mission',
-  'Free Legal Aid & Citizen Redressal',
-  'Women & Child Protection Welfare',
-  'Right to Education for Underprivileged',
-  'Disaster & Emergency Humanitarian Relief',
-];
+const CAUSES = HELP_TOPICS.map(t => t.title);
+
+const getTopicIcon = (iconName: string) => {
+  switch (iconName) {
+    case 'UserCheck':
+      return <UserCheck size={18} />;
+    case 'Baby':
+      return <Baby size={18} />;
+    case 'Scale':
+      return <Scale size={18} />;
+    case 'FileSearch':
+      return <FileSearch size={18} />;
+    case 'GraduationCap':
+      return <GraduationCap size={18} />;
+    case 'Briefcase':
+      return <Briefcase size={18} />;
+    case 'Clock':
+      return <Clock size={18} />;
+    case 'ShieldAlert':
+      return <ShieldAlert size={18} />;
+    case 'Building2':
+      return <Building2 size={18} />;
+    case 'HeartHandshake':
+      return <HeartHandshake size={18} />;
+    case 'FileText':
+      return <FileText size={18} />;
+    case 'Users':
+    default:
+      return <Users size={18} />;
+  }
+};
 
 export const UserDonationsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useUserAuth();
 
   const [activeTab, setActiveTab] = useState<'donate' | 'history'>('donate');
   const [selectedAmount, setSelectedAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
-  const [causes, setCauses] = useState<string[]>(CAUSES);
   const [selectedCause, setSelectedCause] = useState<string>(CAUSES[0]);
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'CARD' | 'NETBANKING'>('UPI');
 
-  useEffect(() => {
-    const loadApprovedCauses = async () => {
-      try {
-        const approved = await assistanceService.listApproved();
-        if (approved && approved.length > 0) {
-          const names = approved
-            .map((a: any) => a.title || a.purpose || a.reason_for_aid)
-            .filter(Boolean);
-          if (names.length > 0) {
-            setCauses([...new Set([...CAUSES, ...names])]);
-          }
-        }
-      } catch {
-        // keep default CAUSES
-      }
-    };
-    loadApprovedCauses();
-  }, []);
-
   // Form State
-  const [donorName, setDonorName] = useState(user?.full_name || 'Mohd. Ayaan Shaikh');
-  const [donorEmail, setDonorEmail] = useState(user?.email || 'ayaan.shaikh@hrsjm.org');
-  const [donorMobile, setDonorMobile] = useState(user?.mobile_number || '+91 98765 43210');
+  const [donorName, setDonorName] = useState(user?.full_name || '');
+  const [donorEmail, setDonorEmail] = useState(user?.email || '');
+  const [donorMobile, setDonorMobile] = useState(user?.mobile_number || '');
   const [panNumber, setPanNumber] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
 
@@ -67,6 +86,30 @@ export const UserDonationsPage: React.FC = () => {
   const [completedDonation, setCompletedDonation] = useState<Donation | null>(null);
   const [pastDonations, setPastDonations] = useState<Donation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<DonationReceiptModel | null>(null);
+
+  const handleOpenReceipt = (donation: Donation) => {
+    const rawRef = donation.transaction_id || donation.id;
+    const cleanHash = rawRef.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase();
+    const receiptNum = (donation as any).receipt_number || `HRSJM/80G/2026-27/${cleanHash}`;
+
+    setSelectedReceipt({
+      id: donation.id,
+      receiptNumber: receiptNum,
+      receiptDate: donation.created_at || new Date().toISOString(),
+      donorName: donation.donor_name || user?.full_name || donorName || 'HRSJM Contributor',
+      donorMobile: donation.donor_mobile || user?.mobile_number || donorMobile || null,
+      donorEmail: donation.donor_email || user?.email || donorEmail || null,
+      donorPan: panNumber || (donation as any).pan_number || null,
+      memberCode: donation.member_code || (user as any)?.member_code || null,
+      cause: donation.cause || 'General Relief Fund',
+      amount: donation.amount,
+      paymentMethod: donation.payment_method || 'Cashfree Payment Gateway (Online)',
+      transactionId: donation.transaction_id || donation.id,
+      status: donation.status || 'PAID',
+      source: donation.source || 'Website Official Portal',
+    });
+  };
 
   // Load history on mount or tab change
   useEffect(() => {
@@ -218,29 +261,11 @@ export const UserDonationsPage: React.FC = () => {
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  cashfreeService.downloadDonationReceiptPdf({
-                    receiptNumber: (completedDonation as any).receipt_number || `RCP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-                    orderId: completedDonation.id,
-                    transactionId: (completedDonation as any).transaction_id || `CF-${Date.now().toString().slice(-8)}`,
-                    amount: completedDonation.amount,
-                    purpose: 'donation',
-                    purposeTitle: completedDonation.cause,
-                    donorName: completedDonation.donor_name,
-                    donorMobile: donorMobile,
-                    donorEmail: donorEmail,
-                    panNumber: panNumber,
-                    userId: user?.id,
-                    paymentMethod: (completedDonation as any).payment_method || 'CASHFREE',
-                    paidAt: completedDonation.created_at || new Date().toISOString(),
-                    is80GEligible: true,
-                    status: 'SUCCESS',
-                  });
-                }}
+                onClick={() => handleOpenReceipt(completedDonation)}
                 className="px-5 py-2.5 rounded-xl bg-[#06294D] hover:bg-[#083563] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
               >
                 <Download size={15} />
-                <span>Download Official 80G Receipt</span>
+                <span>View &amp; Download 80G Receipt</span>
               </button>
               <button
                 type="button"
@@ -260,26 +285,70 @@ export const UserDonationsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form Left 2 cols */}
             <form onSubmit={handleMakeDonation} className="lg:col-span-2 space-y-6">
-              {/* 1. Select Cause */}
+              {/* 1. Select Type / Mission Cause */}
               <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
-                <label className="text-xs font-bold text-[#06294D] uppercase tracking-wider block">
-                  1. Select Mission Cause
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {causes.map(cause => (
-                    <button
-                      key={cause}
-                      type="button"
-                      onClick={() => setSelectedCause(cause)}
-                      className={`p-3 rounded-xl text-left text-xs font-bold transition-all cursor-pointer border ${
-                        selectedCause === cause
-                          ? 'bg-[#FEF3C7] border-amber-400 text-[#06294D] shadow-xs'
-                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {cause}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="text-xs font-bold text-[#06294D] uppercase tracking-wider block">
+                      1. Select Type(s) of Help / Mission Cause
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Choose the humanitarian or constitutional relief category for your contribution
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/causes')}
+                    className="text-xs font-bold text-[#06294D] hover:text-amber-600 flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <span>Browse All Causes &amp; Missions</span>
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {HELP_TOPICS.map(topic => {
+                    const isSelected = selectedCause === topic.title;
+                    return (
+                      <button
+                        key={topic.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCause(topic.title);
+                          navigate(`/causes?cause=${encodeURIComponent(topic.title)}`);
+                        }}
+                        className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex items-center gap-3.5 group relative ${
+                          isSelected
+                            ? 'bg-amber-50/70 border-amber-400 ring-2 ring-amber-400/30 shadow-xs'
+                            : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/80 shadow-2xs'
+                        }`}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-transform group-hover:scale-105"
+                          style={{ backgroundColor: topic.badgeBg, color: topic.badgeColor }}
+                        >
+                          {getTopicIcon(topic.iconName)}
+                        </div>
+                        <div className="flex-1 min-w-0 pr-1">
+                          <div className="text-xs font-bold text-[#06294D] group-hover:text-amber-800 transition-colors">
+                            {topic.title}
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
+                            {topic.description}
+                          </p>
+                        </div>
+                        <div
+                          className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
+                            isSelected
+                              ? 'border-amber-500 bg-amber-500 text-white'
+                              : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                          }`}
+                        >
+                          {isSelected && <CheckCircle size={14} className="stroke-[3]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -539,8 +608,8 @@ export const UserDonationsPage: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => window.print()}
-                    className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-[#06294D] flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    onClick={() => handleOpenReceipt(donation)}
+                    className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-[#06294D] flex items-center gap-1.5 cursor-pointer shadow-xs hover:border-[#06294D]/30 transition"
                   >
                     <Download size={13} />
                     <span>80G Receipt</span>
@@ -551,6 +620,12 @@ export const UserDonationsPage: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Official 80G Statutory Donation Receipt Document Modal */}
+      <DonationReceiptModal
+        receipt={selectedReceipt}
+        onClose={() => setSelectedReceipt(null)}
+      />
     </div>
   );
 };

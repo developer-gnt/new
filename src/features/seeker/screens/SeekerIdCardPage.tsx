@@ -122,7 +122,7 @@ export const SeekerIdCardPage: React.FC = () => {
         {/* Navy Header Band */}
         <div className="bg-gradient-to-r from-[#011F39] via-[#06294D] to-[#123F68] p-5 text-white flex items-center justify-between border-b-2 border-[#FAD465]">
           <div className="flex items-center gap-3">
-            <HrsjmLogo size="sm" variant="light" />
+            <HrsjmLogo size="sm" variant="light" showIcon={true} />
             <div>
               <div className="text-[10px] font-extrabold tracking-widest text-[#FAD465] uppercase">
                 HUMAN RIGHTS & SOCIAL JUSTICE MISSION
