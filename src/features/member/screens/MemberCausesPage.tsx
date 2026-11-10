@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   X,
@@ -14,6 +15,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { useCurrentMember } from '../store/memberStore';
+import { useUserAuth } from '../../user/store/userAuthStore';
 import { GlobalPaymentModal } from '../../payments';
 import { assistanceService } from '../../admin/assistance/services/assistanceService';
 
@@ -281,11 +283,28 @@ const SEED_CAUSES: MemberCause[] = [
 
 export const MemberCausesPage: React.FC = () => {
   const { member, processDonation } = useCurrentMember();
+  const { user } = useUserAuth();
+  const [searchParams] = useSearchParams();
+
+  const urlCategory = searchParams.get('category') as CauseCategoryKey | null;
+  const urlCause = searchParams.get('cause') || searchParams.get('search') || '';
+
   const [causes, setCauses] = useState<MemberCause[]>(SEED_CAUSES);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<CauseCategoryKey>('all');
+  const [searchQuery, setSearchQuery] = useState<string>(urlCause);
+  const [activeTab, setActiveTab] = useState<CauseCategoryKey>(urlCategory || 'all');
   const [selectedCauseForDonation, setSelectedCauseForDonation] = useState<MemberCause | null>(null);
   const [selectedCauseForDetails, setSelectedCauseForDetails] = useState<MemberCause | null>(null);
+
+  useEffect(() => {
+    const causeParam = searchParams.get('cause') || searchParams.get('search');
+    if (causeParam !== null) {
+      setSearchQuery(causeParam);
+    }
+    const catParam = searchParams.get('category') as CauseCategoryKey | null;
+    if (catParam) {
+      setActiveTab(catParam);
+    }
+  }, [searchParams]);
 
   // Fetch approved requests from backend and map them into the APK structure
   useEffect(() => {
@@ -961,10 +980,10 @@ export const MemberCausesPage: React.FC = () => {
             title: selectedCauseForDonation.title,
             subtitle: selectedCauseForDonation.category,
             entityId: selectedCauseForDonation.id,
-            userId: member.id,
-            donorName: member.fullName,
-            donorMobile: member.phone,
-            donorEmail: member.email,
+            userId: user?.id || member?.id,
+            donorName: user?.full_name || member?.fullName || 'HRSJM Contributor',
+            donorMobile: user?.mobile_number || member?.phone || '',
+            donorEmail: user?.email || member?.email || '',
           }}
           onSuccess={(receipt) => {
             const donatedId = selectedCauseForDonation.id;

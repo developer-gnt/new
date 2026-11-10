@@ -178,6 +178,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/articles" element={<UserBlogsPage />} />
           <Route path="/donations" element={<UserDonationsPage />} />
           <Route path="/donate" element={<UserDonationsPage />} />
+          <Route path="/causes" element={<MemberCausesPage />} />
+          <Route path="/user/causes" element={<MemberCausesPage />} />
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />

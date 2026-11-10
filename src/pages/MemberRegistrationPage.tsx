@@ -24,8 +24,12 @@ import {
   X,
   FileCheck,
   Loader2,
+  Clock,
+  LayoutDashboard,
 } from 'lucide-react';
-import hrsjmLogo from '../assets/hrsjm_logo.png';
+import { authStore } from '../features/auth/store/authStore';
+import { authService } from '../features/auth/services/authService';
+import { userAuthStore } from '../features/user/store/userAuthStore';
 import {
   ALL_MEMBERSHIP_POSTS,
   DISTRICT_STATE_POSTS,
@@ -113,8 +117,8 @@ export const MemberRegistrationPage: React.FC = () => {
     addressLine1: '',
     addressLine2: '',
     country: 'India',
-    state: 'Delhi NCR',
-    city: 'New Delhi',
+    state: '',
+    city: '',
     pincode: '',
   });
 
@@ -416,8 +420,8 @@ export const MemberRegistrationPage: React.FC = () => {
 
     if (!address.addressLine1.trim()) {
       errors.addressLine1 = 'Address line 1 is required';
-    } else if (address.addressLine1.trim().length < 5) {
-      errors.addressLine1 = 'Address must be at least 5 characters';
+    } else if (address.addressLine1.trim().length < 3) {
+      errors.addressLine1 = 'Address must be at least 3 characters';
     }
 
     if (!address.state.trim()) {
@@ -436,6 +440,9 @@ export const MemberRegistrationPage: React.FC = () => {
     }
 
     setAddressErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      window.scrollTo({ top: 150, behavior: 'smooth' });
+    }
     return Object.keys(errors).length === 0;
   };
 
@@ -564,8 +571,8 @@ export const MemberRegistrationPage: React.FC = () => {
           const appDocs = [
             ...(documents.identityProof ? [{
               id: `doc-${record.id}-idproof`,
-              title: documents.identityProof.name || 'Identity Proof (Aadhaar / Voter ID)',
-              fileName: documents.identityProof.fileName || 'identity_proof.pdf',
+              title: documents.identityProof.name || 'Aadhaar Card (Optional)',
+              fileName: documents.identityProof.fileName || 'aadhaar_card.pdf',
               fileSize: documents.identityProof.fileSize || '1.8 MB',
               uploadDate: 'Today',
               verified: true,
@@ -609,6 +616,43 @@ export const MemberRegistrationPage: React.FC = () => {
         } catch {}
       }
 
+      // Ensure application ID is stored for status retrieval across the portal
+      if (typeof window !== 'undefined' && record?.applicationId) {
+        try {
+          localStorage.setItem('hrsjm_user_membership_app_id', record.applicationId);
+        } catch {}
+      }
+
+      // Ensure valid authenticated session so user is not bounced to sign-in
+      try {
+        if (!authStore.getSnapshot().isAuthenticated) {
+          try {
+            const session = await authService.login({
+              identifier: cleanMobile,
+              password: personal.password,
+            });
+            if (session?.user) {
+              authStore.setUserDirectly(session.user, session.access_token, session.refresh_token);
+              userAuthStore.setUser(session.user as any);
+            }
+          } catch {
+            const applicantUser: any = {
+              id: record.id || `user-${Date.now()}`,
+              full_name: personal.fullName.trim(),
+              mobile_number: cleanMobile,
+              email: cleanEmail,
+              roles: ['USER'],
+              account_type: 'user',
+              membership_status: 'UNDER_REVIEW',
+            };
+            authStore.setUserDirectly(applicantUser, `hrsjm_session_${Date.now()}`);
+            userAuthStore.setUser(applicantUser);
+          }
+        }
+      } catch (authErr) {
+        console.warn('Post-registration session establishment warning:', authErr);
+      }
+
       setPhase(4); // Move to complete view
     } catch (err: unknown) {
       let message = 'Unable to submit membership application. Please check details and try again.';
@@ -635,12 +679,7 @@ export const MemberRegistrationPage: React.FC = () => {
       <div className="min-h-screen bg-[#FAF7F0] flex flex-col justify-center items-center px-4 py-12 font-sans">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Official Crest"
-              className="w-12 h-12 object-contain shrink-0"
-            />
-            <div className="text-left">
+            <div className="text-center">
               <div className="text-base font-black text-[#011F39] font-serif leading-none tracking-wide">
                 HRSJM
               </div>
@@ -810,18 +849,20 @@ export const MemberRegistrationPage: React.FC = () => {
           {/* Actions */}
           <div className="space-y-3">
             <button
-              onClick={() => navigate('/login?role=member')}
+              onClick={() => navigate(`/user/membership-status?id=${encodeURIComponent(submittedRecord.applicationId)}`)}
               className="w-full py-3.5 px-4 rounded-xl bg-[#FAD465] hover:bg-[#E9B82E] text-[#011F39] font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Login to Member Portal</span>
+              <Clock size={16} />
+              <span>Go to My Application</span>
               <ArrowRight size={16} />
             </button>
 
             <button
-              onClick={() => navigate('/')}
-              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs transition cursor-pointer"
+              onClick={() => navigate('/user/dashboard')}
+              className="w-full py-3 px-4 rounded-xl bg-[#011F39] hover:bg-[#06294D] text-[#FAD465] border border-[#06294D] font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              Return to Homepage
+              <LayoutDashboard size={16} />
+              <span>Go to User Dashboard</span>
             </button>
           </div>
         </div>
@@ -853,11 +894,6 @@ export const MemberRegistrationPage: React.FC = () => {
             </Link>
 
             <div className="flex items-center gap-2.5">
-              <img
-                src={hrsjmLogo}
-                alt="HRSJM Official Crest"
-                className="w-8 h-8 object-contain shrink-0"
-              />
               <div className="flex flex-col">
                 <span className="text-sm font-black tracking-wider text-white font-serif leading-none">HRSJM</span>
                 <span className="text-[9px] font-bold text-[#FAD465] tracking-widest uppercase mt-0.5">Membership Categories</span>
@@ -1019,11 +1055,6 @@ export const MemberRegistrationPage: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Official Crest"
-              className="w-8 h-8 object-contain shrink-0"
-            />
             <div className="flex flex-col">
               <span className="text-sm font-black tracking-wider text-white font-serif leading-none">HRSJM</span>
               <span className="text-[9px] font-bold text-[#FAD465] tracking-widest uppercase mt-0.5">Apply for Membership</span>
@@ -1551,6 +1582,21 @@ export const MemberRegistrationPage: React.FC = () => {
                 </p>
               </div>
 
+              {/* Error banner if validation failed */}
+              {Object.keys(addressErrors).length > 0 && (
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-1">
+                  <div className="flex items-center gap-2 font-bold text-rose-900">
+                    <AlertCircle size={15} className="text-rose-600 shrink-0" />
+                    <span>Please complete the required address fields to proceed:</span>
+                  </div>
+                  <ul className="list-disc list-inside text-[11.5px] text-rose-700 pl-1 space-y-0.5 font-medium">
+                    {Object.values(addressErrors).map((msg, i) => (
+                      <li key={i}>{msg}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Address Line 1 */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -1602,16 +1648,20 @@ export const MemberRegistrationPage: React.FC = () => {
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     State <span className="text-rose-500">*</span>
                   </label>
-                  <div className="flex items-center px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div
+                    className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                      addressErrors.state ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
+                    }`}
+                  >
                     <select
                       value={address.state}
                       onChange={e => {
                         const newState = e.target.value;
-                        const defaultCity = STATE_CITIES[newState]?.[0] || 'Main City';
-                        setAddress(a => ({ ...a, state: newState, city: defaultCity }));
+                        setAddress(a => ({ ...a, state: newState, city: '' }));
                       }}
                       className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium cursor-pointer"
                     >
+                      <option value="">Select State *</option>
                       {INDIAN_STATES.map(st => (
                         <option key={st} value={st}>
                           {st}
@@ -1619,6 +1669,9 @@ export const MemberRegistrationPage: React.FC = () => {
                       ))}
                     </select>
                   </div>
+                  {addressErrors.state && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium">{addressErrors.state}</p>
+                  )}
                 </div>
 
                 {/* City */}
@@ -1626,12 +1679,16 @@ export const MemberRegistrationPage: React.FC = () => {
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     City / District <span className="text-rose-500">*</span>
                   </label>
-                  <div className="flex items-center px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div
+                    className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${
+                      addressErrors.city ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
+                    }`}
+                  >
                     <input
                       type="text"
                       list="city-options"
                       value={address.city}
-                      placeholder="City / District *"
+                      placeholder="Enter City / District *"
                       onChange={e => setAddress(a => ({ ...a, city: e.target.value }))}
                       className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium"
                     />
@@ -1641,6 +1698,9 @@ export const MemberRegistrationPage: React.FC = () => {
                       ))}
                     </datalist>
                   </div>
+                  {addressErrors.city && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium">{addressErrors.city}</p>
+                  )}
                 </div>
               </div>
 
@@ -1721,16 +1781,16 @@ export const MemberRegistrationPage: React.FC = () => {
 
               {/* 4 Document Upload Cards in Responsive 2-Col Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 1. Identity Proof */}
+                {/* 1. Aadhaar Card (Optional Identity Proof) */}
                 <div className={`p-4 rounded-2xl border transition ${documents.identityProof ? 'bg-emerald-50/40 border-emerald-200' : documentErrors.identity ? 'bg-rose-50/30 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <FileCheck size={18} className={documents.identityProof ? 'text-emerald-600' : 'text-slate-400'} />
                       <span className="text-xs font-bold text-[#011F39]">
-                        1. Identity Proof <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
+                        1. Aadhaar Card <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">Aadhaar, Voter ID, Passport, PAN</span>
+                    <span className="text-[10px] text-slate-400">Aadhaar Card (UIDAI)</span>
                   </div>
 
                   {documents.identityProof ? (
@@ -1750,9 +1810,9 @@ export const MemberRegistrationPage: React.FC = () => {
                     <div className="mt-2">
                       <label htmlFor={identityUploadId} className="w-full py-2 px-3 border border-dashed border-slate-300 rounded-xl text-center block text-xs font-semibold text-slate-600 hover:border-[#011F39] hover:bg-white transition cursor-pointer">
                         <Upload size={14} className="inline mr-1.5" />
-                        <span>Select Identity Proof File</span>
+                        <span>Select Aadhaar Card File</span>
                       </label>
-                      <input id={identityUploadId} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => handleDocumentUpload('identity', 'Identity Proof', e)} className="hidden" />
+                      <input id={identityUploadId} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => handleDocumentUpload('identity', 'Aadhaar Card', e)} className="hidden" />
                     </div>
                   )}
                   {documentErrors.identity && <p className="text-[11px] text-rose-600 mt-1 font-medium">{documentErrors.identity}</p>}

@@ -185,7 +185,11 @@ export const AdminDashboardPage: React.FC = () => {
 
           {/* Interactive Trends & Breakdowns */}
           <div style={styles.twoColumnGrid}>
-            <MembershipGrowthChart />
+            <MembershipGrowthChart
+              initialGrowth={dashboardData?.memberGrowth}
+              totalMembers={dashboardData?.memberships?.total}
+              activeMembers={dashboardData?.memberships?.active}
+            />
             <StatusDonutChart
               title="Application Status Distribution"
               segments={

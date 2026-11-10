@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { authService } from '../features/auth/services/authService';
 import { ApiError } from '../services/apiClient';
-import hrsjmLogo from '../assets/hrsjm_logo.png';
 
 /**
  * Extracts reset token from search params, hash fragment, or window location.
@@ -209,11 +208,6 @@ export const ResetPasswordPage: React.FC = () => {
       <header className="bg-[#011F39] border-b border-[#06294D] text-white shadow-md relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Seal"
-              className="w-10 h-10 object-contain drop-shadow-md transition-transform group-hover:scale-105"
-            />
             <div>
               <div className="font-serif font-bold text-sm sm:text-base tracking-wide text-white leading-tight">
                 HUMAN RIGHTS SANRAKSHAN JAN MANCH

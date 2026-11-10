@@ -76,7 +76,7 @@ export const IdCardSvgPreview: React.FC<IdCardSvgPreviewProps> = ({
             {/* Top Navy Header Banner */}
             <div style={styles.frontHeader}>
               <div style={styles.headerBrandRow}>
-                <HrsjmLogo size="sm" variant="light" showWordmark={false} />
+                <HrsjmLogo size="sm" variant="light" showWordmark={false} showIcon={true} />
                 <div style={styles.brandTitles}>
                   <div style={styles.trustNameEn}>HUMAN RIGHTS SANRAKSHAN JAN MANCH</div>
                   <div style={styles.trustNameHi}>मानव अधिकार · सामाजिक न्याय संरक्षण ट्रस्ट</div>

@@ -18,7 +18,6 @@ import {
   Sparkles,
   Shield,
 } from 'lucide-react';
-import hrsjmLogo from '../assets/hrsjm_logo.png';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -47,11 +46,6 @@ export const HomePage: React.FC = () => {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between gap-4">
           {/* Brand Logo and Bilingual Wordmark aligned left */}
           <Link to="/" className="flex items-center gap-3 group text-decoration-none min-w-0">
-            <img
-              src={hrsjmLogo}
-              alt="HRSJM Official Crest"
-              className="w-11 h-11 object-contain shrink-0 group-hover:scale-105 transition-transform drop-shadow-xs"
-            />
             <div className="flex flex-col min-w-0">
               <span className="text-[17px] font-bold tracking-wide text-[#011F39] font-serif leading-none">
                 HUMAN RIGHTS SANRAKSHAN JAN MANCH
@@ -624,11 +618,6 @@ export const HomePage: React.FC = () => {
             {/* Brand column */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <img
-                  src={hrsjmLogo}
-                  alt="HRSJM Official Crest"
-                  className="w-10 h-10 object-contain shrink-0"
-                />
                 <div>
                   <h3 className="font-bold font-serif text-base text-white">HRSJM</h3>
                   <p className="text-[10px] text-[#FAD465] font-semibold tracking-wider">

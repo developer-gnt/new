@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../store/userAuthStore';
 import { executeSignOut } from '@/features/auth/store/authStore';
 import { Bell, User, LogOut, ChevronDown, Heart, Menu } from 'lucide-react';
-import { HrsjmLogo } from '@/components/common/HrsjmLogo';
 
 interface UserHeaderProps {
   onToggleSidebar?: () => void;
@@ -96,7 +95,6 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
             className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer min-w-0"
             aria-label="HRSJM Home"
           >
-            <HrsjmLogo size="sm" variant="dark" showWordmark={false} />
             <div className="flex flex-col min-w-0">
               <span className="text-[16px] sm:text-[18px] font-black tracking-tight text-[#06294D] leading-none shrink-0">
                 HRSJM

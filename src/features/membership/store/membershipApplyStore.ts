@@ -31,10 +31,10 @@ const DEFAULT_PERSONAL: PersonalInfoForm = {
 
 const DEFAULT_ADDRESS: AddressInfoForm = {
   addressLine: '',
-  state: 'Delhi',
-  district: 'North West Delhi',
+  state: '',
+  district: '',
   pinCode: '',
-  proposedChapter: 'National Capital Chapter, New Delhi',
+  proposedChapter: '',
   emergencyContactName: '',
   emergencyContactPhone: '',
 };

@@ -120,11 +120,16 @@ export const MembershipStep3: React.FC<MembershipStep3Props> = ({
         </div>
       </div>
 
-      {/* Document Verification Cards (4 mandatory) */}
+      {/* Document Verification Cards (Optional / Uploadable) */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold text-[#06294D] uppercase tracking-wider">
-          Mandatory Verification Documents
-        </h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold text-[#06294D] uppercase tracking-wider">
+            Verification Documents (Upload now or submit later)
+          </h4>
+          <span className="text-[10.5px] text-slate-500 font-medium">
+            Files optional during initial application
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* 1. Identity Proof */}

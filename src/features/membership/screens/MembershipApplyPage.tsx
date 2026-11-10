@@ -68,7 +68,7 @@ export const MembershipApplyPage: React.FC = () => {
       errors.pinCode = 'Valid 6-digit PIN code is required';
     }
     if (!formData.address.proposedChapter.trim()) {
-      errors.proposedChapter = 'Proposed working chapter is required';
+      updateAddress({ proposedChapter: `${formData.address.state || 'National'} Chapter Unit` });
     }
 
     setFormErrors(errors);

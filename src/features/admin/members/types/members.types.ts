@@ -95,6 +95,14 @@ export interface CreateMemberPayload {
     state?: string;
     pincode?: string;
   };
+  documents?: {
+    id: string;
+    name: string;
+    type: string;
+    fileSize: string;
+    uploadedAt: string;
+    url?: string;
+  }[];
   admin_notes?: string;
   auto_activate?: boolean;
 }

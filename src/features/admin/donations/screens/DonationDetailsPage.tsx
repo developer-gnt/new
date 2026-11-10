@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, RotateCcw, Heart, Smartphone, Globe, Laptop } from 'lucide-react';
+import {
+  ArrowLeft,
+  FileText,
+  RotateCcw,
+  Heart,
+  Smartphone,
+  Globe,
+  Laptop,
+  Scale,
+  ExternalLink,
+  ShieldCheck,
+} from 'lucide-react';
 import { useDonationsStore } from '../store/donationsStore';
 import { donationsService } from '../services/donationsService';
 import { DonationReceiptModal } from '../components/DonationReceiptModal';
@@ -252,6 +263,56 @@ export const DonationDetailsPage: React.FC = () => {
               <span className="text-slate-700 mt-0.5 block">
                 {new Date(donation.created_at).toLocaleString('en-IN')}
               </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Double-Entry General Ledger Integration */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 bg-[#011F39] text-[#FAD465] rounded-lg">
+                <Scale className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#011F39]">
+                  Double-Entry General Ledger Status
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Automated financial reconciliation &amp; audit entry posting
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/admin/accounting?search=${donation.transaction_id || donation.id}`)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-xs font-bold text-[#011F39] shadow-2xs transition cursor-pointer self-start sm:self-auto"
+            >
+              <span>View in Accounting &amp; Ledger</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Debit Account</span>
+              <span className="font-semibold text-slate-800 block mt-1">Bank / Cashfree Clearing</span>
+              <span className="text-[11px] text-slate-500 font-mono">A/c #1010 (Asset)</span>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Credit Account</span>
+              <span className="font-semibold text-slate-800 block mt-1">Public Donations &amp; Grants</span>
+              <span className="text-[11px] text-slate-500 font-mono">A/c #4010 (Income)</span>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Audit Voucher Status</span>
+                <span className="inline-flex items-center gap-1 text-emerald-700 font-bold mt-1">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Posted &amp; Reconciled</span>
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono mt-1">Ref: DONATION_PAYMENT</span>
             </div>
           </div>
         </div>

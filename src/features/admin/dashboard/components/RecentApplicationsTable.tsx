@@ -1,20 +1,66 @@
-import type React from 'react';
+import React, { useEffect, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
+import { applicationsStore } from '@/features/admin/applications/store/applicationsStore';
+import type { MembershipApplicationItem } from '@/features/admin/applications/types/applications.types';
 import { DEMO_RECENT_APPLICATIONS } from '../data/dashboardDemoData';
 
+function formatDisplayDate(dateStr?: string): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 export const RecentApplicationsTable: React.FC = () => {
-  const getStatusBadge = (status: 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED') => {
-    switch (status) {
+  useSyncExternalStore(applicationsStore.subscribe, applicationsStore.getSnapshot);
+
+  useEffect(() => {
+    applicationsStore.fetchApplications();
+  }, []);
+
+  const getStatusBadge = (status?: string) => {
+    const s = (status || '').toUpperCase();
+    switch (s) {
       case 'APPROVED':
         return { bg: '#EAF7EE', color: '#16A34A', label: 'Approved' };
       case 'UNDER_REVIEW':
         return { bg: '#FFF9E6', color: '#D97706', label: 'Under Review' };
+      case 'REJECTED':
+        return { bg: '#FEF2F2', color: '#DC2626', label: 'Rejected' };
       case 'SUBMITTED':
       default:
         return { bg: '#EDF2F7', color: '#174A78', label: 'Submitted' };
     }
   };
+
+  const storeApps = applicationsStore.getAllApplications();
+  const hasLiveApps = storeApps.length > 0;
+
+  // Use live applications if available, sorted newest first, prioritizing pending applications; fallback to demo data
+  const displayApplications: (MembershipApplicationItem | (typeof DEMO_RECENT_APPLICATIONS)[number])[] = hasLiveApps
+    ? [...storeApps]
+        .sort((a, b) => {
+          // Prioritize submitted / under_review over approved/rejected
+          const isPendingA = a.status === 'submitted' || a.status === 'under_review';
+          const isPendingB = b.status === 'submitted' || b.status === 'under_review';
+          if (isPendingA && !isPendingB) return -1;
+          if (!isPendingA && isPendingB) return 1;
+
+          const timeA = new Date(a.submittedDate || 0).getTime() || 0;
+          const timeB = new Date(b.submittedDate || 0).getTime() || 0;
+          return timeB - timeA;
+        })
+        .slice(0, 5)
+    : DEMO_RECENT_APPLICATIONS;
 
   return (
     <div style={styles.card}>
@@ -48,18 +94,25 @@ export const RecentApplicationsTable: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {DEMO_RECENT_APPLICATIONS.map((app) => {
-              const badge = getStatusBadge(app.status);
+            {displayApplications.map((app: any) => {
+              const statusRaw = app.status || 'submitted';
+              const badge = getStatusBadge(statusRaw);
+              const name = app.applicantName || app.name || 'Applicant';
+              const appId = app.applicationId || app.id || 'HRSJM-APP';
+              const category = app.membershipType || app.type || app.category || 'General Member';
+              const date = app.submittedDate ? formatDisplayDate(app.submittedDate) : 'Recently';
+              const reviewTarget = app.id || app.applicationId;
+
               return (
-                <tr key={app.id} style={styles.tr}>
+                <tr key={app.id || appId} style={styles.tr}>
                   <td style={styles.td}>
-                    <span style={styles.applicantName}>{app.applicantName}</span>
+                    <span style={styles.applicantName}>{name}</span>
                   </td>
                   <td style={styles.td}>
-                    <span style={styles.codeBadge}>{app.applicationId}</span>
+                    <span style={styles.codeBadge}>{appId}</span>
                   </td>
-                  <td style={styles.td}>{app.type}</td>
-                  <td style={styles.td}>{app.submittedDate}</td>
+                  <td style={styles.td}>{category}</td>
+                  <td style={styles.td}>{date}</td>
                   <td style={styles.td}>
                     <span
                       style={{
@@ -73,7 +126,7 @@ export const RecentApplicationsTable: React.FC = () => {
                   </td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
                     <Link
-                      to="/admin/membership-applications"
+                      to={reviewTarget ? `/admin/membership-applications/${reviewTarget}` : '/admin/membership-applications'}
                       style={styles.actionBtn}
                     >
                       Review
@@ -199,4 +252,3 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'background-color 0.15s',
   },
 };
-
