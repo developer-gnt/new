@@ -299,6 +299,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="rights" element={<SeekerRightsPage />} />
           <Route path="rights/:id" element={<SeekerRightDetailsPage />} />
           <Route path="events" element={<SeekerEventsPage />} />
+          <Route path="about" element={<UserAboutPage />} />
+          <Route path="news" element={<UserNewsPage />} />
           <Route path="support" element={<SeekerSupportPage />} />
           <Route path="support/create" element={<SeekerCreateTicketPage />} />
           <Route path="complaint" element={<SeekerCreateTicketPage />} />
