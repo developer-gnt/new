@@ -6,9 +6,6 @@ import { MembershipGrowthChart } from '../components/MembershipGrowthChart';
 import { StatusDonutChart } from '../components/StatusDonutChart';
 import { RecentMembersTable } from '../components/RecentMembersTable';
 import { RecentApplicationsTable } from '../components/RecentApplicationsTable';
-import { UpcomingEventsCard } from '../components/UpcomingEventsCard';
-import { FinancialSummaryCard } from '../components/FinancialSummaryCard';
-import { RecentActivitiesCard } from '../components/RecentActivitiesCard';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
 import { AppEmptyState } from '@/components/common/AppEmptyState';
 import { AppErrorState } from '@/components/common/AppErrorState';
@@ -153,13 +150,17 @@ export const AdminDashboardPage: React.FC = () => {
             />
           </div>
 
-          {/* Interactive Trends & Breakdowns */}
-          <div style={styles.twoColumnGrid}>
+          {/* Full-Width Membership Expansion Trend */}
+          <div style={{ width: '100%' }}>
             <MembershipGrowthChart
               initialGrowth={dashboardData?.memberGrowth}
               totalMembers={dashboardData?.memberships?.total}
               activeMembers={dashboardData?.memberships?.active}
             />
+          </div>
+
+          {/* Breakdowns: Applications & Complaints */}
+          <div style={styles.twoColumnGrid}>
             <StatusDonutChart
               title="Application Status Distribution"
               segments={
@@ -172,21 +173,6 @@ export const AdminDashboardPage: React.FC = () => {
                     ]
                   : DEMO_APPLICATION_STATUS
               }
-            />
-          </div>
-
-          {/* Data Tables: Members & Applications */}
-          <div style={styles.twoColumnGrid}>
-            <RecentMembersTable />
-            <RecentApplicationsTable />
-          </div>
-
-          {/* Secondary Row: Complaints breakdown, Financial Summary, Upcoming events */}
-          <div style={styles.threeColumnGrid}>
-            <UpcomingEventsCard />
-            <FinancialSummaryCard
-              totalCollections={dashboardData?.revenue?.total}
-              receiptsCount={dashboardData?.donations?.total}
             />
             <StatusDonutChart
               title="Complaints Resolution"
@@ -203,9 +189,10 @@ export const AdminDashboardPage: React.FC = () => {
             />
           </div>
 
-          {/* Real-time Activity Feed */}
-          <div style={styles.fullWidthSection}>
-            <RecentActivitiesCard />
+          {/* Data Tables: Members & Applications */}
+          <div style={styles.twoColumnGrid}>
+            <RecentMembersTable />
+            <RecentApplicationsTable />
           </div>
         </div>
       )}
@@ -262,14 +249,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
     gap: '20px',
-  },
-  threeColumnGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  fullWidthSection: {
-    width: '100%',
   },
   contentGrid: {
     display: 'flex',

@@ -8,7 +8,6 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import {
   AdminDashboardPage,
   UsersListPage,
-  AllUsersDirectoryPage,
   UserDetailsPage,
   AddUserPage,
   EditUserPage,
@@ -326,13 +325,13 @@ export const AppRoutes: React.FC = () => {
 
           {/* User Management */}
           <Route path="users" element={<UsersListPage />} />
-          <Route path="users/directory" element={<AllUsersDirectoryPage />} />
+          <Route path="users/directory" element={<UsersListPage />} />
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailsPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="users/:id/verification" element={<UserVerificationPage />} />
           <Route path="users/:id/verify" element={<UserVerificationPage />} />
-          <Route path="all-users" element={<AllUsersDirectoryPage />} />
+          <Route path="all-users" element={<UsersListPage />} />
           <Route path="all-users/:id" element={<UserDetailsPage />} />
 
           {/* Applications */}

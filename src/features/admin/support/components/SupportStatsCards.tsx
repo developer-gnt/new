@@ -1,5 +1,5 @@
 import type React from 'react';
-import { MessageSquare, Clock, CheckCircle2, Archive, AlertCircle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { TicketStatsData, TicketTabKey } from '../types/support.types';
 
 interface SupportStatsCardsProps {
@@ -68,21 +68,10 @@ export const SupportStatsCards: React.FC<SupportStatsCardsProps> = ({
       iconColor: 'text-emerald-700',
       ringColor: 'ring-emerald-500',
     },
-    {
-      id: 'CLOSED',
-      title: 'Closed',
-      count: stats.closed,
-      subtitle: 'Archived resolved cases',
-      icon: Archive,
-      accentColor: '#475569',
-      iconBg: 'bg-slate-100',
-      iconColor: 'text-slate-600',
-      ringColor: 'ring-slate-500',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
       {cards.map((c) => {
         const Icon = c.icon;
         const isActive = activeTab === c.id;

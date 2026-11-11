@@ -219,8 +219,8 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ voucher }) => {
         </div>
       </td>
 
-      {/* 6. Action (4%) */}
-      <td className="py-3 px-3 align-middle text-right">
+      {/* 6. Action (9%) */}
+      <td className="py-3 px-3.5 align-middle text-right">
         <button
           type="button"
           onClick={(e) => {
