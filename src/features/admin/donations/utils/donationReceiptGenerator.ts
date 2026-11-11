@@ -420,7 +420,7 @@ export function generateOfficialDonationReceiptHtml(receipt: DonationReceiptMode
         <img src="${HRSJM_LOGO_DATA_URI}" alt="HRSJM Official Crest" />
       </div>
       <div class="org-details">
-        <h1 class="org-title">HUMAN RIGHTS SANRAKSHAN JAN MANCH</h1>
+        <h1 class="org-title">Human Rights &  Social Justice Mission</h1>
         <div class="org-hindi">मानव अधिकार एवं सामाजिक न्याय संरक्षण ट्रस्ट</div>
         <div class="org-tagline">National Non-Governmental Human Rights &amp; Social Justice Mission</div>
         <div class="org-reg-line">
@@ -525,7 +525,7 @@ export function generateOfficialDonationReceiptHtml(receipt: DonationReceiptMode
     <!-- Statutory 80G Legal Declaration -->
     <div class="statutory-legal-box">
       <strong>🏛️ Statutory Endorsement under Section 80G(5)(vi) of the Income Tax Act, 1961:</strong><br/>
-      Certified that the donation received will be utilized solely for charitable purposes conforming to the aims and objectives of Human Rights Sanrakshan Jan Manch. This statutory certificate entitles the donor to claim a 50% deduction from taxable income under Section 80G of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AABTH4589KF20214</strong> dated 12/04/2021. No commercial benefit, goods, or services were provided in exchange for this voluntary contribution.
+      Certified that the donation received will be utilized solely for charitable purposes conforming to the aims and objectives of Human Rights &  Social Justice Mission. This statutory certificate entitles the donor to claim a 50% deduction from taxable income under Section 80G of the Income Tax Act, 1961 vide Unique Registration Number (URN) <strong>AABTH4589KF20214</strong> dated 12/04/2021. No commercial benefit, goods, or services were provided in exchange for this voluntary contribution.
     </div>
 
     <!-- Dual Seals & Signatures -->
@@ -543,7 +543,7 @@ export function generateOfficialDonationReceiptHtml(receipt: DonationReceiptMode
       <div class="signatory-box">
         <div class="signatory-sig">K. S. Rathore</div>
         <div class="signatory-title">Authorized Signatory / National Treasurer</div>
-        <div class="signatory-subtitle">Human Rights Sanrakshan Jan Manch (Trust)</div>
+        <div class="signatory-subtitle">Human Rights &  Social Justice Mission (Trust)</div>
       </div>
     </div>
 
@@ -642,7 +642,7 @@ export function generateDonationReceiptJsPdf(receipt: DonationReceiptModel): jsP
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14.5);
   doc.setTextColor(1, 31, 57); // Navy
-  doc.text('HUMAN RIGHTS SANRAKSHAN JAN MANCH', 39, 22);
+  doc.text('Human Rights &  Social Justice Mission', 39, 22);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
@@ -891,7 +891,7 @@ export function generateDonationReceiptJsPdf(receipt: DonationReceiptModel): jsP
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(113, 63, 18);
-  const legalText = `This certifies that the contribution of INR ${receipt.amount.toLocaleString('en-IN')}/- received by Human Rights Sanrakshan Jan Manch is eligible for 50% income tax deduction under Section 80G(5)(vi) of the Income Tax Act, 1961. Unique Reference Number (URN): AABTH4589KF20214. Perpetual approval granted by the Commissioner of Income Tax (Exemption), New Delhi. Form 10BD electronic return reference has been furnished to the Income Tax Department for pre-filling in the donor's Annual Information Statement (AIS) and Form 26AS.`;
+  const legalText = `This certifies that the contribution of INR ${receipt.amount.toLocaleString('en-IN')}/- received by Human Rights &  Social Justice Mission is eligible for 50% income tax deduction under Section 80G(5)(vi) of the Income Tax Act, 1961. Unique Reference Number (URN): AABTH4589KF20214. Perpetual approval granted by the Commissioner of Income Tax (Exemption), New Delhi. Form 10BD electronic return reference has been furnished to the Income Tax Department for pre-filling in the donor's Annual Information Statement (AIS) and Form 26AS.`;
   doc.text(doc.splitTextToSize(legalText, W - 40), 20, statY + 10);
 
   // 10. Official Signatures & Digital Seal
@@ -930,7 +930,7 @@ export function generateDonationReceiptJsPdf(receipt: DonationReceiptModel): jsP
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(1, 31, 57);
-  doc.text('For Human Rights Sanrakshan Jan Manch', W - 20, sigY + 8, { align: 'right' });
+  doc.text('For Human Rights &  Social Justice Mission', W - 20, sigY + 8, { align: 'right' });
 
   doc.setDrawColor(148, 163, 184);
   doc.setLineWidth(0.5);

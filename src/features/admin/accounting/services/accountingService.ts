@@ -89,10 +89,11 @@ export const accountingService = {
   // ================= Chart of Accounts =================
   async listAccounts(category?: AccountCategory): Promise<AccountItem[]> {
     try {
-      const res = await apiClient.get<AccountItem[]>('/accounts', {
+      const res = await apiClient.get<any>('/accounts', {
         params: category && category !== 'ALL' ? { account_type: category } : undefined,
       });
-      if (Array.isArray(res)) return res;
+      const items = Array.isArray(res) ? res : res?.items || res?.data?.items || res?.data;
+      if (Array.isArray(items)) return items;
     } catch {
       // Offline fallback
     }

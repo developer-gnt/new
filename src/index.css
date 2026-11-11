@@ -428,6 +428,7 @@ html, body {
 /* 1. Portal Responsive Content Inners */
 .admin-content-inner {
   width: 100%;
+  min-width: 0;
   max-width: 1600px;
   margin: 0 auto;
   flex: 1;
@@ -439,6 +440,7 @@ html, body {
 
 .member-content-inner {
   width: 100%;
+  min-width: 0;
   max-width: 1440px;
   margin: 0 auto;
   flex: 1;

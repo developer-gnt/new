@@ -8,7 +8,6 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import {
   AdminDashboardPage,
   UsersListPage,
-  AllUsersDirectoryPage,
   UserDetailsPage,
   AddUserPage,
   EditUserPage,
@@ -78,10 +77,10 @@ import {
   MemberBlogsPage,
   MemberNotificationsPage,
   MemberSettingsPage,
+  MemberMembershipDetailsPage,
 } from '@/features/member';
 
 // Public Experience Pages (Parity with Mobile APK)
-import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { UserTransactionsPage } from '@/features/transactions';
@@ -154,10 +153,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Public Homepage & Role Selection */}
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/public" element={<HomePage />} />
-        <Route path="/portal" element={<HomePage />} />
+        {/* Public routes redirect to primary entrypoint */}
+        <Route path="/home" element={<Navigate to="/login" replace />} />
+        <Route path="/public" element={<Navigate to="/login" replace />} />
+        <Route path="/portal" element={<Navigate to="/login" replace />} />
 
         {/* User Application Routes (Cloned APK User Portal) */}
         <Route element={<UserLayout />}>
@@ -177,15 +176,18 @@ export const AppRoutes: React.FC = () => {
           <Route path="/blogs" element={<UserBlogsPage />} />
           <Route path="/articles" element={<UserBlogsPage />} />
           <Route path="/donations" element={<UserDonationsPage />} />
+          <Route path="/donate" element={<UserDonationsPage />} />
           <Route path="/causes" element={<MemberCausesPage />} />
           <Route path="/user/causes" element={<MemberCausesPage />} />
-          <Route path="/donate" element={<UserDonationsPage />} />
           <Route path="/contact" element={<UserContactPage />} />
           <Route path="/support" element={<UserSupportPage />} />
           <Route path="/complaints" element={<UserSupportPage />} />
           <Route path="/membership" element={<UserMembershipPage />} />
+          <Route path="/membership/details" element={<MemberMembershipDetailsPage />} />
+          <Route path="/membership-details" element={<MemberMembershipDetailsPage />} />
           <Route path="/membership/status" element={<UserMembershipPage />} />
           <Route path="/user/membership" element={<UserMembershipPage />} />
+          <Route path="/user/membership/details" element={<MemberMembershipDetailsPage />} />
           <Route path="/user/membership-status" element={<UserMembershipPage />} />
           <Route path="/user/membership/status" element={<UserMembershipPage />} />
           <Route path="/membership-status" element={<UserMembershipPage />} />
@@ -269,6 +271,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/member" element={<MemberLayout />}>
           <Route index element={<Navigate to="/member/dashboard" replace />} />
           <Route path="dashboard" element={<MemberDashboardPage />} />
+          <Route path="details" element={<MemberMembershipDetailsPage />} />
+          <Route path="membership-details" element={<MemberMembershipDetailsPage />} />
+          <Route path="membership" element={<MemberMembershipDetailsPage />} />
           <Route path="id-card" element={<MemberIdCardPage />} />
           <Route path="certificate" element={<MemberCertificatePage />} />
           <Route path="renew" element={<MemberRenewalPage />} />
@@ -320,13 +325,13 @@ export const AppRoutes: React.FC = () => {
 
           {/* User Management */}
           <Route path="users" element={<UsersListPage />} />
-          <Route path="users/directory" element={<AllUsersDirectoryPage />} />
+          <Route path="users/directory" element={<UsersListPage />} />
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailsPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="users/:id/verification" element={<UserVerificationPage />} />
           <Route path="users/:id/verify" element={<UserVerificationPage />} />
-          <Route path="all-users" element={<AllUsersDirectoryPage />} />
+          <Route path="all-users" element={<UsersListPage />} />
           <Route path="all-users/:id" element={<UserDetailsPage />} />
 
           {/* Applications */}

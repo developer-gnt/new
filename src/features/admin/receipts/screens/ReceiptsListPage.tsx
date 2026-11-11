@@ -487,17 +487,17 @@ export const ReceiptsListPage: React.FC = () => {
           totalFilteredCount={filteredVouchers.length}
         />
 
-        {/* Vouchers Data Table - table-fixed fits 100% in viewport without horizontal scroll */}
+        {/* Vouchers Data Table */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left text-xs border-collapse table-fixed">
+          <table className="w-full min-w-[920px] text-left text-xs border-collapse table-fixed">
             <thead>
-              <tr className="bg-[#FAF7F0] border-b border-[#DCE4EC] text-[#06294D] text-[11px] font-bold uppercase tracking-[0.12em]">
-                <th className="py-3 px-3.5 w-[27%]">Voucher No &amp; Stream</th>
-                <th className="py-3 px-3.5 w-[23%]">Received From / Payer</th>
-                <th className="py-3 px-3.5 w-[18%]">Income Allocation</th>
-                <th className="py-3 px-3.5 w-[15%]">Payment Method</th>
-                <th className="py-3 px-3.5 w-[13%] text-right">Amount &amp; Status</th>
-                <th className="py-3 px-3 w-[4%] text-right">Action</th>
+              <tr className="bg-[#FAF7F0] border-b border-[#DCE4EC] text-[#06294D] text-[11px] font-bold uppercase tracking-[0.06em]">
+                <th className="py-3 px-3.5 w-[25%]">Voucher No &amp; Stream</th>
+                <th className="py-3 px-3.5 w-[21%]">Received From / Payer</th>
+                <th className="py-3 px-3.5 w-[17%]">Income Allocation</th>
+                <th className="py-3 px-3.5 w-[14%]">Payment Method</th>
+                <th className="py-3 px-3.5 w-[14%] text-right">Amount &amp; Status</th>
+                <th className="py-3 px-3.5 w-[9%] text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EDF2F7]">

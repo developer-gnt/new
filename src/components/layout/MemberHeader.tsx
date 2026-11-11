@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { MEMBER_NAV_GROUPS } from './memberNavItems';
 import { useCurrentMember } from '../../features/member/store/memberStore';
+import { useMemberUnreadCount } from '../../features/member/store/memberNotificationsStore';
 import { HrsjmLogo } from '../common/HrsjmLogo';
 
 interface MemberHeaderProps {
@@ -35,6 +36,7 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
   const location = useLocation();
   const { isAdmin } = useAuth();
   const { member } = useCurrentMember();
+  const unreadCount = useMemberUnreadCount();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -161,16 +163,20 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
           <span>Donate Now</span>
         </button>
 
-        {/* Notifications Bell with '7' Unread Badge */}
+        {/* Notifications Bell with Dynamic Unread Badge */}
         <button
           type="button"
           style={styles.bellBtn}
           onClick={() => navigate('/member/notifications')}
-          aria-label="Member Notifications"
+          aria-label={`Member Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           title="Notifications & Bulletins"
         >
           <Bell size={18} color="#0B2F52" />
-          <span style={styles.bellBadge}>7</span>
+          {unreadCount > 0 && (
+            <span style={styles.bellBadge}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </button>
 
         {/* Member Profile Menu */}

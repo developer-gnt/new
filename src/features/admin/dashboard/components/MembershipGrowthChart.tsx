@@ -157,7 +157,7 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
   const floorVal = Math.max(0, Math.floor(minVal - paddingY));
   const ceilVal = Math.ceil(maxVal + paddingY);
 
-  const width = 640;
+  const width = 960;
   const height = 240;
   const padLeft = 46;
   const padRight = 24;
@@ -367,6 +367,7 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
 
 const styles: Record<string, React.CSSProperties> = {
   card: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
     border: '1px solid #DCE4EC',
     borderRadius: '12px',

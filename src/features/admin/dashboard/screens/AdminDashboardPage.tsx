@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, FileText, MessageSquare, Info, SlidersHorizontal } from 'lucide-react';
+import { Calendar, Users, FileText, MessageSquare } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
 import { DashboardStatCard } from '../components/DashboardStatCard';
 import { MembershipGrowthChart } from '../components/MembershipGrowthChart';
 import { StatusDonutChart } from '../components/StatusDonutChart';
 import { RecentMembersTable } from '../components/RecentMembersTable';
 import { RecentApplicationsTable } from '../components/RecentApplicationsTable';
-import { UpcomingEventsCard } from '../components/UpcomingEventsCard';
-import { FinancialSummaryCard } from '../components/FinancialSummaryCard';
-import { RecentActivitiesCard } from '../components/RecentActivitiesCard';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
 import { AppEmptyState } from '@/components/common/AppEmptyState';
 import { AppErrorState } from '@/components/common/AppErrorState';
@@ -60,36 +57,6 @@ export const AdminDashboardPage: React.FC = () => {
 
   return (
     <div style={styles.dashboardContainer}>
-      {/* State Switcher & Demonstration Mode Notice */}
-      <div style={styles.topControlBanner}>
-        <div style={styles.demoNoticeText}>
-          <Info size={16} color="#174A78" style={{ flexShrink: 0 }} />
-          <span>
-            <strong>HRSJM Web Dashboard:</strong> Connected to live HRSJM backend API with graceful offline fallback.
-          </span>
-        </div>
-
-        {/* View State Controls for Testing */}
-        <div style={styles.stateControlsWrapper}>
-          <SlidersHorizontal size={14} color="#64748B" />
-          <span style={styles.stateLabel}>Preview State:</span>
-          <div style={styles.buttonGroup}>
-            {(['normal', 'loading', 'empty', 'error'] as const).map((state) => (
-              <button
-                key={state}
-                onClick={() => setViewState(state)}
-                style={{
-                  ...styles.stateBtn,
-                  ...(viewState === state ? styles.activeStateBtn : {}),
-                }}
-              >
-                {state.charAt(0).toUpperCase() + state.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Main Page Header */}
       <div style={styles.headerRow}>
         <div>
@@ -183,13 +150,17 @@ export const AdminDashboardPage: React.FC = () => {
             />
           </div>
 
-          {/* Interactive Trends & Breakdowns */}
-          <div style={styles.twoColumnGrid}>
+          {/* Full-Width Membership Expansion Trend */}
+          <div style={{ width: '100%' }}>
             <MembershipGrowthChart
               initialGrowth={dashboardData?.memberGrowth}
               totalMembers={dashboardData?.memberships?.total}
               activeMembers={dashboardData?.memberships?.active}
             />
+          </div>
+
+          {/* Breakdowns: Applications & Complaints */}
+          <div style={styles.twoColumnGrid}>
             <StatusDonutChart
               title="Application Status Distribution"
               segments={
@@ -202,21 +173,6 @@ export const AdminDashboardPage: React.FC = () => {
                     ]
                   : DEMO_APPLICATION_STATUS
               }
-            />
-          </div>
-
-          {/* Data Tables: Members & Applications */}
-          <div style={styles.twoColumnGrid}>
-            <RecentMembersTable />
-            <RecentApplicationsTable />
-          </div>
-
-          {/* Secondary Row: Complaints breakdown, Financial Summary, Upcoming events */}
-          <div style={styles.threeColumnGrid}>
-            <UpcomingEventsCard />
-            <FinancialSummaryCard
-              totalCollections={dashboardData?.revenue?.total}
-              receiptsCount={dashboardData?.donations?.total}
             />
             <StatusDonutChart
               title="Complaints Resolution"
@@ -233,9 +189,10 @@ export const AdminDashboardPage: React.FC = () => {
             />
           </div>
 
-          {/* Real-time Activity Feed */}
-          <div style={styles.fullWidthSection}>
-            <RecentActivitiesCard />
+          {/* Data Tables: Members & Applications */}
+          <div style={styles.twoColumnGrid}>
+            <RecentMembersTable />
+            <RecentApplicationsTable />
           </div>
         </div>
       )}
@@ -248,58 +205,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     gap: '24px',
-  },
-  topControlBanner: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: '#F0F7FF',
-    border: '1px solid #BFDBFE',
-    borderRadius: '10px',
-    padding: '10px 16px',
-    fontSize: '13px',
-  },
-  demoNoticeText: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    color: '#1E3A8A',
-  },
-  stateControlsWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  stateLabel: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#475569',
-  },
-  buttonGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    backgroundColor: '#FFFFFF',
-    padding: '2px',
-    borderRadius: '6px',
-    border: '1px solid #CBD5E1',
-  },
-  stateBtn: {
-    padding: '4px 10px',
-    fontSize: '11px',
-    fontWeight: 600,
-    color: '#64748B',
-    border: 'none',
-    borderRadius: '4px',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  activeStateBtn: {
-    backgroundColor: '#0F2942',
-    color: '#FFFFFF',
   },
   headerRow: {
     display: 'flex',
@@ -344,14 +249,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
     gap: '20px',
-  },
-  threeColumnGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  fullWidthSection: {
-    width: '100%',
   },
   contentGrid: {
     display: 'flex',

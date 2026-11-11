@@ -113,7 +113,25 @@ export const donationsService = {
         : null;
 
       if (Array.isArray(items)) {
-        return items;
+        return items.map((p: any) => ({
+          id: p.id,
+          donor_name: p.donor_name || 'Anonymous Donor',
+          donor_mobile: p.donor_mobile || '',
+          donor_email: p.donor_email || null,
+          amount: Number(p.amount) || 0,
+          donation_type: (p.donation_type || (p.source?.toUpperCase() === 'OFFLINE' ? 'OFFLINE' : 'ONE_TIME')) as 'ONE_TIME' | 'RECURRING' | 'OFFLINE',
+          status: (p.status || 'SUCCESS') as DonationStatus,
+          cause: p.cause || 'General Relief Fund',
+          source: p.source || 'Website',
+          is_80g_claimed: Boolean(p.is_80g_claimed ?? p.is_80g_eligible ?? true),
+          pan_number: p.pan_number || undefined,
+          receipt_number: p.receipt_number || (p.id ? `REC-${String(p.id).slice(0, 8).toUpperCase()}` : undefined),
+          remark: p.remark || null,
+          member_code: p.member_code || null,
+          payment_method: p.payment_method || p.source || 'Online Payment',
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || p.created_at || new Date().toISOString(),
+        }));
       }
     } catch (e) {
       console.warn('Backend /donations unavailable, using local mock store:', e);

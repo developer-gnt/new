@@ -24,7 +24,7 @@ export const MemberEventsPage: React.FC = () => {
   const events = snapshot.events;
 
   const [activeTab, setActiveTab] = useState<'UPCOMING' | 'MY_REGISTRATIONS'>('UPCOMING');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -52,7 +52,12 @@ export const MemberEventsPage: React.FC = () => {
     };
   }, [events]);
 
-  const categories = ['ALL', 'Seminar', 'Legal Awareness', 'Relief Activity', 'Workshop'];
+  const statusFilters = [
+    { key: 'ALL', label: 'All' },
+    { key: 'UPCOMING', label: 'Upcoming' },
+    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'CANCELLED', label: 'Cancelled' },
+  ] as const;
 
   const roleAuthorizedEvents = filterEventsForRole(events, 'MEMBER');
 
@@ -60,8 +65,11 @@ export const MemberEventsPage: React.FC = () => {
     if (activeTab === 'MY_REGISTRATIONS' && !registeredIds.includes(e.id)) {
       return false;
     }
-    if (selectedCategory !== 'ALL' && e.category !== selectedCategory) {
-      return false;
+    if (selectedStatus !== 'ALL') {
+      const eStatus = (e.status || 'UPCOMING').toUpperCase();
+      if (selectedStatus === 'UPCOMING' && eStatus !== 'UPCOMING') return false;
+      if (selectedStatus === 'COMPLETED' && eStatus !== 'COMPLETED') return false;
+      if (selectedStatus === 'CANCELLED' && eStatus !== 'CANCELLED') return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -140,7 +148,12 @@ export const MemberEventsPage: React.FC = () => {
       ════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Events */}
-        <div className="bg-[#EDF2F7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border border-[#DBE5EE] shadow-2xs">
+        <div
+          onClick={() => setSelectedStatus('ALL')}
+          className={`bg-[#EDF2F7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'ALL' ? 'border-[#011F39] ring-2 ring-[#011F39]/20' : 'border-[#DBE5EE]'
+          }`}
+        >
           <div className="w-9 h-9 rounded-full bg-[#011F39] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Calendar size={18} className="stroke-[2.2]" />
           </div>
@@ -155,7 +168,12 @@ export const MemberEventsPage: React.FC = () => {
         </div>
 
         {/* Upcoming */}
-        <div className="bg-[#FEF3C7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border border-[#FDE68A] shadow-2xs">
+        <div
+          onClick={() => setSelectedStatus('UPCOMING')}
+          className={`bg-[#FEF3C7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'UPCOMING' ? 'border-[#D97706] ring-2 ring-[#D97706]/30' : 'border-[#FDE68A]'
+          }`}
+        >
           <div className="w-9 h-9 rounded-full bg-[#D97706] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Clock size={18} className="stroke-[2.2]" />
           </div>
@@ -170,7 +188,12 @@ export const MemberEventsPage: React.FC = () => {
         </div>
 
         {/* Completed */}
-        <div className="bg-[#DCFCE7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border border-[#BBF7D0] shadow-2xs">
+        <div
+          onClick={() => setSelectedStatus('COMPLETED')}
+          className={`bg-[#DCFCE7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'COMPLETED' ? 'border-[#16A34A] ring-2 ring-[#16A34A]/30' : 'border-[#BBF7D0]'
+          }`}
+        >
           <div className="w-9 h-9 rounded-full bg-[#16A34A] text-white flex items-center justify-center shrink-0 shadow-xs">
             <CheckCircle2 size={18} className="stroke-[2.2]" />
           </div>
@@ -185,7 +208,12 @@ export const MemberEventsPage: React.FC = () => {
         </div>
 
         {/* Cancelled */}
-        <div className="bg-[#FEE2E2] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border border-[#FECACA] shadow-2xs">
+        <div
+          onClick={() => setSelectedStatus('CANCELLED')}
+          className={`bg-[#FEE2E2] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'CANCELLED' ? 'border-[#DC2626] ring-2 ring-[#DC2626]/30' : 'border-[#FECACA]'
+          }`}
+        >
           <div className="w-9 h-9 rounded-full bg-[#DC2626] text-white flex items-center justify-center shrink-0 shadow-xs">
             <X size={18} className="stroke-[2.2]" />
           </div>
@@ -211,7 +239,7 @@ export const MemberEventsPage: React.FC = () => {
             }}
             onClick={() => setActiveTab('UPCOMING')}
           >
-            All Upcoming Events ({events.length})
+            All Events ({events.length})
           </button>
           <button
             type="button"
@@ -238,19 +266,19 @@ export const MemberEventsPage: React.FC = () => {
             />
           </div>
 
-          {/* Category Chips */}
+          {/* Status Filter Chips: All, Upcoming, Completed, Cancelled */}
           <div style={styles.chipsScroll}>
-            {categories.map((cat) => (
+            {statusFilters.map((item) => (
               <button
-                key={cat}
+                key={item.key}
                 type="button"
                 style={{
                   ...styles.chip,
-                  ...(selectedCategory === cat ? styles.chipActive : {}),
+                  ...(selectedStatus === item.key ? styles.chipActive : {}),
                 }}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => setSelectedStatus(item.key)}
               >
-                {cat === 'ALL' ? 'All Categories' : cat}
+                {item.label}
               </button>
             ))}
           </div>
