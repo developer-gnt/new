@@ -146,11 +146,13 @@ export const AccountingDashboardPage: React.FC = () => {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
         (t) =>
-          t.entry_number.toLowerCase().includes(q) ||
-          (t.narration || '').toLowerCase().includes(q) ||
-          t.account_name.toLowerCase().includes(q) ||
-          (t.received_from || '').toLowerCase().includes(q) ||
-          (t.paid_to || '').toLowerCase().includes(q)
+          String(t.entry_number || '').toLowerCase().includes(q) ||
+          String(t.voucher_number || '').toLowerCase().includes(q) ||
+          String(t.narration || '').toLowerCase().includes(q) ||
+          String(t.account_name || '').toLowerCase().includes(q) ||
+          String(t.received_from || '').toLowerCase().includes(q) ||
+          String(t.paid_to || '').toLowerCase().includes(q) ||
+          String(t.payment_method || '').toLowerCase().includes(q)
       );
     }
 

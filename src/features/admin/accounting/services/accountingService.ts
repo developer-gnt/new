@@ -213,7 +213,7 @@ export const accountingService = {
       if (params?.status && params.status !== 'ALL') queryParams.status = params.status;
       if (params?.search) queryParams.search = params.search;
       if (params?.page) queryParams.page = params.page;
-      if (params?.limit) queryParams.limit = params.limit;
+      queryParams.limit = params?.limit ? Math.min(params.limit, 100) : 100;
 
       const res = await apiClient.get<any>('/accounting/entries', {
         params: queryParams,
@@ -447,85 +447,101 @@ export const accountingService = {
     transactions: LedgerTransaction[];
     summary: LedgerSummary;
   }> {
+    // Helper to fetch paginated backend lists safely within backend validation limit (max 100)
+    const fetchPagedItems = async (
+      endpoint: string,
+      queryParams: Record<string, string | number> = {}
+    ): Promise<any[]> => {
+      try {
+        let allItems: any[] = [];
+        let page = 1;
+        const maxPages = 5; // Up to 500 records
+        while (page <= maxPages) {
+          const res = await apiClient.get<any>(endpoint, {
+            params: { ...queryParams, page, limit: 100 },
+          });
+          const items =
+            res && Array.isArray(res.items)
+              ? res.items
+              : res && Array.isArray(res.data?.items)
+              ? res.data.items
+              : Array.isArray(res)
+              ? res
+              : [];
+          allItems = allItems.concat(items);
+          const total =
+            res?.total ?? res?.meta?.total ?? res?.data?.total ?? allItems.length;
+          if (allItems.length >= total || items.length === 0 || items.length < 100) {
+            break;
+          }
+          page++;
+        }
+        return allItems;
+      } catch (err) {
+        console.warn(`Failed to fetch items from ${endpoint}:`, err);
+        return [];
+      }
+    };
+
     try {
-      // 1. Fetch real accounting entries, expenses, and receipts in parallel
-      const [entriesRes, expensesRes, receiptsRes] = await Promise.allSettled([
-        apiClient.get<any>('/accounting/entries', { params: { limit: 500 } }),
-        apiClient.get<any>('/expenses', { params: { limit: 500 } }),
-        apiClient.get<any>('/receipts', { params: { limit: 500 } }),
+      // 1. Fetch real accounting entries, expense vouchers, receipt entries, and raw ledger in parallel
+      const fromDate = params?.from_date || '2025-01-01';
+      const toDate = params?.to_date || '2027-12-31';
+
+      const [rawEntries, rawExpenses, rawReceipts, rawLedgerItems] = await Promise.all([
+        fetchPagedItems('/accounting/entries'),
+        fetchPagedItems('/expense-entries'),
+        fetchPagedItems('/receipt-entries'),
+        fetchPagedItems('/accounting/ledger', {
+          from_date: fromDate,
+          to_date: toDate,
+        }),
       ]);
-
-      const rawEntries =
-        entriesRes.status === 'fulfilled' && entriesRes.value
-          ? Array.isArray(entriesRes.value.items)
-            ? entriesRes.value.items
-            : Array.isArray(entriesRes.value)
-            ? entriesRes.value
-            : []
-          : [];
-
-      const rawExpenses =
-        expensesRes.status === 'fulfilled' && expensesRes.value
-          ? Array.isArray(expensesRes.value.items)
-            ? expensesRes.value.items
-            : Array.isArray(expensesRes.value)
-            ? expensesRes.value
-            : []
-          : [];
-
-      const rawReceipts =
-        receiptsRes.status === 'fulfilled' && receiptsRes.value
-          ? Array.isArray(receiptsRes.value.items)
-            ? receiptsRes.value.items
-            : Array.isArray(receiptsRes.value)
-            ? receiptsRes.value
-            : []
-          : [];
 
       // Create quick lookup maps for enrichment
       const expensesById = new Map<string, any>();
       const expensesByVoucher = new Map<string, any>();
       rawExpenses.forEach((exp: any) => {
-        if (exp.id) expensesById.set(exp.id, exp);
-        if (exp.voucher_number) expensesByVoucher.set(exp.voucher_number, exp);
+        if (exp?.id) expensesById.set(exp.id, exp);
+        if (exp?.voucher_number) expensesByVoucher.set(exp.voucher_number, exp);
       });
 
       const receiptsById = new Map<string, any>();
       const receiptsByVoucher = new Map<string, any>();
       rawReceipts.forEach((rec: any) => {
-        if (rec.id) receiptsById.set(rec.id, rec);
-        if (rec.voucher_number) receiptsByVoucher.set(rec.voucher_number, rec);
+        if (rec?.id) receiptsById.set(rec.id, rec);
+        if (rec?.voucher_number) receiptsByVoucher.set(rec.voucher_number, rec);
       });
 
-      const processedEntryIds = new Set<string>();
+      const processedEntryNumbers = new Set<string>();
       const consolidatedList: LedgerTransaction[] = [];
 
       // 2. Process real journal entries into unified single-row transactions
       for (const entry of rawEntries) {
-        if (!entry || !entry.id) continue;
-        processedEntryIds.add(entry.id);
+        if (!entry || !entry.entry_number) continue;
+        processedEntryNumbers.add(entry.entry_number);
 
-        const lines: any[] = entry.lines || [];
+        const lines: any[] = Array.isArray(entry.lines) ? entry.lines : [];
         const isReversed = Boolean(entry.is_reversed || entry.entry_type === 'REVERSAL');
         const refType = String(entry.reference_type || '').toUpperCase();
         const refId = entry.reference_id;
 
         // Find Expense head, Income head, and Asset/Bank lines
         const expenseLine = lines.find((l) => {
-          const type = String(l.account?.account_type || '').toUpperCase();
-          const debit = Number(l.debit_amount ?? l.debit ?? 0);
+          const type = String(l?.account?.account_type || '').toUpperCase();
+          const debit = Number(l?.debit_amount ?? l?.debit ?? 0);
           return type === 'EXPENSE' || (debit > 0 && type !== 'ASSET');
         });
 
         const incomeLine = lines.find((l) => {
-          const type = String(l.account?.account_type || '').toUpperCase();
-          const credit = Number(l.credit_amount ?? l.credit ?? 0);
+          const type = String(l?.account?.account_type || '').toUpperCase();
+          const credit = Number(l?.credit_amount ?? l?.credit ?? 0);
           return type === 'INCOME' || (credit > 0 && type !== 'ASSET');
         });
 
         const assetLine = lines.find((l) => {
-          const type = String(l.account?.account_type || '').toUpperCase();
-          const name = String(l.account?.account_name || '').toLowerCase();
+          const type = String(l?.account?.account_type || '').toUpperCase();
+          const name = String(l?.account?.account_name || '').toLowerCase();
           return type === 'ASSET' || name.includes('bank') || name.includes('cash');
         });
 
@@ -536,7 +552,10 @@ export const accountingService = {
         if (refType.includes('EXPENSE') || expenseLine) {
           streamTag = 'EXPENSE';
           isExpense = true;
-        } else if (refType.includes('DONATION') || entry.narration?.toLowerCase().includes('donation')) {
+        } else if (
+          refType.includes('DONATION') ||
+          (entry.description || '').toLowerCase().includes('donation')
+        ) {
           streamTag = 'DONATION';
         } else if (refType.includes('MEMBERSHIP') || refType.includes('RENEWAL')) {
           streamTag = 'MEMBERSHIP_FEE';
@@ -566,7 +585,7 @@ export const accountingService = {
         const nominalLine = isExpense ? expenseLine : incomeLine;
         const accountName =
           nominalLine?.account?.account_name ||
-          (isExpense ? 'General Operations & Administration' : 'General Society Income');
+          (isExpense ? 'Office & Administration' : 'General Society Income');
         const accountCode = nominalLine?.account?.account_code || (isExpense ? '5002' : '4001');
         const accountId = nominalLine?.account?.id || nominalLine?.account_id || (isExpense ? '5002' : '4001');
 
@@ -575,7 +594,7 @@ export const accountingService = {
           assetLine?.account?.account_name ||
           (assetLine?.account?.account_code ? `A/c #${assetLine.account.account_code}` : 'Bank Account');
 
-        // Enrich with matching expense voucher if available
+        // Enrich with matching expense voucher or receipt if available
         const matchedExpense = refId ? expensesById.get(refId) : null;
         const matchedReceipt = refId ? receiptsById.get(refId) : null;
 
@@ -587,13 +606,32 @@ export const accountingService = {
         const isWebApp = Boolean(
           matchedExpense?.reference_number?.toUpperCase().startsWith('WEB-APP') ||
           matchedExpense?.description?.includes('[Source: Web App]') ||
-          entry.narration?.includes('[Source: Web App]') ||
-          entry.narration?.includes('WEB-APP')
+          entry.description?.includes('[Source: Web App]') ||
+          entry.description?.includes('WEB-APP') ||
+          (entry.reference_type === 'MANUAL_EXPENSE' &&
+            matchedExpense &&
+            !matchedExpense.reference_number?.startsWith('REF-EXP'))
         );
 
-        const paidTo = matchedExpense?.paid_to || entry.paid_to || null;
-        const receivedFrom = matchedReceipt?.received_from || entry.received_from || null;
-        const paymentMethod = matchedExpense?.payment_method || matchedReceipt?.payment_method || null;
+        // Payment method detection
+        let paymentMethod =
+          matchedExpense?.payment_method || matchedReceipt?.payment_method || null;
+        if (!paymentMethod) {
+          const lineDesc = lines.map((l) => l.line_description || '').join(' ');
+          const fullDesc = `${lineDesc} ${entry.description || ''}`;
+          if (/cashfree/i.test(fullDesc)) paymentMethod = 'Online (Cashfree)';
+          else if (/\bupi\b/i.test(fullDesc)) paymentMethod = 'UPI';
+          else if (/\bcash\b/i.test(fullDesc)) paymentMethod = 'Cash';
+          else if (/bank|transfer|neft|rtgs|imps/i.test(fullDesc)) paymentMethod = 'Bank Transfer';
+          else if (/cheque/i.test(fullDesc)) paymentMethod = 'Cheque';
+        }
+
+        const paidTo =
+          matchedExpense?.paid_to ||
+          (expenseLine?.line_description?.startsWith('Expense: ')
+            ? expenseLine.line_description.replace('Expense: ', '').trim()
+            : null);
+        const receivedFrom = matchedReceipt?.received_from || null;
 
         consolidatedList.push({
           id: `ltx-consolidated-${entry.id}`,
@@ -601,6 +639,7 @@ export const accountingService = {
           entry_number: entry.entry_number,
           voucher_number: voucherNumber,
           entry_date: entry.entry_date || entry.created_at || new Date().toISOString(),
+          created_at: entry.created_at,
           entry_type: entry.entry_type || 'STANDARD',
           account_id: accountId,
           account_name: accountName,
@@ -608,10 +647,14 @@ export const accountingService = {
           account_type: isExpense ? 'EXPENSE' : 'INCOME',
           reference_type: entry.reference_type || null,
           reference_id: entry.reference_id || null,
-          narration: entry.narration || matchedExpense?.description || matchedReceipt?.notes || 'Official Society Transaction',
+          narration:
+            entry.description ||
+            matchedExpense?.description ||
+            matchedReceipt?.notes ||
+            'Official Society Transaction',
           debit: isExpense ? amount : 0,
           credit: !isExpense ? amount : 0,
-          running_balance: 0, // Computed below
+          running_balance: 0,
           category_tag: streamTag,
           payment_method: paymentMethod,
           disbursing_account_name: disbursingAsset,
@@ -622,26 +665,151 @@ export const accountingService = {
         });
       }
 
-      // 3. Ensure any posted expense vouchers from /expenses not in entries are included
+      // 3. Process raw ledger lines (group by entry_number if not already included)
+      if (rawLedgerItems.length > 0) {
+        const ledgerGroups = new Map<string, any[]>();
+        for (const item of rawLedgerItems) {
+          const num = item?.entry_number || item?.entry?.entry_number;
+          if (!num || processedEntryNumbers.has(num)) continue;
+          if (!ledgerGroups.has(num)) ledgerGroups.set(num, []);
+          ledgerGroups.get(num)!.push(item);
+        }
+
+        for (const [entryNum, lines] of ledgerGroups.entries()) {
+          processedEntryNumbers.add(entryNum);
+          const firstLine = lines[0];
+          const entryDate =
+            firstLine?.entry_date || firstLine?.entry?.entry_date || new Date().toISOString();
+          const createdAt = firstLine?.entry?.created_at || firstLine?.created_at;
+          const desc =
+            firstLine?.description ||
+            firstLine?.entry?.description ||
+            firstLine?.line_description ||
+            'General transaction';
+          const refType = String(
+            firstLine?.reference_type || firstLine?.entry?.reference_type || ''
+          ).toUpperCase();
+          const refId = firstLine?.reference_id || firstLine?.entry?.reference_id;
+
+          // Find nominal line and asset line
+          const expenseLine = lines.find((l) => {
+            const type = String(l?.account?.account_type || '').toUpperCase();
+            const debit = Number(l?.debit_amount ?? l?.debit ?? 0);
+            return type === 'EXPENSE' || (debit > 0 && type !== 'ASSET');
+          });
+
+          const incomeLine = lines.find((l) => {
+            const type = String(l?.account?.account_type || '').toUpperCase();
+            const credit = Number(l?.credit_amount ?? l?.credit ?? 0);
+            return type === 'INCOME' || (credit > 0 && type !== 'ASSET');
+          });
+
+          const assetLine = lines.find((l) => {
+            const type = String(l?.account?.account_type || '').toUpperCase();
+            const name = String(l?.account?.account_name || '').toLowerCase();
+            return type === 'ASSET' || name.includes('bank') || name.includes('cash');
+          });
+
+          let streamTag = 'RECEIPT';
+          let isExpense = false;
+          if (refType.includes('EXPENSE') || expenseLine) {
+            streamTag = 'EXPENSE';
+            isExpense = true;
+          } else if (refType.includes('DONATION') || desc.toLowerCase().includes('donation')) {
+            streamTag = 'DONATION';
+          } else if (refType.includes('MEMBERSHIP') || refType.includes('RENEWAL')) {
+            streamTag = 'MEMBERSHIP_FEE';
+          } else if (incomeLine || refType.includes('RECEIPT')) {
+            streamTag = 'RECEIPT';
+          }
+
+          let amount = 0;
+          if (isExpense) {
+            amount = Number(
+              (expenseLine ? expenseLine.debit_amount ?? expenseLine.debit : 0) ||
+              (assetLine ? assetLine.credit_amount ?? assetLine.credit : 0) ||
+              firstLine?.debit_amount ||
+              0
+            );
+          } else {
+            amount = Number(
+              (incomeLine ? incomeLine.credit_amount ?? incomeLine.credit : 0) ||
+              (assetLine ? assetLine.debit_amount ?? assetLine.debit : 0) ||
+              firstLine?.credit_amount ||
+              0
+            );
+          }
+
+          const nominalLine = isExpense ? expenseLine : incomeLine;
+          const accountName =
+            nominalLine?.account?.account_name ||
+            (isExpense ? 'Office & Administration' : 'Donation Income');
+          const accountCode =
+            nominalLine?.account?.account_code || (isExpense ? '5002' : '4003');
+          const accountId = nominalLine?.account?.id || (isExpense ? '5002' : '4003');
+          const disbursingAsset = assetLine?.account?.account_name || 'Bank Account';
+
+          const matchedExpense = refId ? expensesById.get(refId) : null;
+          const matchedReceipt = refId ? receiptsById.get(refId) : null;
+
+          consolidatedList.push({
+            id: `ltx-grp-${entryNum}`,
+            entry_id: firstLine?.entry_id || entryNum,
+            entry_number: entryNum,
+            voucher_number:
+              matchedExpense?.voucher_number || matchedReceipt?.voucher_number || entryNum,
+            entry_date: entryDate,
+            created_at: createdAt,
+            entry_type: 'STANDARD',
+            account_id: accountId,
+            account_name: accountName,
+            account_code: accountCode,
+            account_type: isExpense ? 'EXPENSE' : 'INCOME',
+            reference_type: refType,
+            reference_id: refId,
+            narration: desc,
+            debit: isExpense ? amount : 0,
+            credit: !isExpense ? amount : 0,
+            running_balance: 0,
+            category_tag: streamTag,
+            payment_method:
+              matchedExpense?.payment_method || matchedReceipt?.payment_method || null,
+            disbursing_account_name: disbursingAsset,
+            paid_to: matchedExpense?.paid_to || null,
+            received_from: matchedReceipt?.received_from || null,
+            status: 'POSTED',
+            is_web_app: Boolean(
+              matchedExpense?.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+              desc.includes('WEB-APP')
+            ),
+          });
+        }
+      }
+
+      // 4. Ensure any posted expense vouchers from /expense-entries are included
       for (const exp of rawExpenses) {
         if (!exp || exp.status === 'CANCELLED') continue;
         const alreadyIncluded = consolidatedList.some(
-          (t) => t.reference_id === exp.id || t.voucher_number === exp.voucher_number
+          (t) =>
+            (exp.id && t.reference_id === exp.id) ||
+            (exp.voucher_number && t.voucher_number === exp.voucher_number)
         );
         if (!alreadyIncluded) {
           const isWebApp = Boolean(
             exp.reference_number?.toUpperCase().startsWith('WEB-APP') ||
-            exp.description?.includes('[Source: Web App]')
+            exp.description?.includes('[Source: Web App]') ||
+            !exp.reference_number?.startsWith('REF-EXP')
           );
           consolidatedList.push({
-            id: `ltx-exp-${exp.id}`,
-            entry_id: exp.id,
-            entry_number: exp.voucher_number,
-            voucher_number: exp.voucher_number,
+            id: `ltx-exp-${exp.id || Date.now()}`,
+            entry_id: exp.id || `exp-${Date.now()}`,
+            entry_number: exp.voucher_number || `EXP-${Date.now()}`,
+            voucher_number: exp.voucher_number || `EXP-${Date.now()}`,
             entry_date: exp.expense_date || exp.created_at || new Date().toISOString(),
+            created_at: exp.created_at,
             entry_type: 'STANDARD',
             account_id: exp.expense_account_id || exp.expense_account?.id || '5002',
-            account_name: exp.expense_account?.account_name || 'General Operations',
+            account_name: exp.expense_account?.account_name || 'Office & Administration',
             account_code: exp.expense_account?.account_code || '5002',
             account_type: 'EXPENSE',
             reference_type: 'MANUAL_EXPENSE',
@@ -661,22 +829,25 @@ export const accountingService = {
         }
       }
 
-      // 4. Ensure any posted receipts from /receipts not in entries are included
+      // 5. Ensure any posted receipts from /receipt-entries are included
       for (const rec of rawReceipts) {
         if (!rec || rec.status === 'CANCELLED') continue;
         const alreadyIncluded = consolidatedList.some(
-          (t) => t.reference_id === rec.id || t.voucher_number === rec.voucher_number
+          (t) =>
+            (rec.id && t.reference_id === rec.id) ||
+            (rec.voucher_number && t.voucher_number === rec.voucher_number)
         );
         if (!alreadyIncluded) {
           consolidatedList.push({
-            id: `ltx-rec-${rec.id}`,
-            entry_id: rec.id,
-            entry_number: rec.voucher_number,
-            voucher_number: rec.voucher_number,
+            id: `ltx-rec-${rec.id || Date.now()}`,
+            entry_id: rec.id || `rec-${Date.now()}`,
+            entry_number: rec.voucher_number || `REC-${Date.now()}`,
+            voucher_number: rec.voucher_number || `REC-${Date.now()}`,
             entry_date: rec.receipt_date || rec.created_at || new Date().toISOString(),
+            created_at: rec.created_at,
             entry_type: 'STANDARD',
             account_id: rec.income_account_id || '4001',
-            account_name: rec.category || 'Donation & Grants',
+            account_name: rec.category || 'Donation Income',
             account_code: '4001',
             account_type: 'INCOME',
             reference_type: 'MANUAL_RECEIPT',
@@ -696,18 +867,12 @@ export const accountingService = {
         }
       }
 
-      // 5. If entries were empty, fallback to local storage
-      if (consolidatedList.length === 0) {
-        const stored = getStoredLedger();
-        consolidatedList.push(...stored);
-      }
-
       // 6. Chronological running balance calculation (oldest -> newest)
       consolidatedList.sort((a, b) => {
-        const tA = new Date(a.entry_date).getTime();
-        const tB = new Date(b.entry_date).getTime();
+        const tA = new Date(a.entry_date).getTime() || 0;
+        const tB = new Date(b.entry_date).getTime() || 0;
         if (tA !== tB) return tA - tB;
-        return a.entry_number.localeCompare(b.entry_number);
+        return String(a.entry_number || '').localeCompare(String(b.entry_number || ''));
       });
 
       const openingBalance = 0;
@@ -716,8 +881,8 @@ export const accountingService = {
       let totalOutflows = 0;
 
       for (const tx of consolidatedList) {
-        const inflow = tx.credit || 0;
-        const outflow = tx.debit || 0;
+        const inflow = Number(tx.credit) || 0;
+        const outflow = Number(tx.debit) || 0;
         totalInflows += inflow;
         totalOutflows += outflow;
         running += inflow - outflow;
@@ -728,10 +893,12 @@ export const accountingService = {
 
       // 7. Sort reverse-chronologically so LATEST TRANSACTIONS ARE ON TOP
       consolidatedList.sort((a, b) => {
-        const tA = new Date(a.entry_date).getTime();
-        const tB = new Date(b.entry_date).getTime();
-        if (tB !== tA) return tB - tA; // Newest date first
-        return (b.voucher_number || b.entry_number).localeCompare(a.voucher_number || a.entry_number);
+        const tA = new Date(a.created_at || a.entry_date).getTime() || 0;
+        const tB = new Date(b.created_at || b.entry_date).getTime() || 0;
+        if (tB !== tA) return tB - tA; // Newest timestamp first
+        return String(b.voucher_number || b.entry_number || '').localeCompare(
+          String(a.voucher_number || a.entry_number || '')
+        );
       });
 
       // Filter by params if provided
@@ -743,12 +910,13 @@ export const accountingService = {
         const q = params.search.toLowerCase().trim();
         resultList = resultList.filter(
           (t) =>
-            t.entry_number.toLowerCase().includes(q) ||
-            (t.voucher_number || '').toLowerCase().includes(q) ||
-            (t.narration || '').toLowerCase().includes(q) ||
-            t.account_name.toLowerCase().includes(q) ||
-            (t.received_from || '').toLowerCase().includes(q) ||
-            (t.paid_to || '').toLowerCase().includes(q)
+            String(t.entry_number || '').toLowerCase().includes(q) ||
+            String(t.voucher_number || '').toLowerCase().includes(q) ||
+            String(t.narration || '').toLowerCase().includes(q) ||
+            String(t.account_name || '').toLowerCase().includes(q) ||
+            String(t.received_from || '').toLowerCase().includes(q) ||
+            String(t.paid_to || '').toLowerCase().includes(q) ||
+            String(t.payment_method || '').toLowerCase().includes(q)
         );
       }
 

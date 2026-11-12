@@ -119,6 +119,7 @@ export interface LedgerTransaction {
   disbursing_account_name?: string | null;
   voucher_number?: string | null;
   is_web_app?: boolean;
+  created_at?: string;
 }
 
 export interface LedgerSummary {
