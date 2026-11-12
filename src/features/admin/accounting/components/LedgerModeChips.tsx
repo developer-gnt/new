@@ -18,8 +18,8 @@ export const LedgerModeChips: React.FC<LedgerModeChipsProps> = ({
 }) => {
   const modes: Array<{ id: MainAccountingMode; label: string; count?: number }> = [
     { id: 'PASSBOOK', label: '📖 All Transactions (Passbook)', count: counts.PASSBOOK },
-    { id: 'CREDIT', label: '📥 Inward Credits Only', count: counts.CREDIT },
-    { id: 'EXPENSE', label: '📤 Outward Debits Only', count: counts.EXPENSE },
+    { id: 'CREDIT', label: '📥 Income (Inflows)', count: counts.CREDIT },
+    { id: 'EXPENSE', label: '📤 Expenses (Outflows)', count: counts.EXPENSE },
     { id: 'ANALYTICS', label: '📊 Stream Breakdown' },
   ];
 

@@ -1,7 +1,7 @@
 import type React from 'react';
-import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, AlertCircle, Receipt } from 'lucide-react';
+import { Plus, AlertCircle, Receipt, RefreshCw } from 'lucide-react';
 import { expensesStore } from '../store/expensesStore';
 import { ExpenseStatsCards } from '../components/ExpenseStatsCards';
 import { ExpenseStatusTabs } from '../components/ExpenseStatusTabs';
@@ -24,6 +24,20 @@ export const ExpensesListPage: React.FC = () => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancellingVoucher, setCancellingVoucher] = useState<ExpenseEntryItem | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    expensesStore.syncFromBackend();
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await expensesStore.syncFromBackend();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const stats = useMemo(() => {
     const all = vouchers.length;
@@ -120,6 +134,16 @@ export const ExpensesListPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] transition cursor-pointer"
+            title="Sync with database"
+          >
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
+          </button>
           <button
             type="button"
             onClick={() => navigate('/admin/accounting')}

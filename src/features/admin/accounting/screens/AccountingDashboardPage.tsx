@@ -31,6 +31,7 @@ import { PassbookExportModal } from '../components/PassbookExportModal';
 import type {
   AccountItem,
   JournalEntryItem,
+  LedgerTransaction,
   MainAccountingMode,
 } from '../types/accounting.types';
 import { formatINR } from '../types/accounting.types';
@@ -74,6 +75,7 @@ export const AccountingDashboardPage: React.FC = () => {
   // Passbook / Ledger Sub-States
   const [ledgerMode, setLedgerMode] = useState<MainAccountingMode>('PASSBOOK');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
@@ -110,15 +112,48 @@ export const AccountingDashboardPage: React.FC = () => {
     setIsRefreshing(false);
   };
 
+  // Transaction classification helpers
+  const getInflowAmount = (t: LedgerTransaction): number => {
+    if (t.account_type === 'ASSET') return t.debit > 0 ? t.debit : 0;
+    if (t.account_type === 'INCOME') return t.credit > 0 ? t.credit : t.debit;
+    if (t.category_tag === 'EXPENSE' || t.account_type === 'EXPENSE') return 0;
+    if (t.category_tag === 'RECEIPT' || t.category_tag === 'DONATION' || t.category_tag === 'MEMBERSHIP_FEE') {
+      return t.debit > 0 ? t.debit : t.credit;
+    }
+    return t.debit > 0 ? t.debit : 0;
+  };
+
+  const getOutflowAmount = (t: LedgerTransaction): number => {
+    if (t.account_type === 'ASSET') return t.credit > 0 ? t.credit : 0;
+    if (t.account_type === 'EXPENSE') return t.debit > 0 ? t.debit : t.credit;
+    if (
+      t.category_tag === 'RECEIPT' ||
+      t.category_tag === 'DONATION' ||
+      t.category_tag === 'MEMBERSHIP_FEE' ||
+      t.account_type === 'INCOME'
+    ) {
+      return 0;
+    }
+    if (t.category_tag === 'EXPENSE') {
+      return t.credit > 0 ? t.credit : t.debit;
+    }
+    return t.credit > 0 ? t.credit : 0;
+  };
+
   // Filter Ledger Transactions
   const filteredTransactions = useMemo(() => {
     let list = [...transactions];
 
+    // Filter by specific Account Head if selected
+    if (selectedAccountId !== 'ALL') {
+      list = list.filter((t) => t.account_id === selectedAccountId);
+    }
+
     // Mode filter: CREDIT (inflow) vs EXPENSE (outflow)
     if (ledgerMode === 'CREDIT') {
-      list = list.filter((t) => t.debit > 0);
+      list = list.filter((t) => getInflowAmount(t) > 0);
     } else if (ledgerMode === 'EXPENSE') {
-      list = list.filter((t) => t.credit > 0);
+      list = list.filter((t) => getOutflowAmount(t) > 0);
     }
 
     // Search query
@@ -135,20 +170,62 @@ export const AccountingDashboardPage: React.FC = () => {
     }
 
     return list;
-  }, [transactions, ledgerMode, searchQuery]);
+  }, [transactions, selectedAccountId, ledgerMode, searchQuery]);
 
   // Mode counts
   const modeCounts = useMemo(() => {
     let credit = 0;
     let expense = 0;
     for (const t of transactions) {
-      if (t.debit > 0) credit++;
-      if (t.credit > 0) expense++;
+      if (getInflowAmount(t) > 0) credit++;
+      if (getOutflowAmount(t) > 0) expense++;
     }
     return {
       PASSBOOK: transactions.length,
       CREDIT: credit,
       EXPENSE: expense,
+    };
+  }, [transactions]);
+
+  // Dynamic live Stream Breakdown computed from REAL transaction data (No mock or fake data)
+  const streamBreakdown = useMemo(() => {
+    const inflowMap: Record<string, { name: string; code?: string; amount: number; count: number }> = {};
+    const outflowMap: Record<string, { name: string; code?: string; amount: number; count: number }> = {};
+
+    let totalInflow = 0;
+    let totalOutflow = 0;
+
+    transactions.forEach((t) => {
+      const inflow = getInflowAmount(t);
+      const outflow = getOutflowAmount(t);
+
+      if (inflow > 0) {
+        totalInflow += inflow;
+        const key = t.account_name || 'General Inflows';
+        if (!inflowMap[key]) {
+          inflowMap[key] = { name: key, code: t.account_code || undefined, amount: 0, count: 0 };
+        }
+        inflowMap[key].amount += inflow;
+        inflowMap[key].count += 1;
+      }
+
+      if (outflow > 0) {
+        totalOutflow += outflow;
+        const key = t.account_name || 'General Outflows';
+        if (!outflowMap[key]) {
+          outflowMap[key] = { name: key, code: t.account_code || undefined, amount: 0, count: 0 };
+        }
+        outflowMap[key].amount += outflow;
+        outflowMap[key].count += 1;
+      }
+    });
+
+    return {
+      inflows: Object.values(inflowMap).sort((a, b) => b.amount - a.amount),
+      outflows: Object.values(outflowMap).sort((a, b) => b.amount - a.amount),
+      totalInflow,
+      totalOutflow,
+      netResult: totalInflow - totalOutflow,
     };
   }, [transactions]);
 
@@ -231,14 +308,24 @@ export const AccountingDashboardPage: React.FC = () => {
               <span>New Journal Entry</span>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/admin/receipts/create')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              <span>Record Voucher</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/receipts/create')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus size={15} strokeWidth={2.5} />
+                <span>+ Record Income</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/expenses/create')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus size={15} strokeWidth={2.5} />
+                <span>+ Record Expense</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -270,70 +357,123 @@ export const AccountingDashboardPage: React.FC = () => {
               counts={modeCounts}
             />
 
-            {/* If Analytics Mode is selected, display breakdown */}
+            {/* If Analytics Mode is selected, display REAL dynamic breakdown */}
             {ledgerMode === 'ANALYTICS' ? (
-              <div className="p-5 bg-slate-50/80 rounded-xl border border-slate-200 space-y-4">
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={18} className="text-[#011F39]" />
-                  <h3 className="font-serif text-base font-bold text-[#011F39]">
-                    Revenue & Expenditure Stream Allocation
-                  </h3>
+              <div className="p-5 bg-slate-50/80 rounded-xl border border-slate-200 space-y-5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp size={18} className="text-[#011F39]" />
+                    <h3 className="font-serif text-base font-bold text-[#011F39]">
+                      Revenue & Expenditure Stream Allocation
+                    </h3>
+                  </div>
+                  <div className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">
+                    Net Balance: <strong className={streamBreakdown.netResult >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
+                      {formatINR(streamBreakdown.netResult)}
+                    </strong>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2">
-                    <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">
-                      Inflow Breakdown (Credits)
+                  {/* Real Inflow Breakdown */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                        Inflow Breakdown (Income & Receipts)
+                      </span>
+                      <span className="font-serif font-bold text-xs text-emerald-700">
+                        {formatINR(streamBreakdown.totalInflow)}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Donations (General & Cause):</span>
-                      <strong className="text-slate-900">₹ 1,20,000.00</strong>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Membership Registrations:</span>
-                      <strong className="text-slate-900">₹ 1,500.00</strong>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Grants & Subsidies:</span>
-                      <strong className="text-slate-900">₹ 1,00,000.00</strong>
-                    </div>
+
+                    {streamBreakdown.inflows.length > 0 ? (
+                      <div className="space-y-2">
+                        {streamBreakdown.inflows.map((item) => (
+                          <div key={item.name} className="flex justify-between items-center text-xs text-slate-600">
+                            <div>
+                              <span>{item.name}</span>
+                              <span className="text-[10px] text-slate-400 ml-1.5 font-normal">
+                                ({item.count} {item.count === 1 ? 'voucher' : 'vouchers'})
+                              </span>
+                            </div>
+                            <strong className="text-slate-900 font-mono">
+                              {formatINR(item.amount)}
+                            </strong>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic py-2">No posted income records found in this cycle.</p>
+                    )}
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2">
-                    <div className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">
-                      Outflow Breakdown (Debits)
+                  {/* Real Outflow Breakdown */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">
+                        Outflow Breakdown (Expenses & Disbursements)
+                      </span>
+                      <span className="font-serif font-bold text-xs text-rose-700">
+                        {formatINR(streamBreakdown.totalOutflow)}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Beneficiary Relief Assistance:</span>
-                      <strong className="text-slate-900">₹ 20,000.00</strong>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Office & Printing:</span>
-                      <strong className="text-slate-900">₹ 3,200.00</strong>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>Field Campaign Conveyance:</span>
-                      <strong className="text-slate-900">₹ 0.00</strong>
-                    </div>
+
+                    {streamBreakdown.outflows.length > 0 ? (
+                      <div className="space-y-2">
+                        {streamBreakdown.outflows.map((item) => (
+                          <div key={item.name} className="flex justify-between items-center text-xs text-slate-600">
+                            <div>
+                              <span>{item.name}</span>
+                              <span className="text-[10px] text-slate-400 ml-1.5 font-normal">
+                                ({item.count} {item.count === 1 ? 'voucher' : 'vouchers'})
+                              </span>
+                            </div>
+                            <strong className="text-slate-900 font-mono">
+                              {formatINR(item.amount)}
+                            </strong>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic py-2">No posted expenditure records found in this cycle.</p>
+                    )}
                   </div>
                 </div>
               </div>
             ) : (
               <>
-                {/* Search Bar */}
+                {/* Search & Account Head Filter Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={searchQuery}
+                  <div className="flex items-center gap-2 flex-1 max-w-2xl flex-wrap">
+                    <div className="relative flex-1 min-w-[220px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        placeholder="Search voucher #, narration, account or party..."
+                        className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
+                      />
+                    </div>
+
+                    <select
+                      value={selectedAccountId}
                       onChange={(e) => {
-                        setSearchQuery(e.target.value);
+                        setSelectedAccountId(e.target.value);
                         setCurrentPage(1);
                       }}
-                      placeholder="Search voucher #, particulars, account or contributor..."
-                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
-                    />
+                      className="px-3 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-[#011F39] focus:outline-none transition-colors cursor-pointer max-w-[260px]"
+                    >
+                      <option value="ALL">All Account Heads (Consolidated)</option>
+                      {accounts.map((acc) => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.account_code ? `${acc.account_code} — ` : ''}{acc.account_name} ({acc.account_type})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="text-xs text-slate-500 font-medium">
@@ -350,15 +490,46 @@ export const AccountingDashboardPage: React.FC = () => {
                         <th className="px-4 py-3">Stream Tag</th>
                         <th className="px-4 py-3">Particulars / Narration</th>
                         <th className="px-4 py-3">Account Allocation</th>
-                        <th className="px-4 py-3 text-right">Inflow (Credit)</th>
-                        <th className="px-4 py-3 text-right">Outflow (Debit)</th>
+                        <th className="px-4 py-3 text-right">Income (Inflow / Cr)</th>
+                        <th className="px-4 py-3 text-right">Expense (Outflow / Dr)</th>
                         <th className="px-4 py-3 text-right">Running Balance</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
+                      {/* 1. Official Opening Balance Row at start of period */}
+                      {currentPage === 1 && !searchQuery.trim() && selectedAccountId === 'ALL' && (
+                        <tr className="bg-amber-50/40 border-b border-amber-200/60 font-medium">
+                          <td className="px-4 py-3 text-slate-600 font-mono text-xs">
+                            {formatLedgerDate(summary ? (summary as any).from_date : undefined)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider bg-blue-50 text-blue-700 border-blue-200">
+                              OPENING
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-slate-800">
+                            Opening Balance Brought Forward (b/f)
+                            <span className="block text-[11px] text-slate-500 font-normal">
+                              Net liquid liquid cash & bank reserve carried from previous cycle
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600 text-xs">
+                            Cash & Bank Asset Reserves
+                          </td>
+                          <td className="px-4 py-3 text-right font-mono text-slate-400">—</td>
+                          <td className="px-4 py-3 text-right font-mono text-slate-400">—</td>
+                          <td className="px-4 py-3 text-right font-serif font-bold text-[#011F39]">
+                            {formatINR(summary.opening_balance)}
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* 2. Chronological Transactions */}
                       {paginatedTransactions.length > 0 ? (
                         paginatedTransactions.map((tx) => {
                           const badge = getCategoryBadgeStyle(tx.category_tag);
+                          const inflow = getInflowAmount(tx);
+                          const outflow = getOutflowAmount(tx);
 
                           return (
                             <tr
@@ -450,9 +621,9 @@ export const AccountingDashboardPage: React.FC = () => {
 
                               {/* Inflow Credit */}
                               <td className="px-4 py-3 align-top text-right">
-                                {tx.debit > 0 ? (
+                                {inflow > 0 ? (
                                   <span className="font-serif font-bold text-emerald-700">
-                                    + {formatINR(tx.debit)}
+                                    + {formatINR(inflow)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-300">—</span>
@@ -461,9 +632,9 @@ export const AccountingDashboardPage: React.FC = () => {
 
                               {/* Outflow Debit */}
                               <td className="px-4 py-3 align-top text-right">
-                                {tx.credit > 0 ? (
+                                {outflow > 0 ? (
                                   <span className="font-serif font-bold text-rose-700">
-                                    - {formatINR(tx.credit)}
+                                    - {formatINR(outflow)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-300">—</span>
@@ -487,6 +658,30 @@ export const AccountingDashboardPage: React.FC = () => {
                               <div className="font-semibold text-slate-700">No ledger transactions found</div>
                               <div className="text-xs text-slate-400">Try switching modes or clearing search terms.</div>
                             </div>
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* 3. Official Closing Balance Row at bottom of table */}
+                      {filteredTransactions.length > 0 && selectedAccountId === 'ALL' && (
+                        <tr className="bg-slate-100/90 border-t-2 border-slate-300 font-semibold text-slate-800">
+                          <td colSpan={2} className="px-4 py-3 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                            Period Balance Summary
+                          </td>
+                          <td className="px-4 py-3">
+                            Closing Net Balance Carried Forward (c/f)
+                          </td>
+                          <td className="px-4 py-3 text-xs text-slate-500">
+                            {filteredTransactions.length} Transactions
+                          </td>
+                          <td className="px-4 py-3 text-right font-serif font-bold text-emerald-700">
+                            {summary.total_debit > 0 ? `+ ${formatINR(summary.total_debit)}` : '₹0.00'}
+                          </td>
+                          <td className="px-4 py-3 text-right font-serif font-bold text-rose-700">
+                            {summary.total_credit > 0 ? `- ${formatINR(summary.total_credit)}` : '₹0.00'}
+                          </td>
+                          <td className="px-4 py-3 text-right font-serif font-bold text-[#011F39] text-base">
+                            {formatINR(summary.closing_balance)}
                           </td>
                         </tr>
                       )}

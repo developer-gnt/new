@@ -74,7 +74,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
         </div>
 
         {/* Scrollable Navigation Groups */}
-        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+        <div data-sidebar="true" className="flex-1 overflow-y-auto py-3 px-2 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
           {USER_NAV_GROUPS.map(group => (
             <div key={group.groupTitle} className="space-y-1">
               {(!collapsed || mobileOpen) ? (

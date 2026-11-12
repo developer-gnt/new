@@ -27,6 +27,14 @@ export const ExpenseCard: React.FC<{
   const paidFrom =
     voucher.paid_from_account?.account_name || voucher.payment_method || 'Bank Transfer';
 
+  const isWebApp =
+    Boolean(
+      voucher.reference_number?.toUpperCase().includes('WEB-APP') ||
+      voucher.description?.toLowerCase().includes('web app') ||
+      voucher.description?.toLowerCase().includes('web-app') ||
+      voucher.reference_number?.startsWith('WEB-APP')
+    );
+
   const formatDate = (isoStr: string): string => {
     try {
       const d = new Date(isoStr);
@@ -100,9 +108,19 @@ export const ExpenseCard: React.FC<{
 
       {/* Col 3: Payee & Reference (col-span-3) */}
       <div className="lg:col-span-3 flex flex-col min-w-0">
-        <span className="text-xs text-[#34516D] truncate" title={voucher.paid_to}>
-          Paid to <strong className="text-[#07294E] font-semibold">{voucher.paid_to}</strong>
-        </span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs text-[#34516D] truncate" title={voucher.paid_to}>
+            Paid to <strong className="text-[#07294E] font-semibold">{voucher.paid_to}</strong>
+          </span>
+          {isWebApp && (
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#EBF5FF] text-[#0369A1] border border-[#BAE6FD] shrink-0"
+              title="Created via Web App"
+            >
+              💻 Web App
+            </span>
+          )}
+        </div>
         {voucher.reference_number ? (
           <span className="text-[11px] text-[#718096] font-mono truncate" title={voucher.reference_number}>
             Ref: {voucher.reference_number}

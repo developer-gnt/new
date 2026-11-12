@@ -1,5 +1,6 @@
 import type {
   AccountItem,
+  AccountType,
   CreateAccountPayload,
   UpdateAccountPayload,
   JournalEntryItem,
@@ -219,10 +220,54 @@ export const accountingService = {
         params: queryParams,
       });
 
-      if (res && Array.isArray(res.items)) {
-        return { items: res.items, total: res.total || res.items.length };
-      } else if (Array.isArray(res)) {
-        return { items: res, total: res.length };
+      const rawList = res && Array.isArray(res.items) ? res.items : Array.isArray(res) ? res : [];
+      if (rawList.length > 0) {
+        const normalized: JournalEntryItem[] = rawList.map((e: any) => {
+          const lines = (e.lines || []).map((l: any, i: number) => ({
+            id: l.id || `jel-${e.id}-${i + 1}`,
+            account_id: l.account_id || l.account?.id,
+            account: l.account
+              ? {
+                  id: l.account.id,
+                  account_name: l.account.account_name,
+                  account_code: l.account.account_code,
+                  account_type: l.account.account_type,
+                }
+              : null,
+            debit: Number(l.debit_amount ?? l.debit ?? 0),
+            credit: Number(l.credit_amount ?? l.credit ?? 0),
+            narration: l.narration || l.line_description || '',
+          }));
+
+          let totalDebit = Number(e.total_debit ?? 0);
+          let totalCredit = Number(e.total_credit ?? 0);
+          if (totalDebit === 0 && totalCredit === 0 && lines.length > 0) {
+            lines.forEach((l: any) => {
+              totalDebit += l.debit;
+              totalCredit += l.credit;
+            });
+          }
+
+          return {
+            id: e.id,
+            entry_number: e.entry_number,
+            reference_type: e.reference_type,
+            reference_id: e.reference_id,
+            entry_type: e.entry_type || 'STANDARD',
+            narration: e.narration || e.description || '',
+            entry_date: e.entry_date,
+            is_reversed: Boolean(e.is_reversed),
+            reversal_entry_id: e.reversal_entry_id,
+            reversed_by_id: e.reversed_by_id,
+            reversal_reason: e.reversal_reason,
+            total_debit: totalDebit,
+            total_credit: totalCredit,
+            lines,
+            created_at: e.created_at,
+          };
+        });
+
+        return { items: normalized, total: res.total || normalized.length };
       }
     } catch {
       // Offline fallback
@@ -398,6 +443,7 @@ export const accountingService = {
     from_date?: string;
     to_date?: string;
     search?: string;
+    account_id?: string;
   }): Promise<{
     transactions: LedgerTransaction[];
     summary: LedgerSummary;
@@ -405,27 +451,132 @@ export const accountingService = {
     try {
       const now = new Date();
       const currentYear = now.getFullYear();
-      const queryParams: Record<string, string> = {
-        from_date: params?.from_date || `${currentYear}-01-01`,
-        to_date: params?.to_date || now.toISOString().slice(0, 10),
+
+      const fromDateIso = params?.from_date
+        ? new Date(params.from_date).toISOString()
+        : new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0)).toISOString();
+      const toDateIso = params?.to_date
+        ? new Date(params.to_date).toISOString()
+        : now.toISOString();
+
+      const queryParams: Record<string, string | number> = {
+        from_date: fromDateIso,
+        to_date: toDateIso,
+        limit: 100,
       };
       if (params?.search) queryParams.search = params.search;
+      if (params?.account_id) queryParams.account_id = params.account_id;
 
       const remote = await apiClient.get<any>(
         '/accounting/ledger',
         { params: queryParams }
       );
       if (remote) {
-        const transactions = Array.isArray(remote.items) ? remote.items : Array.isArray(remote.transactions) ? remote.transactions : [];
-        if (Array.isArray(transactions)) {
+        const rawItems = Array.isArray(remote.items)
+          ? remote.items
+          : Array.isArray(remote.transactions)
+            ? remote.transactions
+            : [];
+
+        if (Array.isArray(rawItems) && rawItems.length > 0) {
+          const transactions: LedgerTransaction[] = rawItems.map((item: any, idx: number) => {
+            const debit = Number(item.debit_amount ?? item.debit ?? 0);
+            const credit = Number(item.credit_amount ?? item.credit ?? 0);
+            const accountObj = item.account || {};
+            const accountName = accountObj.account_name || item.account_name || 'General Account';
+            const accountCode = accountObj.account_code || item.account_code || null;
+            const accountType = (accountObj.account_type || item.account_type || 'ASSET') as AccountType;
+            const narration = item.line_description || item.description || item.narration || '';
+            const running = Number(item.running_balance ?? 0);
+
+            // Determine category and stream tag
+            let categoryTag = item.category_tag;
+            const ref = String(item.reference_type || '').toUpperCase();
+            const narrLower = narration.toLowerCase();
+
+            if (!categoryTag) {
+              if (ref.includes('EXPENSE') || accountType === 'EXPENSE') {
+                categoryTag = 'EXPENSE';
+              } else if (ref.includes('DONATION') || narrLower.includes('donation')) {
+                categoryTag = 'DONATION';
+              } else if (ref.includes('MEMBERSHIP') || narrLower.includes('membership')) {
+                categoryTag = 'MEMBERSHIP_FEE';
+              } else if (accountType === 'INCOME') {
+                categoryTag = 'RECEIPT';
+              } else if (debit > 0) {
+                categoryTag = 'RECEIPT';
+              } else {
+                categoryTag = 'EXPENSE';
+              }
+            }
+
+            return {
+              id: item.id || `ltx-${item.entry_number || 'entry'}-${accountObj.id || idx}-${idx}`,
+              entry_id: item.entry_id || item.reference_id || item.id,
+              entry_number: item.entry_number || `JE-${String(idx + 1).padStart(5, '0')}`,
+              entry_date: item.entry_date ? new Date(item.entry_date).toISOString() : new Date().toISOString(),
+              entry_type: item.entry_type || 'STANDARD',
+              account_id: accountObj.id || item.account_id || '',
+              account_name: accountName,
+              account_code: accountCode,
+              account_type: accountType,
+              reference_type: item.reference_type || null,
+              reference_id: item.reference_id || null,
+              narration: narration || 'General transaction',
+              debit: debit,
+              credit: credit,
+              running_balance: running,
+              category_tag: categoryTag,
+              paid_to: item.paid_to || null,
+              received_from: item.received_from || null,
+            };
+          });
+
+          // Calculate real totals:
+          let totalInflow = 0;
+          let totalOutflow = 0;
+
+          // If there are ASSET accounts (Cash/Bank), their movements define total liquid inflow and outflow:
+          const assetLines = transactions.filter((t) => t.account_type === 'ASSET');
+          if (assetLines.length > 0) {
+            assetLines.forEach((t) => {
+              totalInflow += t.debit;
+              totalOutflow += t.credit;
+            });
+          } else {
+            // Otherwise, calculate across income and expense accounts:
+            transactions.forEach((t) => {
+              if (
+                t.account_type === 'INCOME' ||
+                t.category_tag === 'RECEIPT' ||
+                t.category_tag === 'DONATION' ||
+                t.category_tag === 'MEMBERSHIP_FEE'
+              ) {
+                totalInflow += t.credit || t.debit;
+              } else if (t.account_type === 'EXPENSE' || t.category_tag === 'EXPENSE') {
+                totalOutflow += t.debit || t.credit;
+              }
+            });
+          }
+
+          if (totalInflow === 0 && totalOutflow === 0) {
+            transactions.forEach((t) => {
+              totalInflow += t.debit;
+              totalOutflow += t.credit;
+            });
+          }
+
+          const openingBalance = Number(remote.opening_balance ?? remote.meta?.opening_balance ?? 0);
+          const closingBalance = openingBalance + totalInflow - totalOutflow;
+
           return {
             transactions,
-            summary: remote.summary || {
-              opening_balance: 0,
-              total_debit: 0,
-              total_credit: 0,
-              closing_balance: 0,
-              net_change: 0,
+            summary: {
+              opening_balance: openingBalance,
+              total_debit: totalInflow, // Total Inflows (Income/Receipts)
+              total_credit: totalOutflow, // Total Outflows (Expenses/Disbursements)
+              closing_balance: closingBalance,
+              net_change: totalInflow - totalOutflow,
             },
           };
         }
@@ -462,13 +613,13 @@ export const accountingService = {
       totalCredit += Number(t.credit) || 0;
     });
 
-    const closingBal = filtered.length > 0 ? filtered[0].running_balance : 500000;
+    const closingBal = filtered.length > 0 ? filtered[0].running_balance : 0;
     const openingBal = closingBal - totalDebit + totalCredit;
 
     return {
       transactions: filtered,
       summary: {
-        opening_balance: openingBal,
+        opening_balance: Math.max(0, openingBal),
         total_debit: totalDebit,
         total_credit: totalCredit,
         closing_balance: closingBal,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
@@ -21,6 +21,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const location = useLocation();
   const unreadCount = useUnreadCount();
   const { getEffectiveBadge, clearBadge } = useAdminNavBadges();
+  const navScrollRef = useRef<HTMLDivElement>(null);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem('admin_sidebar_scroll_top');
+    if (saved && navScrollRef.current) {
+      navScrollRef.current.scrollTop = Number(saved);
+    }
+  }, []);
+
+  const handleNavScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    sessionStorage.setItem('admin_sidebar_scroll_top', String(e.currentTarget.scrollTop));
+  };
 
   // Reset badges automatically when navigating to or viewing the corresponding admin module
   useEffect(() => {
@@ -91,7 +104,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
 
         {/* Navigation Groups List */}
-        <div style={styles.navScrollArea}>
+        <div
+          ref={navScrollRef}
+          onScroll={handleNavScroll}
+          data-sidebar="true"
+          style={styles.navScrollArea}
+        >
           {ADMIN_NAV_GROUPS.map((group) => (
             <div key={group.groupTitle} style={styles.groupContainer}>
               {!collapsed && (

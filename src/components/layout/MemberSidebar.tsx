@@ -1,4 +1,4 @@
-import type React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { executeSignOut } from '@/features/auth/store/authStore';
 import { ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react';
@@ -20,6 +20,18 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const unreadCount = useMemberUnreadCount();
+  const navScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('member_sidebar_scroll_top');
+    if (saved && navScrollRef.current) {
+      navScrollRef.current.scrollTop = Number(saved);
+    }
+  }, []);
+
+  const handleNavScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    sessionStorage.setItem('member_sidebar_scroll_top', String(e.currentTarget.scrollTop));
+  };
 
   const handleSignOut = async () => {
     if (mobileOpen) onCloseMobile();
@@ -82,7 +94,12 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
         </div>
 
         {/* Navigation Groups List */}
-        <div style={styles.navScrollArea}>
+        <div
+          ref={navScrollRef}
+          onScroll={handleNavScroll}
+          data-sidebar="true"
+          style={styles.navScrollArea}
+        >
           {MEMBER_NAV_GROUPS.map((group) => (
             <div key={group.groupTitle} style={styles.groupContainer}>
               {!collapsed && (

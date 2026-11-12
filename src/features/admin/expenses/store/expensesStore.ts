@@ -88,30 +88,19 @@ class ExpensesStore {
   public async syncFromBackend(): Promise<void> {
     try {
       const { items } = await expensesService.list({ limit: 100 });
-      if (items && items.length > 0) {
-        const mergedMap = new Map<string, ExpenseEntryItem>();
-        for (const item of items) {
-          mergedMap.set(item.id, item);
-        }
-        for (const local of this.vouchers) {
-          if (!mergedMap.has(local.id)) {
-            mergedMap.set(local.id, local);
-          }
-        }
-        this.vouchers = Array.from(mergedMap.values());
+      if (Array.isArray(items)) {
+        this.vouchers = items;
         this.sortInternal();
         this.notify();
       }
-    } catch {
-      // Fallback already loaded
+    } catch (e) {
+      console.warn('Could not sync expenses from backend:', e);
     }
   }
 
   public async create(payload: CreateExpensePayload): Promise<ExpenseEntryItem> {
     const created = await expensesService.create(payload);
-    this.vouchers = [created, ...this.vouchers];
-    this.sortInternal();
-    this.notify();
+    await this.syncFromBackend();
     return created;
   }
 
