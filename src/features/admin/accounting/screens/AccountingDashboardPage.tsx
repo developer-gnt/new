@@ -14,10 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { accountingStore } from '../store/accountingStore';
-import {
-  AccountingTabs,
-  type AccountingActiveTab,
-} from '../components/AccountingTabs';
+import type { AccountingActiveTab } from '../components/AccountingTabs';
 import { LedgerSummaryCards } from '../components/LedgerSummaryCards';
 import { LedgerModeChips } from '../components/LedgerModeChips';
 import { ChartOfAccountsTree } from '../components/ChartOfAccountsTree';
@@ -52,7 +49,7 @@ const formatLedgerDate = (dateStr?: string): string => {
 };
 
 export const AccountingDashboardPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // Reactive state from accountingStore
@@ -65,12 +62,6 @@ export const AccountingDashboardPage: React.FC = () => {
   // Active Main Tab: 'passbook' | 'accounts' | 'journals'
   const initialTab = (searchParams.get('tab') as AccountingActiveTab) || 'passbook';
   const [activeTab, setActiveTab] = useState<AccountingActiveTab>(initialTab);
-
-  // Sync tab with URL query parameter
-  const handleSelectTab = (tab: AccountingActiveTab) => {
-    setActiveTab(tab);
-    setSearchParams({ tab });
-  };
 
   // Passbook / Ledger Sub-States
   const [ledgerMode, setLedgerMode] = useState<MainAccountingMode>('PASSBOOK');
@@ -322,15 +313,6 @@ export const AccountingDashboardPage: React.FC = () => {
 
       {/* Main Content Box */}
       <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 sm:p-6">
-        {/* Navigation Tabs */}
-        <AccountingTabs
-          activeTab={activeTab}
-          onSelectTab={handleSelectTab}
-          journalCount={journals.length}
-          accountCount={accounts.length}
-          txCount={transactions.length}
-        />
-
         {/* TAB 1: General Ledger / Passbook */}
         {activeTab === 'passbook' && (
           <div>
