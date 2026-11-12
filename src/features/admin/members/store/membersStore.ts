@@ -257,7 +257,9 @@ class MembersStore {
         const res = await membersService.list({ limit: 100 });
         const items = res?.items || (Array.isArray(res) ? res : []);
         if (Array.isArray(items) && items.length > 0) {
-          mappedMembers = items.map(mapBackendMembershipToMember);
+          mappedMembers = items
+            .map(mapBackendMembershipToMember)
+            .filter((m) => m.status === 'ACTIVE' || m.status === 'EXPIRING_SOON');
         }
       } catch (err) {
         console.warn('GET /memberships call failed, trying /users fallback:', err);
