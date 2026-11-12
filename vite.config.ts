@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
   const proxyTarget =
     env.VITE_BACKEND_PROXY_TARGET ||
     env.BACKEND_PROXY_TARGET ||
-    'http://127.0.0.1:3000';
+    'http://194.164.151.17:3000';
 
   return {
     plugins: [react(), tailwindcss()],
