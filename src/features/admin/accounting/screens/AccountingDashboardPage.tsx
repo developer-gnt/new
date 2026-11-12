@@ -12,6 +12,13 @@ import {
   ChevronRight,
   TrendingUp,
   ExternalLink,
+  Calendar,
+  Smartphone,
+  Banknote,
+  Building2,
+  CreditCard,
+  FileText,
+  X,
 } from 'lucide-react';
 import { accountingStore } from '../store/accountingStore';
 import type { AccountingActiveTab } from '../components/AccountingTabs';
@@ -46,6 +53,54 @@ const formatLedgerDate = (dateStr?: string): string => {
   } catch {
     return dateStr;
   }
+};
+
+const renderPaymentModeBadge = (mode?: string | null) => {
+  if (!mode) {
+    return <span className="text-[11px] text-slate-400">via Bank Account</span>;
+  }
+  const m = mode.toUpperCase();
+  if (m.includes('UPI')) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+        <Smartphone size={11} className="text-indigo-600" />
+        <span>UPI</span>
+      </span>
+    );
+  }
+  if (m.includes('CASHFREE') || m.includes('GATEWAY') || m.includes('ONLINE')) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+        <CreditCard size={11} className="text-purple-600" />
+        <span>Online</span>
+      </span>
+    );
+  }
+  if (m.includes('CASH')) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+        <Banknote size={11} className="text-emerald-600" />
+        <span>Cash</span>
+      </span>
+    );
+  }
+  if (m.includes('BANK') || m.includes('TRANSFER') || m.includes('NEFT') || m.includes('RTGS') || m.includes('IMPS')) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+        <Building2 size={11} className="text-blue-600" />
+        <span>Bank Transfer</span>
+      </span>
+    );
+  }
+  if (m.includes('CHEQUE')) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+        <FileText size={11} className="text-amber-600" />
+        <span>Cheque</span>
+      </span>
+    );
+  }
+  return <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">via {mode}</span>;
 };
 
 export const AccountingDashboardPage: React.FC = () => {
@@ -414,7 +469,7 @@ export const AccountingDashboardPage: React.FC = () => {
                 {/* Search & Account Head Filter Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div className="flex items-center gap-2 flex-1 max-w-2xl flex-wrap">
-                    <div className="relative flex-1 min-w-[220px]">
+                    <div className="relative flex-1 min-w-[240px]">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                       <input
                         type="text"
@@ -424,8 +479,21 @@ export const AccountingDashboardPage: React.FC = () => {
                           setCurrentPage(1);
                         }}
                         placeholder="Search voucher #, narration, account or party..."
-                        className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
+                        className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
                       />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery('');
+                            setCurrentPage(1);
+                          }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                          title="Clear search"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
                     </div>
 
                     <select
@@ -445,49 +513,57 @@ export const AccountingDashboardPage: React.FC = () => {
                     </select>
                   </div>
 
-                  <div className="text-xs text-slate-500 font-medium">
-                    Showing <strong className="text-slate-800">{filteredTransactions.length}</strong> ledger records
+                  <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 self-end sm:self-auto whitespace-nowrap">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>
+                      Showing <strong className="text-slate-800 font-bold">{filteredTransactions.length}</strong> ledger records
+                    </span>
                   </div>
                 </div>
 
                 {/* Ledger Transactions Table */}
-                <div className="overflow-x-auto border border-slate-200/90 rounded-xl shadow-xs">
+                <div className="overflow-x-auto border border-slate-200/90 rounded-xl shadow-xs bg-white">
                   <table className="w-full border-collapse text-left text-xs sm:text-sm">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                        <th className="px-4 py-3">Date & Voucher No</th>
-                        <th className="px-4 py-3">Stream Tag</th>
-                        <th className="px-4 py-3">Particulars & Beneficiary</th>
-                        <th className="px-4 py-3">Account Head & Payment Mode</th>
-                        <th className="px-4 py-3 text-right">Income (Inflow / Cr)</th>
-                        <th className="px-4 py-3 text-right">Expense (Outflow / Dr)</th>
-                        <th className="px-4 py-3 text-right">Running Balance</th>
+                      <tr className="bg-slate-50/90 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th className="px-4 py-3.5 whitespace-nowrap min-w-[210px]">Date & Voucher No</th>
+                        <th className="px-4 py-3.5 whitespace-nowrap min-w-[110px]">Stream Tag</th>
+                        <th className="px-4 py-3.5 min-w-[220px]">Particulars & Beneficiary</th>
+                        <th className="px-4 py-3.5 min-w-[220px]">Account Head & Mode</th>
+                        <th className="px-4 py-3.5 text-right whitespace-nowrap min-w-[145px]">Income (Inflow / Cr)</th>
+                        <th className="px-4 py-3.5 text-right whitespace-nowrap min-w-[145px]">Expense (Outflow / Dr)</th>
+                        <th className="px-4 py-3.5 text-right whitespace-nowrap min-w-[155px]">Running Balance</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
                       {/* 1. Official Opening Balance Row at start of period */}
                       {currentPage === 1 && !searchQuery.trim() && selectedAccountId === 'ALL' && (
-                        <tr className="bg-amber-50/40 border-b border-amber-200/60 font-medium">
-                          <td className="px-4 py-3 text-slate-600 font-mono text-xs">
-                            {formatLedgerDate(summary ? (summary as any).from_date : undefined)}
+                        <tr className="bg-[#FFFDF5] border-b border-amber-200/80 font-medium">
+                          <td className="px-4 py-3.5 text-slate-500 font-mono text-xs whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                              <span>{formatLedgerDate(summary ? (summary as any).from_date : undefined)}</span>
+                            </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider bg-blue-50 text-blue-700 border-blue-200">
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border tracking-wider bg-blue-50 text-blue-700 border-blue-200 uppercase">
                               OPENING
                             </span>
                           </td>
-                          <td className="px-4 py-3 font-semibold text-slate-800">
-                            Opening Balance Brought Forward (b/f)
-                            <span className="block text-[11px] text-slate-500 font-normal">
+                          <td className="px-4 py-3.5">
+                            <div className="font-semibold text-slate-900 text-xs sm:text-sm">
+                              Opening Balance Brought Forward (b/f)
+                            </div>
+                            <div className="text-[11px] text-slate-500 font-normal mt-0.5">
                               Net liquid cash & bank reserve carried from previous cycle
-                            </span>
+                            </div>
                           </td>
-                          <td className="px-4 py-3 text-slate-600 text-xs">
-                            Cash & Bank Asset Reserves
+                          <td className="px-4 py-3.5 text-slate-600 text-xs">
+                            <span className="font-medium text-slate-800">Cash & Bank Asset Reserves</span>
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-slate-400">—</td>
-                          <td className="px-4 py-3 text-right font-mono text-slate-400">—</td>
-                          <td className="px-4 py-3 text-right font-serif font-bold text-[#011F39]">
+                          <td className="px-4 py-3.5 text-right font-mono text-slate-300 whitespace-nowrap">—</td>
+                          <td className="px-4 py-3.5 text-right font-mono text-slate-300 whitespace-nowrap">—</td>
+                          <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-[#011F39] whitespace-nowrap">
                             {formatINR(summary.opening_balance)}
                           </td>
                         </tr>
@@ -500,18 +576,22 @@ export const AccountingDashboardPage: React.FC = () => {
                           const inflow = getInflowAmount(tx);
                           const outflow = getOutflowAmount(tx);
                           const displayVoucherNo = tx.voucher_number || tx.entry_number;
+                          const cleanNarration = (tx.narration || '').replace(/\[Source:\s*Web App\]/gi, '').trim();
+                          const mainParty = tx.paid_to || tx.received_from;
 
                           return (
                             <tr
                               key={tx.id}
-                              className="hover:bg-slate-50/80 transition-colors"
+                              className="hover:bg-slate-50/80 transition-colors group"
                             >
                               {/* Date & Voucher No */}
-                              <td className="px-4 py-3 align-top">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="font-mono text-xs font-bold text-[#011F39]">{displayVoucherNo}</span>
+                              <td className="px-4 py-3.5 align-middle whitespace-nowrap min-w-[210px]">
+                                <div className="flex items-center gap-1.5 flex-nowrap">
+                                  <span className="font-mono text-xs font-bold text-[#011F39] tracking-tight whitespace-nowrap">
+                                    {displayVoucherNo}
+                                  </span>
                                   {tx.is_web_app && (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs whitespace-nowrap">
                                       Web App
                                     </span>
                                   )}
@@ -520,7 +600,7 @@ export const AccountingDashboardPage: React.FC = () => {
                                       type="button"
                                       onClick={() => navigate(`/admin/expenses/${tx.reference_id || tx.entry_number}`)}
                                       title="Open Expense Voucher"
-                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer p-0.5 rounded hover:bg-blue-50"
                                     >
                                       <ExternalLink size={12} />
                                     </button>
@@ -529,7 +609,7 @@ export const AccountingDashboardPage: React.FC = () => {
                                       type="button"
                                       onClick={() => navigate(`/admin/donations/${tx.reference_id || tx.entry_number}`)}
                                       title="Open Donation Record"
-                                      className="text-slate-400 hover:text-amber-600 transition cursor-pointer"
+                                      className="text-slate-400 hover:text-amber-600 transition cursor-pointer p-0.5 rounded hover:bg-amber-50"
                                     >
                                       <ExternalLink size={12} />
                                     </button>
@@ -538,7 +618,7 @@ export const AccountingDashboardPage: React.FC = () => {
                                       type="button"
                                       onClick={() => navigate('/admin/members')}
                                       title="Open Members Directory"
-                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer p-0.5 rounded hover:bg-blue-50"
                                     >
                                       <ExternalLink size={12} />
                                     </button>
@@ -547,21 +627,22 @@ export const AccountingDashboardPage: React.FC = () => {
                                       type="button"
                                       onClick={() => navigate(`/admin/receipts/${tx.reference_id || tx.entry_number}`)}
                                       title="Open Receipt Voucher"
-                                      className="text-slate-400 hover:text-emerald-600 transition cursor-pointer"
+                                      className="text-slate-400 hover:text-emerald-600 transition cursor-pointer p-0.5 rounded hover:bg-emerald-50"
                                     >
                                       <ExternalLink size={12} />
                                     </button>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-                                  {formatLedgerDate(tx.entry_date)}
+                                <div className="text-[11px] text-slate-500 font-medium mt-1 flex items-center gap-1.5">
+                                  <Calendar size={11} className="text-slate-400 shrink-0" />
+                                  <span>{formatLedgerDate(tx.entry_date)}</span>
                                 </div>
                               </td>
 
                               {/* Stream Tag */}
-                              <td className="px-4 py-3 align-top">
+                              <td className="px-4 py-3.5 align-middle whitespace-nowrap min-w-[110px]">
                                 <span
-                                  className="text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider"
+                                  className="inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs tracking-wide uppercase"
                                   style={{
                                     backgroundColor: badge.bg,
                                     color: badge.color,
@@ -573,57 +654,67 @@ export const AccountingDashboardPage: React.FC = () => {
                               </td>
 
                               {/* Particulars & Beneficiary */}
-                              <td className="px-4 py-3 align-top max-w-xs">
-                                <div className="font-semibold text-slate-900 truncate">
-                                  {tx.paid_to || tx.received_from || tx.narration || 'General transaction'}
-                                </div>
-                                {(tx.paid_to || tx.received_from) && tx.narration && (
-                                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                                    {tx.narration}
+                              <td className="px-4 py-3.5 align-middle max-w-xs min-w-[220px]">
+                                {mainParty ? (
+                                  <>
+                                    <div className="font-semibold text-slate-900 text-xs sm:text-sm truncate">
+                                      {mainParty}
+                                    </div>
+                                    {cleanNarration && cleanNarration !== mainParty && (
+                                      <div className="text-[11.5px] text-slate-500 truncate mt-0.5">
+                                        {cleanNarration}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="font-semibold text-slate-800 text-xs sm:text-sm truncate">
+                                    {cleanNarration || 'General transaction'}
                                   </div>
                                 )}
                               </td>
 
                               {/* Account Head & Payment Mode */}
-                              <td className="px-4 py-3 align-top">
-                                <div className="font-semibold text-slate-800 truncate">
-                                  {tx.account_name}
+                              <td className="px-4 py-3.5 align-middle min-w-[220px]">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-semibold text-slate-800 text-xs sm:text-sm truncate max-w-[180px]">
+                                    {tx.account_name}
+                                  </span>
                                   {tx.account_code && (
-                                    <span className="text-[10.5px] text-slate-400 font-mono ml-1">
-                                      (#{tx.account_code})
+                                    <span className="text-[10px] px-1.5 py-0.2 font-mono text-slate-500 bg-slate-100 rounded border border-slate-200">
+                                      #{tx.account_code}
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-[11px] text-slate-500 mt-0.5">
-                                  via {tx.payment_method || tx.disbursing_account_name || 'Bank Account'}
+                                <div className="mt-1">
+                                  {renderPaymentModeBadge(tx.payment_method || tx.disbursing_account_name)}
                                 </div>
                               </td>
 
                               {/* Inflow Credit */}
-                              <td className="px-4 py-3 align-top text-right">
+                              <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap min-w-[145px]">
                                 {inflow > 0 ? (
-                                  <span className="font-serif font-bold text-emerald-700">
+                                  <span className="font-mono font-bold text-xs sm:text-sm text-emerald-700 bg-emerald-50/70 px-2.5 py-0.5 rounded-md border border-emerald-200/60 inline-block whitespace-nowrap">
                                     + {formatINR(inflow)}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-300">—</span>
+                                  <span className="text-slate-300 font-mono">—</span>
                                 )}
                               </td>
 
                               {/* Outflow Debit */}
-                              <td className="px-4 py-3 align-top text-right">
+                              <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap min-w-[145px]">
                                 {outflow > 0 ? (
-                                  <span className="font-serif font-bold text-rose-700">
+                                  <span className="font-mono font-bold text-xs sm:text-sm text-rose-700 bg-rose-50/70 px-2.5 py-0.5 rounded-md border border-rose-200/60 inline-block whitespace-nowrap">
                                     - {formatINR(outflow)}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-300">—</span>
+                                  <span className="text-slate-300 font-mono">—</span>
                                 )}
                               </td>
 
                               {/* Running Balance */}
-                              <td className="px-4 py-3 align-top text-right">
-                                <span className="font-serif font-bold text-[#011F39]">
+                              <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap min-w-[155px]">
+                                <span className="font-mono font-bold text-xs sm:text-sm text-[#011F39] whitespace-nowrap">
                                   {formatINR(tx.running_balance)}
                                 </span>
                               </td>
@@ -644,23 +735,23 @@ export const AccountingDashboardPage: React.FC = () => {
 
                       {/* 3. Official Closing Balance Row at bottom of table */}
                       {filteredTransactions.length > 0 && selectedAccountId === 'ALL' && (
-                        <tr className="bg-slate-100/90 border-t-2 border-slate-300 font-semibold text-slate-800">
-                          <td colSpan={2} className="px-4 py-3 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                            Period Balance Summary
+                        <tr className="bg-slate-50/90 border-t-2 border-slate-300/90 font-semibold text-slate-800">
+                          <td colSpan={2} className="px-4 py-3.5 text-xs uppercase tracking-wider text-slate-600 font-bold whitespace-nowrap">
+                            Closing Balance Carried Forward (c/f)
                           </td>
-                          <td className="px-4 py-3">
-                            Closing Net Balance Carried Forward (c/f)
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">
+                          <td className="px-4 py-3.5 text-xs text-slate-500">
                             {filteredTransactions.length} Transactions
                           </td>
-                          <td className="px-4 py-3 text-right font-serif font-bold text-emerald-700">
+                          <td className="px-4 py-3.5 text-xs text-slate-500">
+                            Net Liquid Reserves
+                          </td>
+                          <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-emerald-700 whitespace-nowrap">
                             {summary.total_debit > 0 ? `+ ${formatINR(summary.total_debit)}` : '₹0.00'}
                           </td>
-                          <td className="px-4 py-3 text-right font-serif font-bold text-rose-700">
+                          <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-rose-700 whitespace-nowrap">
                             {summary.total_credit > 0 ? `- ${formatINR(summary.total_credit)}` : '₹0.00'}
                           </td>
-                          <td className="px-4 py-3 text-right font-serif font-bold text-[#011F39] text-base">
+                          <td className="px-4 py-3.5 text-right font-mono font-bold text-sm sm:text-base text-[#011F39] whitespace-nowrap">
                             {formatINR(summary.closing_balance)}
                           </td>
                         </tr>
