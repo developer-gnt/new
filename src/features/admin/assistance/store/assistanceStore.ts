@@ -3,7 +3,6 @@ import type {
   AssistanceStatus,
   AssistanceSummaryStats,
   CreateAssistanceRequestPayload,
-  AssistanceDocumentItem,
 } from '../types/assistance.types';
 import { assistanceService } from '../services/assistanceService';
 
@@ -33,6 +32,13 @@ class AssistanceStore {
   }
 
   private loadPersisted(): AssistanceRequest[] {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // Ignore storage errors
+    }
     return [];
   }
 
@@ -107,73 +113,40 @@ class AssistanceStore {
   }
 
   public async fetchRequests(): Promise<void> {
-    try {
-      const res = await assistanceService.list({ limit: 100 });
-      const remoteItems = res?.items || (Array.isArray(res) ? res : []);
-      if (Array.isArray(remoteItems)) {
-        this.requests = remoteItems;
-        this.sortInternal();
-        this.notify();
-      }
-    } catch {
-      // In offline mode, retain real local items only
-    }
+    const res = await assistanceService.list({ limit: 100 });
+    const remoteItems = Array.isArray(res?.items) ? res.items : [];
+    const existingMap = new Map<string, AssistanceRequest>();
+    this.requests.forEach((r) => existingMap.set(r.id, r));
+
+    this.requests = remoteItems.map((remote) => {
+      const existing = existingMap.get(remote.id);
+      return {
+        ...remote,
+        age: remote.age ?? existing?.age,
+        city: remote.city ?? existing?.city,
+        state: remote.state ?? existing?.state,
+        urgency: remote.urgency ?? existing?.urgency,
+        documents: remote.documents && remote.documents.length > 0 ? remote.documents : existing?.documents,
+      };
+    });
+    this.sortInternal();
+    this.notify();
   }
 
   public async createRequest(payload: CreateAssistanceRequestPayload): Promise<AssistanceRequest> {
-    const newId = `ast-${Date.now()}`;
-    const nowIso = new Date().toISOString();
-
-    const docs: AssistanceDocumentItem[] = (payload.documents || []).map((d, idx) => ({
-      id: `doc-ast-${Date.now()}-${idx + 1}`,
-      document_name: d.document_name,
-      document_type: 'Supporting Document',
-      original_file_name: d.file_name,
-      mime_type: d.mime_type || 'application/pdf',
-      file_size: d.file_size || '1.2 MB',
-      description: 'Uploaded during registration',
-      created_at: nowIso.split('T')[0],
-      verified: false,
-    }));
-
-    const newRequest: AssistanceRequest = {
-      id: newId,
-      user_id: payload.user_id || `usr-${Math.floor(1000 + Math.random() * 9000)}`,
-      full_name: payload.full_name.trim(),
-      mobile: payload.mobile.trim(),
-      email: payload.email?.trim() || null,
-      requested_amount: Number(payload.requested_amount) || 0,
-      raised_amount: 0,
-      donor_count: 0,
-      reason: payload.reason || 'Medical Emergency',
-      description: payload.description || null,
-      status: payload.status || 'UNDER_REVIEW',
-      admin_remark: payload.admin_remark || null,
-      reviewed_at: payload.status === 'APPROVED' ? nowIso : null,
-      created_at: nowIso,
-      updated_at: nowIso,
-      age: payload.age,
-      city: payload.city,
-      state: payload.state,
-      urgency: payload.urgency || 'NORMAL',
-      documents: docs,
+    const created = await assistanceService.create(payload);
+    const enriched: AssistanceRequest = {
+      ...created,
+      age: created.age ?? payload.age,
+      city: created.city ?? payload.city,
+      state: created.state ?? payload.state,
+      urgency: created.urgency ?? payload.urgency ?? 'NORMAL',
     };
 
-    this.requests = [newRequest, ...this.requests];
+    this.requests = [enriched, ...this.requests.filter((r) => r.id !== enriched.id)];
+    this.sortInternal();
     this.notify();
-
-    // Call backend API asynchronously
-    try {
-      const res = await assistanceService.create(payload);
-      if (res?.id && res.id !== newRequest.id) {
-        newRequest.id = res.id;
-        this.notify();
-      }
-    } catch {
-      // Retain local copy
-    }
-
-    return newRequest;
+    return enriched;
   }
 
   public async updateStatus(
@@ -181,28 +154,26 @@ class AssistanceStore {
     newStatus: AssistanceStatus,
     adminRemark?: string
   ): Promise<boolean> {
-    const idx = this.requests.findIndex((r) => r.id === id);
-    if (idx === -1) return false;
-
-    const current = this.requests[idx];
-    const nowIso = new Date().toISOString();
-
-    this.requests[idx] = {
-      ...current,
+    const updated = await assistanceService.updateStatus(id, {
       status: newStatus,
-      admin_remark: adminRemark !== undefined ? adminRemark : current.admin_remark,
-      reviewed_at: nowIso,
-      updated_at: nowIso,
-    };
-    this.notify();
+      admin_remark: adminRemark,
+    });
 
-    try {
-      await assistanceService.updateStatus(id, {
-        status: newStatus,
-        admin_remark: adminRemark,
-      });
-    } catch {
-      // Local fallback handled
+    const idx = this.requests.findIndex((r) => r.id === id);
+    const nowIso = new Date().toISOString();
+    if (idx !== -1) {
+      const current = this.requests[idx];
+      this.requests[idx] = {
+        ...current,
+        ...(updated && typeof updated === 'object' ? updated : {}),
+        status: updated?.status || newStatus,
+        admin_remark: adminRemark !== undefined ? adminRemark : (updated?.admin_remark ?? current.admin_remark),
+        reviewed_at: updated?.reviewed_at || nowIso,
+        updated_at: updated?.updated_at || nowIso,
+      };
+      this.notify();
+    } else {
+      await this.fetchRequests();
     }
 
     return true;
@@ -221,7 +192,6 @@ class AssistanceStore {
 
   public resetToFixtures(): void {
     this.requests = [];
-    this.sortInternal();
     this.notify();
   }
 }

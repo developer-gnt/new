@@ -6,8 +6,6 @@ import type {
   UserTransactionsResponse,
 } from '../types/transactions.types';
 
-const MOCK_FALLBACK_TRANSACTIONS: UserTransactionItem[] = [];
-
 export const transactionsService = {
   /**
    * Fetches unified transaction ledger and totals for current user.
@@ -52,63 +50,25 @@ export const transactionsService = {
         };
       }
     } catch {
-      // Fallback to offline fixtures
+      // Return empty live state if API fails
     }
-
-    // Apply client filters to offline fixtures
-    let items = [...MOCK_FALLBACK_TRANSACTIONS];
-
-    if (params?.category && params.category !== 'ALL') {
-      const cat = params.category.toUpperCase();
-      items = items.filter(
-        (i) => i.category_code === cat || i.category.toUpperCase() === cat
-      );
-    }
-
-    if (params?.status && params.status !== 'ALL') {
-      const st = params.status.toUpperCase();
-      items = items.filter(
-        (i) => i.status_code === st || i.status.toUpperCase() === st
-      );
-    }
-
-    if (params?.search && params.search.trim()) {
-      const q = params.search.trim().toLowerCase();
-      items = items.filter(
-        (i) =>
-          i.transaction_id.toLowerCase().includes(q) ||
-          i.title.toLowerCase().includes(q) ||
-          i.purpose.toLowerCase().includes(q) ||
-          (i.receipt_number && i.receipt_number.toLowerCase().includes(q)) ||
-          String(i.amount).includes(q)
-      );
-    }
-
-    const totalPaid = items.reduce((acc, i) => acc + i.amount, 0);
-    const successful = items.filter((i) => i.status === 'Success').length;
-    const pending = items.filter((i) => i.status === 'Pending').length;
-    const failed = items.filter((i) => i.status === 'Failed').length;
-    const refunded = items.filter((i) => i.status === 'Refunded').length;
-    const tax80G = items
-      .filter((i) => i.status === 'Success' && i.related_info?.tax_exemption_eligible)
-      .reduce((acc, i) => acc + i.amount, 0);
 
     return {
       summary: {
-        total_amount_paid: totalPaid,
-        total_transactions: items.length,
-        successful_count: successful,
-        pending_count: pending,
-        failed_count: failed,
-        refunded_count: refunded,
-        tax_exemption_total: tax80G,
+        total_amount_paid: 0,
+        total_transactions: 0,
+        successful_count: 0,
+        pending_count: 0,
+        failed_count: 0,
+        refunded_count: 0,
+        tax_exemption_total: 0,
       },
-      items,
+      items: [],
       meta: {
-        page: 1,
-        limit: 50,
-        total: items.length,
-        totalPages: 1,
+        page: params?.page || 1,
+        limit: params?.limit || 50,
+        total: 0,
+        totalPages: 0,
       },
     };
   },
@@ -122,13 +82,10 @@ export const transactionsService = {
       const payload = res?.data || res;
       if (payload && payload.id) return payload;
     } catch {
-      // Check mock fixtures
+      // Return null if not found
     }
 
-    const found = MOCK_FALLBACK_TRANSACTIONS.find(
-      (t) => t.id === id || t.transaction_id === id || t.payment_reference === id
-    );
-    return found || null;
+    return null;
   },
 
   /**

@@ -39,6 +39,7 @@ import {
   STATE_CITIES,
   CATEGORY_UUID_MAP,
 } from '../features/membership/data/membershipCategoriesData';
+import { INDIA_LOCATIONS } from '../features/user/data/indiaLocations';
 import { membershipService } from '../features/membership/services/membershipService';
 import {
   formatDateToDMY,
@@ -1690,19 +1691,29 @@ export const MemberRegistrationPage: React.FC = () => {
                     className={`flex items-center px-3.5 py-2.5 bg-slate-50 border rounded-xl transition ${addressErrors.city ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
                       }`}
                   >
-                    <input
-                      type="text"
-                      list="city-options"
+                    <select
                       value={address.city}
-                      placeholder="Enter City / District *"
-                      onChange={e => setAddress(a => ({ ...a, city: e.target.value }))}
-                      className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium"
-                    />
-                    <datalist id="city-options">
-                      {(STATE_CITIES[address.state] || []).map(c => (
-                        <option key={c} value={c} />
+                      disabled={!address.state}
+                      onChange={e => {
+                        const newCity = e.target.value;
+                        setAddress(a => ({ ...a, city: newCity }));
+                        if (addressErrors.city) setAddressErrors(err => ({ ...err, city: '' }));
+                      }}
+                      className="w-full bg-transparent text-sm text-slate-900 focus:outline-none font-medium cursor-pointer disabled:text-slate-400 disabled:cursor-not-allowed"
+                    >
+                      <option value="">
+                        {address.state ? 'Select City / District *' : 'Select State First *'}
+                      </option>
+                      {(
+                        STATE_CITIES[address.state] ||
+                        INDIA_LOCATIONS.find(loc => loc.name === address.state)?.cities ||
+                        []
+                      ).map(c => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
                   {addressErrors.city && (
                     <p className="text-[11px] text-rose-600 mt-1 font-medium">{addressErrors.city}</p>
