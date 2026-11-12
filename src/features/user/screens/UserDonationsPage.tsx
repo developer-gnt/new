@@ -33,25 +33,9 @@ export const UserDonationsPage: React.FC<UserDonationsPageProps> = ({ isMember =
   const [customAmount, setCustomAmount] = useState<string>('');
   const [selectedCause, setSelectedCause] = useState<string>('General Fund — HRSJM Mission');
 
-  // Causes from live API / fallbacks matching APK
-  const [causes, setCauses] = useState<any[]>([
-    {
-      id: 'cause-aftab',
-      title: 'Seekeraftab (Education Support)',
-      description: 'Hello',
-      icon: BookOpen,
-      category: 'Education Support',
-    },
-    {
-      id: 'cause-vikram',
-      title:
-        'Vikram Joshi ([Complaint: Human Rights Violation] Unlawful detention complaint submitted for investigation.)',
-      description:
-        'Citizen Complaint / Grievance Details:\n- Category: Human Rights Violation',
-      icon: Scale,
-      category: 'Human Rights',
-    },
-  ]);
+  // Live approved causes from backend API
+  const [causes, setCauses] = useState<any[]>([]);
+  const [loadingCauses, setLoadingCauses] = useState(true);
 
   // Payment Modal state
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
@@ -64,18 +48,35 @@ export const UserDonationsPage: React.FC<UserDonationsPageProps> = ({ isMember =
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
-    assistanceService.listApproved().then((approved) => {
-      if (approved && approved.length > 0) {
-        const liveCauses = approved.map((a: any, idx: number) => ({
-          id: a.id || `live-${idx}`,
-          title: a.title || a.applicant_name || a.purpose || 'Community Relief Initiative',
-          description: a.description || a.reason_for_aid || 'Verified humanitarian support cause.',
-          icon: a.category === 'Education' ? BookOpen : Scale,
-          category: a.category || 'Human Rights',
-        }));
+    setLoadingCauses(true);
+    assistanceService
+      .listApproved({ limit: 100 })
+      .then((approved) => {
+        const liveCauses = (approved || []).map((a: any, idx: number) => {
+          const reason = a.reason || a.title || a.purpose || 'Community Relief Initiative';
+          const applicant = a.full_name || a.applicant_name || '';
+          const title = applicant ? `${applicant} (${reason})` : reason;
+          const rawDesc = String(a.description || a.reason_for_aid || '');
+          const cleanDesc = rawDesc
+            .replace(/\s*\[(Location|Urgency|Age):[^\]]+\]/gi, '')
+            .trim();
+
+          return {
+            id: a.id || `live-${idx}`,
+            title,
+            description: cleanDesc || 'Verified humanitarian support cause.',
+            icon: reason.toLowerCase().includes('educat') ? BookOpen : Scale,
+            category: a.category || reason || 'Humanitarian Aid',
+          };
+        });
         setCauses(liveCauses);
-      }
-    }).catch(() => {});
+      })
+      .catch(() => {
+        setCauses([]);
+      })
+      .finally(() => {
+        setLoadingCauses(false);
+      });
   }, []);
 
   const effectiveAmount =
@@ -310,6 +311,15 @@ export const UserDonationsPage: React.FC<UserDonationsPageProps> = ({ isMember =
         </div>
 
         {/* Cause Cards Grid */}
+        {loadingCauses ? (
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 text-center text-xs font-semibold text-slate-500">
+            Loading verified aid causes...
+          </div>
+        ) : causes.length === 0 ? (
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 text-center text-xs text-slate-500">
+            No active relief causes available right now.
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {causes.slice(0, 4).map((cause) => {
             const Icon = cause.icon || Heart;
@@ -346,6 +356,7 @@ export const UserDonationsPage: React.FC<UserDonationsPageProps> = ({ isMember =
             );
           })}
         </div>
+        )}
       </div>
 
       {/* 5. Where Your Donation Helps */}

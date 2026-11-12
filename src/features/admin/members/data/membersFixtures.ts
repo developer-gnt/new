@@ -54,7 +54,7 @@ export const STANDARD_MEMBERSHIP_CATEGORIES: MembershipCategoryItem[] = [
   },
   {
     id: '6',
-    name: 'Counsellor of State',
+    name: 'Counselor of State',
     code: 'COUNSELLOR_OF_STATE',
     fee: 5000,
     description: 'Qualification: Minimum 12th Pass · 5 Years Validity',

@@ -300,6 +300,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="home" element={<SeekerHomePage />} />
           <Route path="requests" element={<SeekerRequestsPage />} />
           <Route path="requests/:id" element={<SeekerRequestDetailsPage />} />
+          <Route path="causes" element={<MemberCausesPage />} />
           <Route path="aid" element={<Navigate to="/seeker/requests" replace />} />
           <Route path="apply" element={<SeekerApplyPage />} />
           <Route path="apply-aid" element={<Navigate to="/seeker/apply" replace />} />
