@@ -536,40 +536,7 @@ export const AccountingDashboardPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
-                      {/* 1. Official Opening Balance Row at start of period */}
-                      {currentPage === 1 && !searchQuery.trim() && selectedAccountId === 'ALL' && (
-                        <tr className="bg-[#FFFDF5] border-b border-amber-200/80 font-medium">
-                          <td className="px-4 py-3.5 text-slate-500 font-mono text-xs whitespace-nowrap">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                              <span>{formatLedgerDate(summary ? (summary as any).from_date : undefined)}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border tracking-wider bg-blue-50 text-blue-700 border-blue-200 uppercase">
-                              OPENING
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <div className="font-semibold text-slate-900 text-xs sm:text-sm">
-                              Opening Balance Brought Forward (b/f)
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal mt-0.5">
-                              Net liquid cash & bank reserve carried from previous cycle
-                            </div>
-                          </td>
-                          <td className="px-4 py-3.5 text-slate-600 text-xs">
-                            <span className="font-medium text-slate-800">Cash & Bank Asset Reserves</span>
-                          </td>
-                          <td className="px-4 py-3.5 text-right font-mono text-slate-300 whitespace-nowrap">—</td>
-                          <td className="px-4 py-3.5 text-right font-mono text-slate-300 whitespace-nowrap">—</td>
-                          <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-[#011F39] whitespace-nowrap">
-                            {formatINR(summary.opening_balance)}
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* 2. Chronological Transactions (Newest First) */}
+                      {/* Chronological Transactions (Newest First) */}
                       {paginatedTransactions.length > 0 ? (
                         paginatedTransactions.map((tx) => {
                           const badge = getCategoryBadgeStyle(tx.category_tag);
