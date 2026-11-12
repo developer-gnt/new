@@ -47,34 +47,35 @@ export const LedgerSummaryCards: React.FC<LedgerSummaryCardsProps> = ({ summary 
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 w-full max-w-full min-w-0">
       {cards.map((c) => {
         const IconComponent = c.icon;
         return (
           <div
             key={c.id}
-            className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+            className="bg-white rounded-xl border border-slate-200/90 p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-0 w-full overflow-hidden"
           >
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
                   {c.label}
                 </span>
                 <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${c.iconBg}`}
+                  className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 border ${c.iconBg}`}
                 >
-                  <IconComponent size={18} />
+                  <IconComponent size={17} />
                 </div>
               </div>
 
               <div
-                className={`font-serif font-bold text-xl sm:text-2xl lg:text-3xl tracking-tight leading-none mb-1.5 truncate ${c.amountColor}`}
+                className={`font-serif font-bold text-lg sm:text-2xl lg:text-[26px] xl:text-3xl tracking-tight leading-none mb-1.5 truncate ${c.amountColor}`}
+                title={c.amount}
               >
                 {c.amount}
               </div>
             </div>
 
-            <div className="text-[11px] text-slate-500 font-medium truncate pt-2 border-t border-slate-100 mt-2">
+            <div className="text-[11px] text-slate-500 font-medium truncate pt-2 border-t border-slate-100 mt-2 min-w-0">
               {c.subtitle}
             </div>
           </div>

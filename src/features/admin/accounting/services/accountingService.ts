@@ -443,10 +443,72 @@ export const accountingService = {
     to_date?: string;
     search?: string;
     account_id?: string;
+    stream?: string;
+    source?: string;
   }): Promise<{
     transactions: LedgerTransaction[];
     summary: LedgerSummary;
   }> {
+    // Helper classification functions for stream and source
+    const detectStreamCategory = (
+      tag: string,
+      refType: string,
+      desc: string,
+      isExpense: boolean
+    ): string => {
+      const d = (desc || '').toLowerCase();
+      const r = (refType || '').toUpperCase();
+      if (isExpense || r.includes('EXPENSE')) return 'EXPENSE';
+      if (
+        tag === 'CAUSE_FUND' ||
+        d.includes('cause:') ||
+        d.includes('emergency') ||
+        d.includes('seeker') ||
+        d.includes('relief') ||
+        d.includes('medical')
+      ) {
+        return 'CAUSE_DONATION';
+      }
+      if (d.includes('renew')) return 'RENEWAL';
+      if (r.includes('MEMBERSHIP') || d.includes('membership') || d.includes('member/user')) {
+        return 'MEMBERSHIP';
+      }
+      if (r.includes('DONATION') || d.includes('donation')) return 'DONATION';
+      return 'DONATION';
+    };
+
+    const detectSourceChannel = (
+      isWebApp: boolean,
+      voucherNo: string,
+      refNo: string,
+      desc: string,
+      party: string
+    ): string => {
+      const text = `${desc} ${voucherNo} ${refNo} ${party}`.toLowerCase();
+      if (isWebApp || text.includes('web-app') || text.includes('[source: web app]')) {
+        return 'WEB_APP';
+      }
+      if (
+        text.includes('application') ||
+        text.includes('applicaition') ||
+        text.includes('mobile') ||
+        text.includes('apk') ||
+        text.includes('member/user')
+      ) {
+        return 'APPLICATION';
+      }
+      if (
+        text.includes('website') ||
+        text.includes('cashfree') ||
+        text.includes('online') ||
+        text.includes('gateway') ||
+        text.includes('public/guest')
+      ) {
+        return 'WEBSITE';
+      }
+      return 'WEBSITE';
+    };
+
     // Helper to fetch paginated backend lists safely within backend validation limit (max 100)
     const fetchPagedItems = async (
       endpoint: string,
@@ -633,6 +695,27 @@ export const accountingService = {
             : null);
         const receivedFrom = matchedReceipt?.received_from || null;
 
+        const narrationText =
+          entry.description ||
+          matchedExpense?.description ||
+          matchedReceipt?.notes ||
+          'Official Society Transaction';
+
+        const streamCategory = detectStreamCategory(
+          streamTag,
+          refType,
+          narrationText,
+          isExpense
+        );
+
+        const sourceChannel = detectSourceChannel(
+          isWebApp,
+          voucherNumber,
+          matchedExpense?.reference_number || '',
+          narrationText,
+          paidTo || receivedFrom || ''
+        );
+
         consolidatedList.push({
           id: `ltx-consolidated-${entry.id}`,
           entry_id: entry.id,
@@ -647,11 +730,7 @@ export const accountingService = {
           account_type: isExpense ? 'EXPENSE' : 'INCOME',
           reference_type: entry.reference_type || null,
           reference_id: entry.reference_id || null,
-          narration:
-            entry.description ||
-            matchedExpense?.description ||
-            matchedReceipt?.notes ||
-            'Official Society Transaction',
+          narration: narrationText,
           debit: isExpense ? amount : 0,
           credit: !isExpense ? amount : 0,
           running_balance: 0,
@@ -662,6 +741,8 @@ export const accountingService = {
           received_from: receivedFrom,
           status: isReversed ? 'REVERSED' : 'POSTED',
           is_web_app: isWebApp,
+          stream_category: streamCategory,
+          source_channel: sourceChannel,
         });
       }
 
@@ -752,6 +833,19 @@ export const accountingService = {
           const matchedExpense = refId ? expensesById.get(refId) : null;
           const matchedReceipt = refId ? receiptsById.get(refId) : null;
 
+          const rawIsWebApp = Boolean(
+            matchedExpense?.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+            desc.includes('WEB-APP')
+          );
+          const rawStreamCategory = detectStreamCategory(streamTag, refType, desc, isExpense);
+          const rawSourceChannel = detectSourceChannel(
+            rawIsWebApp,
+            matchedExpense?.voucher_number || matchedReceipt?.voucher_number || entryNum,
+            matchedExpense?.reference_number || '',
+            desc,
+            matchedExpense?.paid_to || matchedReceipt?.received_from || ''
+          );
+
           consolidatedList.push({
             id: `ltx-grp-${entryNum}`,
             entry_id: firstLine?.entry_id || entryNum,
@@ -778,10 +872,9 @@ export const accountingService = {
             paid_to: matchedExpense?.paid_to || null,
             received_from: matchedReceipt?.received_from || null,
             status: 'POSTED',
-            is_web_app: Boolean(
-              matchedExpense?.reference_number?.toUpperCase().startsWith('WEB-APP') ||
-              desc.includes('WEB-APP')
-            ),
+            is_web_app: rawIsWebApp,
+            stream_category: rawStreamCategory,
+            source_channel: rawSourceChannel,
           });
         }
       }
@@ -825,6 +918,16 @@ export const accountingService = {
             received_from: null,
             status: 'POSTED',
             is_web_app: isWebApp,
+            stream_category: 'EXPENSE',
+            source_channel: isWebApp
+              ? 'WEB_APP'
+              : detectSourceChannel(
+                  false,
+                  exp.voucher_number || '',
+                  exp.reference_number || '',
+                  exp.description || '',
+                  exp.paid_to || ''
+                ),
           });
         }
       }
@@ -838,6 +941,16 @@ export const accountingService = {
             (rec.voucher_number && t.voucher_number === rec.voucher_number)
         );
         if (!alreadyIncluded) {
+          const recDesc = `${rec.notes || ''} ${rec.category || ''} ${rec.received_from || ''}`;
+          const recStreamCategory = detectStreamCategory('RECEIPT', 'MANUAL_RECEIPT', recDesc, false);
+          const recSourceChannel = detectSourceChannel(
+            false,
+            rec.voucher_number || '',
+            rec.reference_number || '',
+            recDesc,
+            rec.received_from || ''
+          );
+
           consolidatedList.push({
             id: `ltx-rec-${rec.id || Date.now()}`,
             entry_id: rec.id || `rec-${Date.now()}`,
@@ -863,6 +976,8 @@ export const accountingService = {
             received_from: rec.received_from,
             status: 'POSTED',
             is_web_app: false,
+            stream_category: recStreamCategory,
+            source_channel: recSourceChannel,
           });
         }
       }
@@ -905,6 +1020,12 @@ export const accountingService = {
       let resultList = consolidatedList;
       if (params?.account_id && params.account_id !== 'ALL') {
         resultList = resultList.filter((t) => t.account_id === params.account_id);
+      }
+      if (params?.stream && params.stream !== 'ALL') {
+        resultList = resultList.filter((t) => t.stream_category === params.stream);
+      }
+      if (params?.source && params.source !== 'ALL') {
+        resultList = resultList.filter((t) => t.source_channel === params.source);
       }
       if (params?.search) {
         const q = params.search.toLowerCase().trim();

@@ -19,6 +19,7 @@ import {
   CreditCard,
   FileText,
   X,
+  Filter,
 } from 'lucide-react';
 import { accountingStore } from '../store/accountingStore';
 import type { AccountingActiveTab } from '../components/AccountingTabs';
@@ -122,6 +123,8 @@ export const AccountingDashboardPage: React.FC = () => {
   const [ledgerMode, setLedgerMode] = useState<MainAccountingMode>('PASSBOOK');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedAccountId, setSelectedAccountId] = useState<string>('ALL');
+  const [selectedStream, setSelectedStream] = useState<string>('ALL');
+  const [selectedSource, setSelectedSource] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
@@ -171,6 +174,44 @@ export const AccountingDashboardPage: React.FC = () => {
     return 0;
   };
 
+  // Dynamic counts for Stream categories and Source channels across entire ledger
+  const filterCounts = useMemo(() => {
+    let donation = 0;
+    let causeDonation = 0;
+    let membership = 0;
+    let renewal = 0;
+    let expense = 0;
+
+    let website = 0;
+    let webApp = 0;
+    let application = 0;
+
+    for (const t of transactions) {
+      const stream = (t.stream_category || 'DONATION').toUpperCase();
+      if (stream.includes('CAUSE')) causeDonation++;
+      else if (stream.includes('RENEW')) renewal++;
+      else if (stream.includes('MEMBERSHIP')) membership++;
+      else if (stream.includes('EXPENSE')) expense++;
+      else donation++;
+
+      const source = (t.source_channel || (t.is_web_app ? 'WEB_APP' : 'WEBSITE')).toUpperCase();
+      if (source === 'WEB_APP' || t.is_web_app) webApp++;
+      else if (source === 'APPLICATION') application++;
+      else website++;
+    }
+
+    return {
+      donation,
+      causeDonation,
+      membership,
+      renewal,
+      expense,
+      website,
+      webApp,
+      application,
+    };
+  }, [transactions]);
+
   // Filter Ledger Transactions
   const filteredTransactions = useMemo(() => {
     let list = [...transactions];
@@ -178,6 +219,30 @@ export const AccountingDashboardPage: React.FC = () => {
     // Filter by specific Account Head if selected
     if (selectedAccountId !== 'ALL') {
       list = list.filter((t) => t.account_id === selectedAccountId);
+    }
+
+    // Filter by Stream Category: Donation, Cause Donation, Membership, Renew, Expenses
+    if (selectedStream !== 'ALL') {
+      list = list.filter((t) => {
+        const s = (t.stream_category || 'DONATION').toUpperCase();
+        if (selectedStream === 'CAUSE_DONATION') return s.includes('CAUSE');
+        if (selectedStream === 'RENEWAL') return s.includes('RENEW');
+        if (selectedStream === 'MEMBERSHIP') return s.includes('MEMBERSHIP');
+        if (selectedStream === 'EXPENSE') return s.includes('EXPENSE');
+        if (selectedStream === 'DONATION') return s === 'DONATION' || (!s.includes('CAUSE') && !s.includes('MEMBERSHIP') && !s.includes('EXPENSE') && !s.includes('RENEW'));
+        return true;
+      });
+    }
+
+    // Filter by Source Channel: Website, Web App, Application
+    if (selectedSource !== 'ALL') {
+      list = list.filter((t) => {
+        const src = (t.source_channel || (t.is_web_app ? 'WEB_APP' : 'WEBSITE')).toUpperCase();
+        if (selectedSource === 'WEB_APP') return t.is_web_app || src === 'WEB_APP';
+        if (selectedSource === 'APPLICATION') return src === 'APPLICATION';
+        if (selectedSource === 'WEBSITE') return src === 'WEBSITE' && !t.is_web_app;
+        return true;
+      });
     }
 
     // Mode filter: CREDIT (inflow) vs EXPENSE (outflow)
@@ -203,7 +268,22 @@ export const AccountingDashboardPage: React.FC = () => {
     }
 
     return list;
-  }, [transactions, selectedAccountId, ledgerMode, searchQuery]);
+  }, [transactions, selectedAccountId, selectedStream, selectedSource, ledgerMode, searchQuery]);
+
+  // Aggregated totals for the active filtered set
+  const filteredTotals = useMemo(() => {
+    let inflow = 0;
+    let outflow = 0;
+    for (const t of filteredTransactions) {
+      inflow += getInflowAmount(t);
+      outflow += getOutflowAmount(t);
+    }
+    return {
+      inflow,
+      outflow,
+      net: inflow - outflow,
+    };
+  }, [filteredTransactions]);
 
   // Mode counts
   const modeCounts = useMemo(() => {
@@ -269,23 +349,28 @@ export const AccountingDashboardPage: React.FC = () => {
     return filteredTransactions.slice(start, start + pageSize);
   }, [filteredTransactions, currentPage, pageSize]);
 
-  const getCategoryBadgeStyle = (tag?: string) => {
-    switch (tag) {
-      case 'CAUSE_FUND':
-        return { label: 'CAUSE FUND', bg: '#EDE9FE', color: '#6D28D9', border: '#DDD6FE' };
-      case 'DONATION':
-        return { label: 'DONATION', bg: '#FEF3C7', color: '#B45309', border: '#FDE68A' };
-      case 'MEMBERSHIP_FEE':
-        return { label: 'MEMBERSHIP', bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE' };
-      case 'EXPENSE':
-        return { label: 'EXPENSE', bg: '#FEE2E2', color: '#DC2626', border: '#FECACA' };
-      default:
-        return { label: 'RECEIPT', bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0' };
+  const getCategoryBadgeStyle = (streamCategory?: string, tag?: string) => {
+    const s = (streamCategory || tag || '').toUpperCase();
+    if (s.includes('CAUSE')) {
+      return { label: 'CAUSE DONATION', bg: '#EDE9FE', color: '#6D28D9', border: '#DDD6FE' };
     }
+    if (s.includes('RENEW')) {
+      return { label: 'RENEWAL', bg: '#CCFBF1', color: '#0F766E', border: '#99F6E4' };
+    }
+    if (s.includes('MEMBERSHIP')) {
+      return { label: 'MEMBERSHIP', bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE' };
+    }
+    if (s.includes('EXPENSE')) {
+      return { label: 'EXPENSE', bg: '#FEE2E2', color: '#DC2626', border: '#FECACA' };
+    }
+    if (s.includes('DONATION')) {
+      return { label: 'DONATION', bg: '#FEF3C7', color: '#B45309', border: '#FDE68A' };
+    }
+    return { label: 'RECEIPT', bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0' };
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6 min-w-0">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -345,18 +430,18 @@ export const AccountingDashboardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/admin/receipts/create')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition-colors cursor-pointer whitespace-nowrap"
               >
                 <Plus size={15} strokeWidth={2.5} />
-                <span>+ Record Income</span>
+                <span>Record Income</span>
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/admin/expenses/create')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer whitespace-nowrap"
               >
                 <Plus size={15} strokeWidth={2.5} />
-                <span>+ Record Expense</span>
+                <span>Record Expense</span>
               </button>
             </div>
           )}
@@ -367,7 +452,7 @@ export const AccountingDashboardPage: React.FC = () => {
       <LedgerSummaryCards summary={summary} />
 
       {/* Main Content Box */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 sm:p-6">
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 sm:p-6 w-full max-w-full min-w-0">
         {/* TAB 1: General Ledger / Passbook */}
         {activeTab === 'passbook' && (
           <div>
@@ -466,10 +551,11 @@ export const AccountingDashboardPage: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Search & Account Head Filter Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-2 flex-1 max-w-2xl flex-wrap">
-                    <div className="relative flex-1 min-w-[240px]">
+                {/* Search & Multi-Filter Bar */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4 w-full min-w-0">
+                  <div className="flex items-center gap-2 flex-1 flex-wrap min-w-0">
+                    {/* Search Input */}
+                    <div className="relative flex-1 min-w-[200px] sm:min-w-[220px]">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                       <input
                         type="text"
@@ -478,7 +564,7 @@ export const AccountingDashboardPage: React.FC = () => {
                           setSearchQuery(e.target.value);
                           setCurrentPage(1);
                         }}
-                        placeholder="Search voucher #, narration, account or party..."
+                        placeholder="Search voucher #, narration, party..."
                         className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
                       />
                       {searchQuery && (
@@ -496,24 +582,80 @@ export const AccountingDashboardPage: React.FC = () => {
                       )}
                     </div>
 
+                    <div className="flex items-center gap-1.5 text-slate-400 pl-1">
+                      <Filter size={13} className="shrink-0 text-slate-400" />
+                    </div>
+
+                    {/* Stream Category Filter */}
+                    <select
+                      value={selectedStream}
+                      onChange={(e) => {
+                        setSelectedStream(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-[#011F39] focus:outline-none transition-colors cursor-pointer shrink-0"
+                    >
+                      <option value="ALL">All Categories ({transactions.length})</option>
+                      <option value="DONATION">Donation ({filterCounts.donation})</option>
+                      <option value="CAUSE_DONATION">Cause Donation ({filterCounts.causeDonation})</option>
+                      <option value="MEMBERSHIP">Membership ({filterCounts.membership})</option>
+                      <option value="RENEWAL">Renew ({filterCounts.renewal})</option>
+                      <option value="EXPENSE">Expenses ({filterCounts.expense})</option>
+                    </select>
+
+                    {/* Source Channel Filter */}
+                    <select
+                      value={selectedSource}
+                      onChange={(e) => {
+                        setSelectedSource(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-[#011F39] focus:outline-none transition-colors cursor-pointer shrink-0"
+                    >
+                      <option value="ALL">All Sources ({transactions.length})</option>
+                      <option value="WEBSITE">Website ({filterCounts.website})</option>
+                      <option value="WEB_APP">Web App ({filterCounts.webApp})</option>
+                      <option value="APPLICATION">Application ({filterCounts.application})</option>
+                    </select>
+
+                    {/* Account Head Filter */}
                     <select
                       value={selectedAccountId}
                       onChange={(e) => {
                         setSelectedAccountId(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="px-3 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-[#011F39] focus:outline-none transition-colors cursor-pointer max-w-[260px]"
+                      className="px-3 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-[#011F39] focus:outline-none transition-colors cursor-pointer max-w-[210px] truncate"
                     >
-                      <option value="ALL">All Account Heads (Consolidated)</option>
+                      <option value="ALL">All Account Heads</option>
                       {accounts.map((acc) => (
                         <option key={acc.id} value={acc.id}>
-                          {acc.account_code ? `${acc.account_code} — ` : ''}{acc.account_name} ({acc.account_type})
+                          {acc.account_code ? `${acc.account_code} — ` : ''}{acc.account_name}
                         </option>
                       ))}
                     </select>
+
+                    {/* Reset Filters button if any filter active */}
+                    {(selectedStream !== 'ALL' || selectedSource !== 'ALL' || selectedAccountId !== 'ALL' || searchQuery) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStream('ALL');
+                          setSelectedSource('ALL');
+                          setSelectedAccountId('ALL');
+                          setSearchQuery('');
+                          setCurrentPage(1);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        title="Reset all filters"
+                      >
+                        <X size={13} />
+                        <span>Reset</span>
+                      </button>
+                    )}
                   </div>
 
-                  <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 self-end sm:self-auto whitespace-nowrap">
+                  <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 self-start lg:self-auto shrink-0 whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>
                       Showing <strong className="text-slate-800 font-bold">{filteredTransactions.length}</strong> ledger records
@@ -522,12 +664,12 @@ export const AccountingDashboardPage: React.FC = () => {
                 </div>
 
                 {/* Ledger Transactions Table */}
-                <div className="overflow-x-auto border border-slate-200/90 rounded-xl shadow-xs bg-white">
+                <div className="w-full max-w-full min-w-0 overflow-x-auto border border-slate-200/90 rounded-xl shadow-xs bg-white">
                   <table className="w-full border-collapse text-left text-xs sm:text-sm">
                     <thead>
                       <tr className="bg-slate-50/90 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <th className="px-4 py-3.5 whitespace-nowrap min-w-[210px]">Date & Voucher No</th>
-                        <th className="px-4 py-3.5 whitespace-nowrap min-w-[110px]">Stream Tag</th>
+                        <th className="px-4 py-3.5 whitespace-nowrap min-w-[120px]">Stream Tag</th>
                         <th className="px-4 py-3.5 min-w-[220px]">Particulars & Beneficiary</th>
                         <th className="px-4 py-3.5 min-w-[220px]">Account Head & Mode</th>
                         <th className="px-4 py-3.5 text-right whitespace-nowrap min-w-[145px]">Income (Inflow / Cr)</th>
@@ -539,7 +681,7 @@ export const AccountingDashboardPage: React.FC = () => {
                       {/* Chronological Transactions (Newest First) */}
                       {paginatedTransactions.length > 0 ? (
                         paginatedTransactions.map((tx) => {
-                          const badge = getCategoryBadgeStyle(tx.category_tag);
+                          const badge = getCategoryBadgeStyle(tx.stream_category, tx.category_tag);
                           const inflow = getInflowAmount(tx);
                           const outflow = getOutflowAmount(tx);
                           const displayVoucherNo = tx.voucher_number || tx.entry_number;
@@ -557,11 +699,16 @@ export const AccountingDashboardPage: React.FC = () => {
                                   <span className="font-mono text-xs font-bold text-[#011F39] tracking-tight whitespace-nowrap">
                                     {displayVoucherNo}
                                   </span>
-                                  {tx.is_web_app && (
+                                  {/* Show Web App tag ONLY when entered from web app */}
+                                  {tx.is_web_app ? (
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs whitespace-nowrap">
                                       Web App
                                     </span>
-                                  )}
+                                  ) : tx.source_channel === 'APPLICATION' ? (
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs whitespace-nowrap">
+                                      Application
+                                    </span>
+                                  ) : null}
                                   {tx.category_tag === 'EXPENSE' || tx.reference_type === 'MANUAL_EXPENSE' ? (
                                     <button
                                       type="button"
@@ -607,9 +754,9 @@ export const AccountingDashboardPage: React.FC = () => {
                               </td>
 
                               {/* Stream Tag */}
-                              <td className="px-4 py-3.5 align-middle whitespace-nowrap min-w-[110px]">
+                              <td className="px-4 py-3.5 align-middle whitespace-nowrap min-w-[120px]">
                                 <span
-                                  className="inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs tracking-wide uppercase"
+                                  className="inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs tracking-wide uppercase whitespace-nowrap"
                                   style={{
                                     backgroundColor: badge.bg,
                                     color: badge.color,
@@ -701,25 +848,25 @@ export const AccountingDashboardPage: React.FC = () => {
                       )}
 
                       {/* 3. Official Closing Balance Row at bottom of table */}
-                      {filteredTransactions.length > 0 && selectedAccountId === 'ALL' && (
+                      {filteredTransactions.length > 0 && (
                         <tr className="bg-slate-50/90 border-t-2 border-slate-300/90 font-semibold text-slate-800">
                           <td colSpan={2} className="px-4 py-3.5 text-xs uppercase tracking-wider text-slate-600 font-bold whitespace-nowrap">
                             Closing Balance Carried Forward (c/f)
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-slate-500">
+                          <td className="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">
                             {filteredTransactions.length} Transactions
                           </td>
                           <td className="px-4 py-3.5 text-xs text-slate-500">
                             Net Liquid Reserves
                           </td>
                           <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-emerald-700 whitespace-nowrap">
-                            {summary.total_debit > 0 ? `+ ${formatINR(summary.total_debit)}` : '₹0.00'}
+                            {filteredTotals.inflow > 0 ? `+ ${formatINR(filteredTotals.inflow)}` : '₹0.00'}
                           </td>
                           <td className="px-4 py-3.5 text-right font-mono font-bold text-xs sm:text-sm text-rose-700 whitespace-nowrap">
-                            {summary.total_credit > 0 ? `- ${formatINR(summary.total_credit)}` : '₹0.00'}
+                            {filteredTotals.outflow > 0 ? `- ${formatINR(filteredTotals.outflow)}` : '₹0.00'}
                           </td>
                           <td className="px-4 py-3.5 text-right font-mono font-bold text-sm sm:text-base text-[#011F39] whitespace-nowrap">
-                            {formatINR(summary.closing_balance)}
+                            {formatINR(filteredTotals.net)}
                           </td>
                         </tr>
                       )}

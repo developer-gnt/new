@@ -120,6 +120,8 @@ export interface LedgerTransaction {
   voucher_number?: string | null;
   is_web_app?: boolean;
   created_at?: string;
+  stream_category?: 'DONATION' | 'CAUSE_DONATION' | 'MEMBERSHIP' | 'RENEWAL' | 'EXPENSE' | 'RECEIPT' | string;
+  source_channel?: 'WEB_APP' | 'WEBSITE' | 'APPLICATION' | string;
 }
 
 export interface LedgerSummary {
