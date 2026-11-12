@@ -25,9 +25,10 @@ class ExpensesStore {
 
   private sortInternal(): void {
     this.vouchers.sort((a, b) => {
-      const timeA = new Date(a.expense_date || a.created_at || 0).getTime() || 0;
-      const timeB = new Date(b.expense_date || b.created_at || 0).getTime() || 0;
-      return timeB - timeA;
+      const timeB = new Date(b.created_at || b.expense_date || 0).getTime() || 0;
+      const timeA = new Date(a.created_at || a.expense_date || 0).getTime() || 0;
+      if (timeB !== timeA) return timeB - timeA;
+      return (b.voucher_number || '').localeCompare(a.voucher_number || '');
     });
   }
 

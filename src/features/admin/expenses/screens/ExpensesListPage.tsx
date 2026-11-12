@@ -53,7 +53,7 @@ export const ExpensesListPage: React.FC = () => {
   const filteredVouchers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
-    return vouchers.filter((voucher) => {
+    const filtered = vouchers.filter((voucher) => {
       // Status filter
       if (activeStatus !== 'ALL' && voucher.status !== activeStatus) {
         return false;
@@ -84,6 +84,14 @@ export const ExpensesListPage: React.FC = () => {
         }
       }
       return true;
+    });
+
+    // Always sort latest transactions on top (newest created_at first, then voucher number descending)
+    return filtered.sort((a, b) => {
+      const timeB = new Date(b.created_at || b.expense_date || 0).getTime();
+      const timeA = new Date(a.created_at || a.expense_date || 0).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return (b.voucher_number || '').localeCompare(a.voucher_number || '');
     });
   }, [vouchers, activeStatus, activeMethod, selectedCategory, searchQuery]);
 

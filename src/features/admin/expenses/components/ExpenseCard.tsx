@@ -24,16 +24,12 @@ export const ExpenseCard: React.FC<{
   const isPosted = voucher.status === 'POSTED';
   const accountName = voucher.expense_account?.account_name || 'Expense Account';
   const accountCode = voucher.expense_account?.account_code || '5000';
-  const paidFrom =
-    voucher.paid_from_account?.account_name || voucher.payment_method || 'Bank Transfer';
 
-  const isWebApp =
-    Boolean(
-      voucher.reference_number?.toUpperCase().includes('WEB-APP') ||
-      voucher.description?.toLowerCase().includes('web app') ||
-      voucher.description?.toLowerCase().includes('web-app') ||
-      voucher.reference_number?.startsWith('WEB-APP')
-    );
+  // Only vouchers originating specifically from the Web App receive the Web App tag
+  const isWebApp = Boolean(
+    voucher.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+    voucher.description?.includes('[Source: Web App]')
+  );
 
   const formatDate = (isoStr: string): string => {
     try {
@@ -49,19 +45,46 @@ export const ExpenseCard: React.FC<{
     }
   };
 
-  const getSourceIcon = () => {
-    const s = String(paidFrom).toUpperCase();
-    if (s.includes('UPI') || s.includes('ONLINE') || s.includes('PHONEPE') || s.includes('GPAY')) {
-      return <Smartphone size={12} className="text-[#07294E] shrink-0" />;
+  // Resolve source display according to payment method chosen
+  const getSourceDisplay = () => {
+    const method = String(voucher.payment_method || '').toUpperCase();
+    if (method === 'UPI') {
+      return {
+        label: 'UPI',
+        icon: <Smartphone size={12} className="text-[#07294E] shrink-0" />,
+      };
     }
-    if (s.includes('CARD') || s.includes('DEBIT') || s.includes('CREDIT')) {
-      return <CreditCard size={12} className="text-[#07294E] shrink-0" />;
+    if (method === 'CASH') {
+      return {
+        label: 'Cash',
+        icon: <Banknote size={12} className="text-[#07294E] shrink-0" />,
+      };
     }
-    if (s.includes('CASH')) {
-      return <Banknote size={12} className="text-[#07294E] shrink-0" />;
+    if (method === 'BANK_TRANSFER') {
+      return {
+        label: 'Bank Transfer',
+        icon: <Building size={12} className="text-[#07294E] shrink-0" />,
+      };
     }
-    return <Building size={12} className="text-[#07294E] shrink-0" />;
+    if (method === 'CARD') {
+      return {
+        label: 'Card',
+        icon: <CreditCard size={12} className="text-[#07294E] shrink-0" />,
+      };
+    }
+    if (method === 'CHEQUE') {
+      return {
+        label: 'Cheque',
+        icon: <Building size={12} className="text-[#07294E] shrink-0" />,
+      };
+    }
+    return {
+      label: voucher.paid_from_account?.account_name || 'Bank',
+      icon: <Building size={12} className="text-[#07294E] shrink-0" />,
+    };
   };
+
+  const sourceInfo = getSourceDisplay();
 
   return (
     <div
@@ -137,8 +160,8 @@ export const ExpenseCard: React.FC<{
       {/* Col 4: Payment Source (col-span-2) - Plenty of room, no premature cut-off */}
       <div className="lg:col-span-2 min-w-0">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#EDF2F7] border border-[#DBE5EE] text-[#07294E] max-w-full">
-          {getSourceIcon()}
-          <span className="truncate" title={paidFrom}>{paidFrom}</span>
+          {sourceInfo.icon}
+          <span className="truncate" title={sourceInfo.label}>{sourceInfo.label}</span>
         </span>
       </div>
 

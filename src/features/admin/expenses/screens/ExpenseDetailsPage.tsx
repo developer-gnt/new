@@ -75,6 +75,11 @@ export const ExpenseDetailsPage: React.FC = () => {
     }
   };
 
+  const isWebApp = Boolean(
+    voucher.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+    voucher.description?.includes('[Source: Web App]')
+  );
+
   const handleConfirmCancel = async (reason: string) => {
     setIsCancelling(true);
     try {
@@ -140,21 +145,42 @@ export const ExpenseDetailsPage: React.FC = () => {
               </div>
             </div>
 
-            <div
-              style={{
-                ...styles.statusBadge,
-                backgroundColor: isCancelled ? '#FEE2E2' : '#E8F8F0',
-                color: isCancelled ? '#DC2626' : '#16A34A',
-                borderColor: isCancelled ? '#FECACA' : '#A7F3D0',
-              }}
-            >
-              <span
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isWebApp && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    backgroundColor: '#EBF5FF',
+                    color: '#0369A1',
+                    border: '1px solid #BAE6FD',
+                  }}
+                  title="Entered from Web App"
+                >
+                  💻 Web App
+                </div>
+              )}
+              <div
                 style={{
-                  ...styles.statusDot,
-                  backgroundColor: isCancelled ? '#DC2626' : '#16A34A',
+                  ...styles.statusBadge,
+                  backgroundColor: isCancelled ? '#FEE2E2' : '#E8F8F0',
+                  color: isCancelled ? '#DC2626' : '#16A34A',
+                  borderColor: isCancelled ? '#FECACA' : '#A7F3D0',
                 }}
-              />
-              <span>{voucher.status}</span>
+              >
+                <span
+                  style={{
+                    ...styles.statusDot,
+                    backgroundColor: isCancelled ? '#DC2626' : '#16A34A',
+                  }}
+                />
+                <span>{voucher.status}</span>
+              </div>
             </div>
           </div>
 
@@ -216,13 +242,25 @@ export const ExpenseDetailsPage: React.FC = () => {
                 <span>Paid From (Disbursing Source)</span>
               </span>
               <span style={styles.fieldValue}>
-                {voucher.paid_from_account?.account_name || 'Bank Account'}
+                {voucher.payment_method === 'UPI'
+                  ? 'UPI (Bank Account)'
+                  : voucher.payment_method === 'CASH'
+                  ? (voucher.paid_from_account?.account_name || 'Cash Account')
+                  : (voucher.paid_from_account?.account_name || 'Bank Account')}
               </span>
             </div>
 
             <div style={styles.dataItem}>
               <span style={styles.fieldLabel}>Payment Method</span>
-              <span style={styles.fieldValue}>{voucher.payment_method}</span>
+              <span style={styles.fieldValue}>
+                {voucher.payment_method === 'UPI'
+                  ? 'UPI'
+                  : voucher.payment_method === 'CASH'
+                  ? 'Cash'
+                  : voucher.payment_method === 'BANK_TRANSFER'
+                  ? 'Bank Transfer'
+                  : voucher.payment_method}
+              </span>
             </div>
 
             <div style={styles.dataItem}>
