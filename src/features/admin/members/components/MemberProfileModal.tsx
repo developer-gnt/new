@@ -855,12 +855,37 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
                   <div
                     style={{
                       textAlign: 'center',
-                      padding: '36px 16px',
-                      color: '#9CA3AF',
-                      fontSize: '13.5px',
+                      padding: '36px 20px',
+                      borderRadius: '12px',
+                      backgroundColor: '#F9FAFB',
+                      border: '1.5px dashed #D1D5DB',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
                     }}
                   >
-                    No uploaded KYC documents attached to this member.
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '50%',
+                        backgroundColor: '#F3F4F6',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#9CA3AF',
+                      }}
+                    >
+                      <FileText size={22} />
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
+                      No Documents Uploaded
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#6B7280', maxWidth: '360px', lineHeight: 1.4 }}>
+                      This member has not uploaded any identity, address, or qualification verification documents.
+                    </div>
                   </div>
                 )}
               </div>

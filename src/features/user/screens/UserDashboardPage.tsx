@@ -326,7 +326,7 @@ export const UserDashboardPage: React.FC = () => {
         />
         <CategoryIconRow
           items={RIGHTS_CATEGORIES}
-          onPressItem={() => navigate('/rights')}
+          onPressItem={item => navigate(`/rights/${item.id}`)}
         />
       </div>
 
@@ -335,11 +335,11 @@ export const UserDashboardPage: React.FC = () => {
         <SectionHeader
           title="What HRSJM Does"
           linkLabel="View All"
-          onLinkPress={() => navigate('/about')}
+          onLinkPress={() => navigate('/what-we-do')}
         />
         <CategoryIconRow
           items={WHAT_WE_DO_ITEMS}
-          onPressItem={() => navigate('/about')}
+          onPressItem={item => navigate(`/what-we-do/${item.id}`)}
         />
       </div>
 

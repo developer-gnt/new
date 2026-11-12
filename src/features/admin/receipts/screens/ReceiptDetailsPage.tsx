@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Calendar,
   CreditCard,
+  ExternalLink,
 } from 'lucide-react';
 import { receiptsStore } from '../store/receiptsStore';
 import {
@@ -523,9 +524,31 @@ export const ReceiptDetailsPage: React.FC = () => {
                   Double-Entry Journal Postings ({voucher.accounting_entry.entry_number})
                 </h4>
               </div>
-              <span style={{ fontSize: '12px', color: '#6B7280' }}>
-                Date: {voucher.accounting_entry.entry_date}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                  Date: {voucher.accounting_entry.entry_date}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/admin/accounting?search=${voucher.voucher_number || voucher.id}`)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    color: '#011F39',
+                    backgroundColor: '#EDF2F7',
+                    border: '1px solid #DBE5EE',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span>View in General Ledger</span>
+                  <ExternalLink size={12} />
+                </button>
+              </div>
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>

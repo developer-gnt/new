@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  ExternalLink,
 } from 'lucide-react';
 import { accountingStore } from '../store/accountingStore';
 import {
@@ -33,6 +34,21 @@ import type {
   MainAccountingMode,
 } from '../types/accounting.types';
 import { formatINR } from '../types/accounting.types';
+
+const formatLedgerDate = (dateStr?: string): string => {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 export const AccountingDashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,9 +73,21 @@ export const AccountingDashboardPage: React.FC = () => {
 
   // Passbook / Ledger Sub-States
   const [ledgerMode, setLedgerMode] = useState<MainAccountingMode>('PASSBOOK');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
+
+  // React to search param updates
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) {
+      setSearchQuery(q);
+    }
+    const t = searchParams.get('tab') as AccountingActiveTab;
+    if (t && (t === 'passbook' || t === 'accounts' || t === 'journals')) {
+      setActiveTab(t);
+    }
+  }, [searchParams]);
 
   // Modals state
   const [createAccountModalVisible, setCreateAccountModalVisible] = useState(false);
@@ -147,92 +175,40 @@ export const AccountingDashboardPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '16px',
-          marginBottom: '20px',
-        }}
-      >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                backgroundColor: '#011F39',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Scale size={18} color="#FAD465" />
-            </div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#011F39',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Accounting & General Ledger
-            </h1>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FFF9E6] text-[#011F39] border border-[#FDE68A] mb-2 tracking-wide uppercase">
+            <Scale size={12} className="text-[#B45309]" />
+            <span>Financial Audit & General Ledger</span>
           </div>
-          <p style={{ margin: '4px 0 0 40px', fontSize: '13px', color: '#6B7280' }}>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#011F39]">
+            Accounting & General Ledger
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Official double-entry chart of accounts, balanced journal entries, and running passbook general ledger
           </p>
         </div>
 
         {/* Global Page Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
           <button
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 14px',
-              fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #D1D5DB',
-              backgroundColor: '#FFFFFF',
-              color: '#374151',
-              cursor: isRefreshing ? 'not-allowed' : 'pointer',
-            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
           >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[#011F39]' : 'text-slate-500'} />
             <span>Refresh</span>
           </button>
 
           <button
             type="button"
             onClick={() => setExportModalVisible(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 14px',
-              fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #D1D5DB',
-              backgroundColor: '#FFFFFF',
-              color: '#374151',
-              cursor: 'pointer',
-            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
           >
-            <Download size={14} />
+            <Download size={14} className="text-slate-500" />
             <span>Export Passbook</span>
           </button>
 
@@ -240,85 +216,38 @@ export const AccountingDashboardPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setCreateAccountModalVisible(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 18px',
-                fontSize: '13.5px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#011F39',
-                color: '#FAD465',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
-              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
             >
-              <Plus size={16} color="#FAD465" />
+              <Plus size={16} strokeWidth={2.5} />
               <span>Add Account</span>
             </button>
           ) : activeTab === 'journals' ? (
             <button
               type="button"
               onClick={() => setCreateJournalModalVisible(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 18px',
-                fontSize: '13.5px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#011F39',
-                color: '#FAD465',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
-              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
             >
-              <Plus size={16} color="#FAD465" />
+              <Plus size={16} strokeWidth={2.5} />
               <span>New Journal Entry</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={() => navigate('/admin/receipts/create')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 18px',
-                fontSize: '13.5px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#011F39',
-                color: '#FAD465',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
-              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
             >
-              <Plus size={16} color="#FAD465" />
+              <Plus size={16} strokeWidth={2.5} />
               <span>Record Voucher</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Top 4 Summary Cards */}
+      {/* Top 4 Summary Cards (Executive Balanced Grid, No Dark Block) */}
       <LedgerSummaryCards summary={summary} />
 
       {/* Main Content Box */}
-      <div
-        style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-          padding: '24px',
-        }}
-      >
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 sm:p-6">
         {/* Navigation Tabs */}
         <AccountingTabs
           activeTab={activeTab}
@@ -343,48 +272,48 @@ export const AccountingDashboardPage: React.FC = () => {
 
             {/* If Analytics Mode is selected, display breakdown */}
             {ledgerMode === 'ANALYTICS' ? (
-              <div style={{ padding: '20px', backgroundColor: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <TrendingUp size={18} color="#011F39" />
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#011F39' }}>
+              <div className="p-5 bg-slate-50/80 rounded-xl border border-slate-200 space-y-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={18} className="text-[#011F39]" />
+                  <h3 className="font-serif text-base font-bold text-[#011F39]">
                     Revenue & Expenditure Stream Allocation
                   </h3>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                  <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#059669', marginBottom: '8px' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">
                       Inflow Breakdown (Credits)
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                      <span style={{ color: '#4B5563' }}>Donations (General & Cause):</span>
-                      <b>₹ 1,20,000.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Donations (General & Cause):</span>
+                      <strong className="text-slate-900">₹ 1,20,000.00</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                      <span style={{ color: '#4B5563' }}>Membership Registrations:</span>
-                      <b>₹ 1,500.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Membership Registrations:</span>
+                      <strong className="text-slate-900">₹ 1,500.00</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <span style={{ color: '#4B5563' }}>Grants & Subsidies:</span>
-                      <b>₹ 1,00,000.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Grants & Subsidies:</span>
+                      <strong className="text-slate-900">₹ 1,00,000.00</strong>
                     </div>
                   </div>
 
-                  <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#DC2626', marginBottom: '8px' }}>
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">
                       Outflow Breakdown (Debits)
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                      <span style={{ color: '#4B5563' }}>Beneficiary Relief Assistance:</span>
-                      <b>₹ 20,000.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Beneficiary Relief Assistance:</span>
+                      <strong className="text-slate-900">₹ 20,000.00</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                      <span style={{ color: '#4B5563' }}>Office & Printing:</span>
-                      <b>₹ 3,200.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Office & Printing:</span>
+                      <strong className="text-slate-900">₹ 3,200.00</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <span style={{ color: '#4B5563' }}>Field Campaign Conveyance:</span>
-                      <b>₹ 0.00</b>
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>Field Campaign Conveyance:</span>
+                      <strong className="text-slate-900">₹ 0.00</strong>
                     </div>
                   </div>
                 </div>
@@ -392,30 +321,9 @@ export const AccountingDashboardPage: React.FC = () => {
             ) : (
               <>
                 {/* Search Bar */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '12px',
-                    marginBottom: '16px',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '8px',
-                      padding: '0 12px',
-                      height: '40px',
-                      flex: '1 1 300px',
-                      maxWidth: '520px',
-                    }}
-                  >
-                    <Search size={16} color="#9CA3AF" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                     <input
                       type="text"
                       value={searchQuery}
@@ -424,37 +332,30 @@ export const AccountingDashboardPage: React.FC = () => {
                         setCurrentPage(1);
                       }}
                       placeholder="Search voucher #, particulars, account or contributor..."
-                      style={{
-                        flex: 1,
-                        border: 'none',
-                        outline: 'none',
-                        marginLeft: '8px',
-                        fontSize: '13.5px',
-                        backgroundColor: 'transparent',
-                      }}
+                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
                     />
                   </div>
 
-                  <div style={{ fontSize: '13px', color: '#6B7280' }}>
-                    Showing <b>{filteredTransactions.length}</b> ledger records
+                  <div className="text-xs text-slate-500 font-medium">
+                    Showing <strong className="text-slate-800">{filteredTransactions.length}</strong> ledger records
                   </div>
                 </div>
 
                 {/* Ledger Transactions Table */}
-                <div style={{ overflowX: 'auto', border: '1px solid #E5E7EB', borderRadius: '12px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <div className="overflow-x-auto border border-slate-200/90 rounded-xl shadow-xs">
+                  <table className="w-full border-collapse text-left text-xs sm:text-sm">
                     <thead>
-                      <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB', textAlign: 'left' }}>
-                        <th style={thStyle}>Date & Voucher No</th>
-                        <th style={thStyle}>Stream Tag</th>
-                        <th style={thStyle}>Particulars / Narration</th>
-                        <th style={thStyle}>Account Allocation</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>Inflow (Credit)</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>Outflow (Debit)</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>Running Balance</th>
+                      <tr className="bg-slate-50 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th className="px-4 py-3">Date & Voucher No</th>
+                        <th className="px-4 py-3">Stream Tag</th>
+                        <th className="px-4 py-3">Particulars / Narration</th>
+                        <th className="px-4 py-3">Account Allocation</th>
+                        <th className="px-4 py-3 text-right">Inflow (Credit)</th>
+                        <th className="px-4 py-3 text-right">Outflow (Debit)</th>
+                        <th className="px-4 py-3 text-right">Running Balance</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 bg-white">
                       {paginatedTransactions.length > 0 ? (
                         paginatedTransactions.map((tx) => {
                           const badge = getCategoryBadgeStyle(tx.category_tag);
@@ -462,31 +363,63 @@ export const AccountingDashboardPage: React.FC = () => {
                           return (
                             <tr
                               key={tx.id}
-                              style={{
-                                borderBottom: '1px solid #E5E7EB',
-                                transition: 'background-color 0.15s ease',
-                              }}
+                              className="hover:bg-slate-50/80 transition-colors"
                             >
                               {/* Date & Voucher No */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
-                                <div style={{ fontWeight: 700, color: '#011F39' }}>{tx.entry_number}</div>
-                                <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '2px' }}>
-                                  {tx.entry_date}
+                              <td className="px-4 py-3 align-top">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-xs font-bold text-[#011F39]">{tx.entry_number}</span>
+                                  {tx.category_tag === 'EXPENSE' || tx.reference_type === 'MANUAL_EXPENSE' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/expenses/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Expense Voucher"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : tx.category_tag === 'DONATION' || tx.reference_type === 'DONATION_PAYMENT' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/donations/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Donation Record"
+                                      className="text-slate-400 hover:text-amber-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : tx.category_tag === 'MEMBERSHIP_FEE' || tx.reference_type === 'MEMBERSHIP_PAYMENT' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate('/admin/members')}
+                                      title="Open Members Directory"
+                                      className="text-slate-400 hover:text-blue-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/admin/receipts/${tx.reference_id || tx.entry_number}`)}
+                                      title="Open Receipt Voucher"
+                                      className="text-slate-400 hover:text-emerald-600 transition cursor-pointer"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                  {formatLedgerDate(tx.entry_date)}
                                 </div>
                               </td>
 
                               {/* Stream Tag */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
+                              <td className="px-4 py-3 align-top">
                                 <span
+                                  className="text-[10px] font-bold px-2 py-0.5 rounded-md border tracking-wider"
                                   style={{
-                                    fontSize: '10.5px',
-                                    fontWeight: 700,
-                                    padding: '2px 8px',
-                                    borderRadius: '4px',
                                     backgroundColor: badge.bg,
                                     color: badge.color,
-                                    border: `1px solid ${badge.border}`,
-                                    letterSpacing: '0.04em',
+                                    borderColor: badge.border,
                                   }}
                                 >
                                   {badge.label}
@@ -494,52 +427,52 @@ export const AccountingDashboardPage: React.FC = () => {
                               </td>
 
                               {/* Particulars */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top', maxWidth: '320px' }}>
-                                <div style={{ fontWeight: 600, color: '#111827' }}>
+                              <td className="px-4 py-3 align-top max-w-xs">
+                                <div className="font-semibold text-slate-900 truncate">
                                   {tx.narration || 'General transaction'}
                                 </div>
                                 {(tx.received_from || tx.paid_to) && (
-                                  <div style={{ fontSize: '11.5px', color: '#4B5563', marginTop: '2px' }}>
+                                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
                                     Party: {tx.received_from || tx.paid_to}
                                   </div>
                                 )}
                               </td>
 
                               {/* Account */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
-                                <div style={{ fontWeight: 600, color: '#011F39' }}>{tx.account_name}</div>
+                              <td className="px-4 py-3 align-top">
+                                <div className="font-semibold text-slate-800 truncate">{tx.account_name}</div>
                                 {tx.account_code && (
-                                  <span style={{ fontSize: '11px', color: '#6B7280', fontFamily: 'monospace' }}>
+                                  <span className="text-[11px] text-slate-400 font-mono">
                                     A/c #{tx.account_code}
                                   </span>
                                 )}
                               </td>
 
                               {/* Inflow Credit */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top', textAlign: 'right' }}>
+                              <td className="px-4 py-3 align-top text-right">
                                 {tx.debit > 0 ? (
-                                  <span style={{ fontWeight: 700, color: '#059669' }}>
+                                  <span className="font-serif font-bold text-emerald-700">
                                     + {formatINR(tx.debit)}
                                   </span>
                                 ) : (
-                                  <span style={{ color: '#D1D5DB' }}>—</span>
+                                  <span className="text-slate-300">—</span>
                                 )}
                               </td>
 
                               {/* Outflow Debit */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top', textAlign: 'right' }}>
+                              <td className="px-4 py-3 align-top text-right">
                                 {tx.credit > 0 ? (
-                                  <span style={{ fontWeight: 700, color: '#DC2626' }}>
+                                  <span className="font-serif font-bold text-rose-700">
                                     - {formatINR(tx.credit)}
                                   </span>
                                 ) : (
-                                  <span style={{ color: '#D1D5DB' }}>—</span>
+                                  <span className="text-slate-300">—</span>
                                 )}
                               </td>
 
                               {/* Running Balance */}
-                              <td style={{ padding: '12px 14px', verticalAlign: 'top', textAlign: 'right' }}>
-                                <span style={{ fontWeight: 800, color: '#011F39', fontSize: '13.5px' }}>
+                              <td className="px-4 py-3 align-top text-right">
+                                <span className="font-serif font-bold text-[#011F39]">
                                   {formatINR(tx.running_balance)}
                                 </span>
                               </td>
@@ -548,11 +481,11 @@ export const AccountingDashboardPage: React.FC = () => {
                         })
                       ) : (
                         <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#6B7280' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                              <AlertCircle size={28} color="#9CA3AF" />
-                              <div style={{ fontWeight: 600 }}>No ledger transactions found</div>
-                              <div style={{ fontSize: '12.5px' }}>Try switching modes or clearing search terms.</div>
+                          <td colSpan={7} className="text-center py-12 text-slate-500">
+                            <div className="flex flex-col items-center gap-2">
+                              <AlertCircle size={28} className="text-slate-400" />
+                              <div className="font-semibold text-slate-700">No ledger transactions found</div>
+                              <div className="text-xs text-slate-400">Try switching modes or clearing search terms.</div>
                             </div>
                           </td>
                         </tr>
@@ -563,45 +496,29 @@ export const AccountingDashboardPage: React.FC = () => {
 
                 {/* Pagination */}
                 {filteredTransactions.length > 0 && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingTop: '16px',
-                      borderTop: '1px solid #E5E7EB',
-                      marginTop: '16px',
-                      fontSize: '13px',
-                      color: '#4B5563',
-                    }}
-                  >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-slate-100 text-xs text-slate-500 mt-3">
                     <div>
-                      Showing <b>{(currentPage - 1) * pageSize + 1}</b> to{' '}
-                      <b>{Math.min(currentPage * pageSize, filteredTransactions.length)}</b> of{' '}
-                      <b>{filteredTransactions.length}</b> transactions
+                      Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> to{' '}
+                      <strong>{Math.min(currentPage * pageSize, filteredTransactions.length)}</strong> of{' '}
+                      <strong>{filteredTransactions.length}</strong> transactions
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div className="flex items-center gap-2 self-center sm:self-auto">
                       <button
                         type="button"
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid #D1D5DB',
-                          backgroundColor: '#FFFFFF',
-                          cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                          opacity: currentPage === 1 ? 0.5 : 1,
-                        }}
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
+                          currentPage === 1
+                            ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+                        }`}
                       >
-                        <ChevronLeft size={16} />
+                        <ChevronLeft size={14} />
                         <span>Prev</span>
                       </button>
 
-                      <span style={{ padding: '0 8px', fontWeight: 600 }}>
+                      <span className="font-bold text-slate-700 px-2">
                         Page {currentPage} of {totalPages}
                       </span>
 
@@ -609,19 +526,14 @@ export const AccountingDashboardPage: React.FC = () => {
                         type="button"
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid #D1D5DB',
-                          backgroundColor: '#FFFFFF',
-                          cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                          opacity: currentPage === totalPages ? 0.5 : 1,
-                        }}
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
+                          currentPage === totalPages
+                            ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs'
+                        }`}
                       >
                         <span>Next</span>
-                        <ChevronRight size={16} />
+                        <ChevronRight size={14} />
                       </button>
                     </div>
                   </div>
@@ -704,13 +616,4 @@ export const AccountingDashboardPage: React.FC = () => {
       />
     </div>
   );
-};
-
-const thStyle: React.CSSProperties = {
-  padding: '12px 14px',
-  fontSize: '12px',
-  fontWeight: 600,
-  color: '#4B5563',
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
 };

@@ -28,28 +28,9 @@ export const ReceiptMethodChips: React.FC<ReceiptMethodChipsProps> = ({
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        overflowX: 'auto',
-        marginBottom: '16px',
-        padding: '2px 0',
-      }}
-    >
-      <span
-        style={{
-          fontSize: '12px',
-          fontWeight: 600,
-          color: '#6B7280',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          marginRight: '4px',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Payment:
+    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none px-4 py-2.5 bg-[#FAF7F0]/30 border-b border-[#EDF2F7]">
+      <span className="text-[11px] font-bold text-[#718096] uppercase tracking-[0.12em] mr-1 shrink-0">
+        Method:
       </span>
       {chips.map((chip) => {
         const isActive = activeMethod === chip.id;
@@ -58,32 +39,19 @@ export const ReceiptMethodChips: React.FC<ReceiptMethodChipsProps> = ({
             key={chip.id}
             type="button"
             onClick={() => onSelectMethod(chip.id)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: isActive ? 600 : 500,
-              backgroundColor: isActive ? '#011F39' : '#FFFFFF',
-              color: isActive ? '#FAD465' : '#4B5563',
-              border: isActive ? '1px solid #011F39' : '1px solid #D1D5DB',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
-            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+              isActive
+                ? 'bg-[#06294D] text-[#FAD465] shadow-xs'
+                : 'bg-white hover:bg-[#EDF2F7] text-[#34516D] border border-[#DBE5EE]'
+            }`}
           >
             <span>{chip.label}</span>
             <span
-              style={{
-                fontSize: '10.5px',
-                fontWeight: 600,
-                padding: '1px 5px',
-                borderRadius: '6px',
-                backgroundColor: isActive ? 'rgba(250, 212, 101, 0.2)' : '#F3F4F6',
-                color: isActive ? '#FAD465' : '#6B7280',
-              }}
+              className={`text-[10px] font-bold px-1.5 py-0.2 rounded-md ${
+                isActive
+                  ? 'bg-white/20 text-[#FAD465]'
+                  : 'bg-[#EDF2F7] text-[#718096]'
+              }`}
             >
               {chip.count}
             </span>

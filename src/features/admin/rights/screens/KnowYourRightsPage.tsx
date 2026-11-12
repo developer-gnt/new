@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useMemo, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, BookOpen, ChevronRight } from 'lucide-react';
 import { rightsStore } from '../store/rightsStore';
 import { RightsStatsCards } from '../components/RightsStatsCards';
 import { RightsStatusTabs } from '../components/RightsStatusTabs';
@@ -167,31 +167,51 @@ export const KnowYourRightsPage: React.FC = () => {
   };
 
   return (
-    <div style={styles.page}>
-      {/* Top Breadcrumb & Actions Bar */}
-      <div style={styles.topBar}>
-        <div>
-          <div style={styles.breadcrumb}>
-            <span>Content & Media</span>
-            <span style={styles.bcSep}>/</span>
-            <span style={styles.bcActive}>Know Your Rights</span>
-          </div>
-          <h1 style={styles.title}>Know Your Rights Directory</h1>
-          <p style={styles.subtitle}>
-            Statutory legal rights documentation, human rights handbook and citizen legal empowerment guides.
-          </p>
+    <div className="w-full max-w-7xl mx-auto space-y-6 min-w-0">
+      {/* Top Breadcrumb & Header */}
+      <div className="space-y-2">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/dashboard')}
+            className="hover:text-[#011F39] font-medium transition-colors cursor-pointer"
+          >
+            Content & Media
+          </button>
+          <ChevronRight size={13} className="text-slate-400" />
+          <span className="text-slate-900 font-semibold">Know Your Rights</span>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate('/admin/rights/create')}
-          style={styles.createBtn}
-        >
-          <Plus size={16} strokeWidth={2.4} />
-          <span>New Rights Article</span>
-        </button>
+
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FFF9E6] text-[#011F39] border border-[#FDE68A] mb-2 tracking-wide uppercase">
+              <BookOpen size={12} className="text-[#B45309]" />
+              <span>Legal Empowerment & Citizen Handbook</span>
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#011F39]">
+              Know Your Rights Directory
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Statutory legal rights documentation, human rights handbook and citizen legal empowerment guides.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/rights/create')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>New Rights Article</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* KPI Stats Cards */}
+      {/* KPI Stats Cards (Balanced 4-column grid) */}
       <RightsStatsCards
         stats={stats}
         activeStatus={activeStatus}
@@ -217,40 +237,48 @@ export const KnowYourRightsPage: React.FC = () => {
         onOpenFilterModal={() => setFilterModalOpen(true)}
         onResetFilters={handleResetFilters}
         hasActiveFilters={hasActiveFilters}
-        onAddRights={() => navigate('/admin/rights/create')}
+        totalFilteredCount={filteredArticles.length}
       />
 
-      {/* List Container */}
-      <div style={styles.listContainer}>
-        <RightsListHeader />
+      {/* Table Container */}
+      <div className="w-full min-w-0 shadow-xs rounded-xl overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[820px]">
+            <RightsListHeader />
 
-        {filteredArticles.length > 0 ? (
-          filteredArticles.map((article) => (
-            <RightsCard
-              key={article.id}
-              article={article}
-              onPress={handleCardPress}
-              onMorePress={handleMorePress}
-            />
-          ))
-        ) : (
-          <div style={styles.emptyState}>
-            <AlertCircle size={40} color="#94A3B8" />
-            <h3 style={styles.emptyTitle}>No Rights Articles Found</h3>
-            <p style={styles.emptyText}>
-              No articles match the selected filters or search keyword. Try clearing filters or creating a new article.
-            </p>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                style={styles.emptyResetBtn}
-              >
-                Clear All Filters
-              </button>
+            {filteredArticles.length > 0 ? (
+              filteredArticles.map((article) => (
+                <RightsCard
+                  key={article.id}
+                  article={article}
+                  onPress={handleCardPress}
+                  onMorePress={handleMorePress}
+                />
+              ))
+            ) : (
+              <div className="bg-white rounded-b-xl border border-slate-200 p-12 text-center shadow-xs">
+                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                  <AlertCircle size={28} className="text-slate-400" />
+                </div>
+                <h3 className="font-serif font-bold text-lg text-slate-800 mb-1">
+                  No Rights Articles Found
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mb-4">
+                  No articles match the selected filters or search keyword. Try clearing filters or creating a new article.
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Filter Modal */}
@@ -302,101 +330,4 @@ export const KnowYourRightsPage: React.FC = () => {
       />
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    padding: '24px 32px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-  },
-  topBar: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: '20px',
-    marginBottom: '20px',
-    flexWrap: 'wrap',
-  },
-  breadcrumb: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '12px',
-    color: '#64748B',
-    marginBottom: '6px',
-    fontWeight: 500,
-  },
-  bcSep: {
-    color: '#CBD5E1',
-  },
-  bcActive: {
-    color: '#06294D',
-    fontWeight: 600,
-  },
-  title: {
-    margin: 0,
-    fontSize: '28px',
-    fontWeight: 700,
-    color: '#011F39',
-    fontFamily: 'Playfair Display, Georgia, serif',
-  },
-  subtitle: {
-    margin: '4px 0 0 0',
-    fontSize: '14px',
-    color: '#64748B',
-  },
-  createBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    backgroundColor: '#06294D',
-    color: '#FFFFFF',
-    border: 'none',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(6, 41, 77, 0.2)',
-  },
-  listContainer: {
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-  },
-  emptyState: {
-    padding: '60px 24px',
-    textAlign: 'center',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderTop: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    margin: '16px 0 6px 0',
-    fontSize: '17px',
-    fontWeight: 700,
-    color: '#1E293B',
-  },
-  emptyText: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#64748B',
-    maxWidth: '440px',
-  },
-  emptyResetBtn: {
-    marginTop: '16px',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#FFFFFF',
-    color: '#06294D',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
 };

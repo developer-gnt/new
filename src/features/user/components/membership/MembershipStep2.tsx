@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Building, Globe } from 'lucide-react';
+import { MapPin, Building, Globe, AlertCircle } from 'lucide-react';
 import { INDIAN_STATES, STATE_CITIES } from '../../data/membershipCategoriesData';
 
 export interface Step2FormData {
@@ -23,8 +23,18 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
   onNext,
   onBack,
 }) => {
-  const [formData, setFormData] = useState<Step2FormData>(initialData);
+  const defaultState = initialData.state || 'Maharashtra';
+  const defaultCities = STATE_CITIES[defaultState] || ['Mumbai', 'Pune', 'Nagpur', 'Nashik'];
+  const defaultCity = initialData.city || defaultCities[0] || 'Mumbai';
+
+  const [formData, setFormData] = useState<Step2FormData>({
+    ...initialData,
+    state: initialData.state || defaultState,
+    city: initialData.city || defaultCity,
+    country: initialData.country || 'India',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [customCityMode, setCustomCityMode] = useState(false);
 
   const availableCities = formData.state && STATE_CITIES[formData.state]
     ? STATE_CITIES[formData.state]
@@ -33,27 +43,23 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
   const validate = () => {
     const errs: Record<string, string> = {};
 
-    if (!formData.addressLine1.trim() || formData.addressLine1.trim().length < 5) {
-      errs.addressLine1 = 'Address line 1 must be at least 5 characters.';
+    const cleanAddress = formData.addressLine1.trim();
+    if (!cleanAddress || cleanAddress.length < 3) {
+      errs.addressLine1 = 'Address line 1 must be at least 3 characters.';
     }
 
-    if (!formData.state) {
+    if (!formData.state.trim()) {
       errs.state = 'Please select your state.';
     }
 
-    if (!formData.city) {
+    if (!formData.city.trim()) {
       errs.city = 'Please select or enter your city / district.';
     }
 
     const cleanPin = formData.pincode.replace(/\D/g, '');
-    if (cleanPin.length !== 6) {
+    if (!cleanPin || cleanPin.length !== 6) {
       errs.pincode = 'Must be a valid 6-digit Indian postal pincode.';
     }
-
-    // const cleanAadhaar = formData.aadhaarNumber.replace(/[\s-]/g, '');
-    // if (cleanAadhaar.length < 10) {
-    //   errs.aadhaarNumber = 'Please enter a valid Aadhaar number (12 digits) or Voter ID.';
-    // }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -63,6 +69,8 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
     e.preventDefault();
     if (validate()) {
       onNext(formData);
+    } else {
+      window.scrollTo({ top: 120, behavior: 'smooth' });
     }
   };
 
@@ -73,11 +81,26 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
         <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">
           Step 2 of 3
         </span>
-        <h2 className="text-xl font-black text-[#06294D]">Residential Address & Official Identity</h2>
+        <h2 className="text-xl font-black text-[#06294D]">Residential Address &amp; Delivery Details</h2>
         <p className="text-xs text-slate-500 mt-0.5">
           Your official appointment certificate and welcome credentials kit will be dispatched to this address.
         </p>
       </div>
+
+      {/* Global Error Banner if validation fails */}
+      {Object.keys(errors).length > 0 && (
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-1.5 shadow-2xs">
+          <div className="flex items-center gap-2 font-bold text-rose-900">
+            <AlertCircle size={16} className="text-rose-600 shrink-0" />
+            <span>Please complete the required address fields to proceed:</span>
+          </div>
+          <ul className="list-disc list-inside text-[11.5px] text-rose-700 pl-1 space-y-0.5 font-medium">
+            {Object.values(errors).map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Address Line 1 */}
@@ -91,9 +114,14 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
               type="text"
               required
               value={formData.addressLine1}
-              onChange={e => setFormData({ ...formData, addressLine1: e.target.value })}
+              onChange={e => {
+                setFormData({ ...formData, addressLine1: e.target.value });
+                if (errors.addressLine1) setErrors({ ...errors, addressLine1: '' });
+              }}
               placeholder="e.g. Flat 402, Royal Palms, Link Road"
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+              className={`w-full pl-9 pr-3 py-2 rounded-xl border text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] ${
+                errors.addressLine1 ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+              }`}
             />
           </div>
           {errors.addressLine1 && <p className="text-[11px] text-rose-600 mt-1">{errors.addressLine1}</p>}
@@ -128,8 +156,11 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
                 state: newState,
                 city: newCities.length > 0 ? newCities[0] : '',
               });
+              if (errors.state) setErrors({ ...errors, state: '' });
             }}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] bg-white cursor-pointer"
+            className={`w-full px-3 py-2 rounded-xl border text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] bg-white cursor-pointer ${
+              errors.state ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+            }`}
           >
             <option value="">Select State</option>
             {INDIAN_STATES.map(s => (
@@ -143,17 +174,50 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
 
         {/* City / District */}
         <div>
-          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-            City / District *
-          </label>
-          {availableCities.length > 0 ? (
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-[11px] font-bold text-slate-700">
+              City / District *
+            </label>
+            <button
+              type="button"
+              onClick={() => setCustomCityMode(!customCityMode)}
+              className="text-[10px] text-blue-600 hover:underline font-semibold cursor-pointer"
+            >
+              {customCityMode ? 'Choose from list' : 'Type custom city'}
+            </button>
+          </div>
+
+          {customCityMode || availableCities.length === 0 ? (
+            <div className="relative">
+              <Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                required
+                value={formData.city}
+                onChange={e => {
+                  setFormData({ ...formData, city: e.target.value });
+                  if (errors.city) setErrors({ ...errors, city: '' });
+                }}
+                placeholder="Enter city or district name"
+                className={`w-full pl-9 pr-3 py-2 rounded-xl border text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] ${
+                  errors.city ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                }`}
+              />
+            </div>
+          ) : (
             <div className="relative">
               <Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
               <select
                 value={formData.city}
-                onChange={e => setFormData({ ...formData, city: e.target.value })}
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] bg-white cursor-pointer"
+                onChange={e => {
+                  setFormData({ ...formData, city: e.target.value });
+                  if (errors.city) setErrors({ ...errors, city: '' });
+                }}
+                className={`w-full pl-9 pr-3 py-2 rounded-xl border text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] bg-white cursor-pointer ${
+                  errors.city ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                }`}
               >
+                <option value="">Select City / District</option>
                 {availableCities.map(c => (
                   <option key={c} value={c}>
                     {c}
@@ -161,15 +225,6 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
                 ))}
               </select>
             </div>
-          ) : (
-            <input
-              type="text"
-              required
-              value={formData.city}
-              onChange={e => setFormData({ ...formData, city: e.target.value })}
-              placeholder="Enter city or district"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
-            />
           )}
           {errors.city && <p className="text-[11px] text-rose-600 mt-1">{errors.city}</p>}
         </div>
@@ -184,9 +239,15 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
             required
             maxLength={6}
             value={formData.pincode}
-            onChange={e => setFormData({ ...formData, pincode: e.target.value.replace(/\D/g, '') })}
+            onChange={e => {
+              const clean = e.target.value.replace(/\D/g, '').slice(0, 6);
+              setFormData({ ...formData, pincode: clean });
+              if (errors.pincode) setErrors({ ...errors, pincode: '' });
+            }}
             placeholder="e.g. 400001"
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
+            className={`w-full px-3 py-2 rounded-xl border text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D] tracking-wider ${
+              errors.pincode ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+            }`}
           />
           {errors.pincode && <p className="text-[11px] text-rose-600 mt-1">{errors.pincode}</p>}
         </div>
@@ -206,28 +267,6 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
             />
           </div>
         </div>
-
-        {/* Aadhaar / Voter ID (Full Width) */}
-        {/* <div className="sm:col-span-2">
-          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-            Aadhaar Card Number / Voter ID Number *
-          </label>
-          <div className="relative">
-            <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              required
-              value={formData.aadhaarNumber}
-              onChange={e => setFormData({ ...formData, aadhaarNumber: e.target.value })}
-              placeholder="e.g. 1234 5678 9012 or Voter ID"
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#06294D]"
-            />
-          </div>
-          <p className="text-[10.5px] text-slate-500 mt-1">
-            Used strictly for KYC identity verification under Societies Registration Act 1860.
-          </p>
-          {errors.aadhaarNumber && <p className="text-[11px] text-rose-600 mt-1">{errors.aadhaarNumber}</p>}
-        </div> */}
       </div>
 
       {/* Action Buttons */}
@@ -251,4 +290,3 @@ export const MembershipStep2: React.FC<MembershipStep2Props> = ({
     </form>
   );
 };
-

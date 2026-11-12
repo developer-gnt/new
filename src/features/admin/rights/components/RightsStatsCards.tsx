@@ -1,11 +1,11 @@
 import type React from 'react';
-import { FileText, Clock, Check, X } from 'lucide-react';
-import type { RightsStatsSummary } from '../types/rights.types';
+import { FileText, Clock, CheckCircle2, Archive } from 'lucide-react';
+import type { RightsStatsSummary, RightsStatusFilter } from '../types/rights.types';
 
 interface RightsStatsCardsProps {
   stats: RightsStatsSummary;
-  activeStatus: string;
-  onSelectStatus?: (status: any) => void;
+  activeStatus: RightsStatusFilter;
+  onSelectStatus?: (status: RightsStatusFilter) => void;
 }
 
 export const RightsStatsCards: React.FC<RightsStatsCardsProps> = ({
@@ -13,127 +13,96 @@ export const RightsStatsCards: React.FC<RightsStatsCardsProps> = ({
   activeStatus,
   onSelectStatus,
 }) => {
-  const cards = [
+  const cards: Array<{
+    key: RightsStatusFilter;
+    label: string;
+    value: number;
+    subtitle: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    iconBg: string;
+    iconColor: string;
+    ringColor: string;
+  }> = [
     {
       key: 'ALL',
       label: 'Total Articles',
       value: stats.total,
+      subtitle: 'Complete legal rights directory',
       icon: FileText,
-      surfaceBg: '#EFF6FF',
-      iconBg: '#06294D',
-      numColor: '#0B2F52',
-      labelColor: '#34516D',
-      border: '#BFDBFE',
+      iconBg: 'bg-[#011F39]/10',
+      iconColor: 'text-[#011F39]',
+      ringColor: 'ring-[#011F39]',
     },
     {
       key: 'DRAFT',
       label: 'Drafts',
       value: stats.drafts,
+      subtitle: 'In-progress revisions',
       icon: Clock,
-      surfaceBg: '#FFF7ED',
-      iconBg: '#EA580C',
-      numColor: '#0B2F52',
-      labelColor: '#34516D',
-      border: '#FED7AA',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-700',
+      ringColor: 'ring-amber-500',
     },
     {
       key: 'PUBLISHED',
       label: 'Published',
       value: stats.published,
-      icon: Check,
-      surfaceBg: '#F0FDF4',
-      iconBg: '#16A34A',
-      numColor: '#16A34A',
-      labelColor: '#15803D',
-      border: '#BBF7D0',
+      subtitle: 'Active & citizen-accessible',
+      icon: CheckCircle2,
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-700',
+      ringColor: 'ring-emerald-500',
     },
     {
       key: 'ARCHIVED',
       label: 'Archived',
       value: stats.archived,
-      icon: X,
-      surfaceBg: '#FEF2F2',
-      iconBg: '#DC2626',
-      numColor: '#DC2626',
-      labelColor: '#B91C1C',
-      border: '#FECACA',
+      subtitle: 'Superceded or retired guides',
+      icon: Archive,
+      iconBg: 'bg-slate-100',
+      iconColor: 'text-slate-600',
+      ringColor: 'ring-slate-500',
     },
   ];
 
   return (
-    <div style={styles.grid}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full min-w-0">
       {cards.map((c) => {
         const IconComponent = c.icon;
         const isSelected = activeStatus === c.key;
 
         return (
-          <div
+          <button
             key={c.key}
-            style={{
-              ...styles.card,
-              backgroundColor: c.surfaceBg,
-              border: isSelected ? `2px solid ${c.iconBg}` : `1px solid ${c.border}`,
-              cursor: onSelectStatus ? 'pointer' : 'default',
-              boxShadow: isSelected ? '0 4px 12px rgba(6, 41, 77, 0.12)' : 'none',
-            }}
+            type="button"
             onClick={() => onSelectStatus && onSelectStatus(c.key)}
-            role={onSelectStatus ? 'button' : undefined}
-            tabIndex={onSelectStatus ? 0 : undefined}
+            className={`w-full min-w-0 text-left bg-white rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${
+              isSelected
+                ? `border-transparent ring-2 ${c.ringColor} shadow-md bg-slate-50/50`
+                : 'border-slate-200/90 shadow-xs hover:border-slate-300'
+            }`}
           >
-            <div style={{ ...styles.iconBadge, backgroundColor: c.iconBg }}>
-              <IconComponent size={18} color="#FFFFFF" strokeWidth={2.4} />
+            <div className="flex items-center justify-between gap-2 mb-2.5 min-w-0">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                {c.label}
+              </span>
+              <div
+                className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconColor}`}
+              >
+                <IconComponent size={18} />
+              </div>
             </div>
-            <div style={styles.content}>
-              <div style={{ ...styles.value, color: c.numColor }}>{c.value}</div>
-              <div style={{ ...styles.label, color: c.labelColor }}>{c.label}</div>
+
+            <div className="font-serif font-bold text-2xl lg:text-3xl text-slate-900 tracking-tight leading-none mb-1.5">
+              {c.value}
             </div>
-          </div>
+
+            <div className="text-[11px] text-slate-500 font-medium truncate">
+              {c.subtitle}
+            </div>
+          </button>
         );
       })}
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '14px',
-    marginBottom: '20px',
-  },
-  card: {
-    borderRadius: '10px',
-    padding: '16px 18px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    transition: 'all 0.15s ease',
-  },
-  iconBadge: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  value: {
-    fontSize: '22px',
-    fontWeight: 700,
-    lineHeight: '1.2',
-    fontFamily: 'Inter, sans-serif',
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: 600,
-    textTransform: 'none',
-    letterSpacing: '0.01em',
-  },
-};
-

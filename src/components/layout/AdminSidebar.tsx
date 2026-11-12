@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { ADMIN_NAV_GROUPS } from './adminNavItems';
-import { HrsjmLogo } from '../common/HrsjmLogo';
 import { useUnreadCount } from '@/features/admin/notifications/store/notificationsStore';
 import { useAdminNavBadges } from './adminNavBadgesStore';
 
@@ -59,7 +58,25 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {/* Brand / Logo Section */}
         <div style={styles.header}>
           <div style={styles.logoWrap}>
-            <HrsjmLogo size="md" variant="light" showWordmark={!collapsed} />
+            {!collapsed ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '15px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.04em', fontFamily: 'serif', lineHeight: 1.2 }}>
+                  HRSJM
+                </span>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: '#FAD465', textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.2 }}>
+                  ADMIN PORTAL
+                </span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <span style={{ fontSize: '13px', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.05em' }}>
+                  HRSJM
+                </span>
+                <span style={{ fontSize: '7.5px', fontWeight: 700, color: '#FAD465', textTransform: 'uppercase' }}>
+                  Admin
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Mobile Close Button */}
@@ -138,6 +155,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                 {effectiveBadge}
                               </span>
                             )}
+
+                            {collapsed && effectiveBadge && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  right: '12px',
+                                  width: '6px',
+                                  height: '6px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#FAD465',
+                                }}
+                                title={`${item.title}: ${effectiveBadge}`}
+                              />
+                            )}
                           </>
                         );
                       }}
@@ -179,11 +211,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    position: 'sticky',
+    position: 'fixed',
     top: 0,
+    left: 0,
+    bottom: 0,
     zIndex: 40,
     borderRight: '1px solid #123F68',
-    transition: 'width 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
     flexShrink: 0,
   },
   mobileBackdrop: {

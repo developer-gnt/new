@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -18,8 +19,11 @@ import {
   ArrowUpRight,
   RefreshCw,
   Printer,
+  Scale,
+  ExternalLink,
 } from 'lucide-react';
 import { transactionsService } from '../services/transactionsService';
+import { printOfficialDonationReceipt } from '../../admin/donations/utils/donationReceiptGenerator';
 import type {
   TransactionCategoryCode,
   TransactionStatusCode,
@@ -39,6 +43,7 @@ const CATEGORY_TABS: { label: string; value: TransactionCategoryCode }[] = [
 
 export const UserTransactionsPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<TransactionCategoryCode>('ALL');
@@ -310,11 +315,10 @@ export const UserTransactionsPage: React.FC = () => {
                   setSelectedCategory(tab.value);
                   setLoading(true);
                 }}
-                className={`pb-3 px-3.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                  isActive
+                className={`pb-3 px-3.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${isActive
                     ? 'border-[#011F39] text-[#011F39]'
                     : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -590,9 +594,8 @@ export const UserTransactionsPage: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                      getStatusBadge(selectedTxn.status).className
-                    }`}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(selectedTxn.status).className
+                      }`}
                   >
                     <span>{selectedTxn.status}</span>
                   </span>
@@ -675,6 +678,28 @@ export const UserTransactionsPage: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Admin General Ledger Audit Link */}
+              {(user?.roles?.includes('SUPER_ADMIN') || user?.roles?.includes('ADMIN') || user?.roles?.includes('STAFF')) && (
+                <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                  <div className="flex items-center gap-2">
+                    <Scale size={14} className="text-[#011F39]" />
+                    <span className="text-[11px] font-semibold text-slate-700">General Ledger Audit Entry:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const id = selectedTxn.transaction_id || selectedTxn.id;
+                      setSelectedTxn(null);
+                      navigate(`/admin/accounting?search=${id}`);
+                    }}
+                    className="text-[11px] font-bold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Open in Ledger</span>
+                    <ExternalLink size={11} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer Actions */}
@@ -744,7 +769,7 @@ export const UserTransactionsPage: React.FC = () => {
                 {/* Trust Letterhead */}
                 <div className="text-center border-b-2 border-[#011F39] pb-4 mb-4">
                   <h2 className="text-lg sm:text-xl font-bold font-serif text-[#011F39] tracking-wide">
-                    HUMAN RIGHTS SANRAKSHAN JAN MANCH
+                    Human Rights &  Social Justice Mission
                   </h2>
                   <p className="text-xs font-semibold text-slate-700 mt-0.5">
                     मानव अधिकार एवं सामाजिक न्याय संरक्षण ट्रस्ट
@@ -826,7 +851,7 @@ export const UserTransactionsPage: React.FC = () => {
                       Donation Amount: <strong>₹{receiptModalTxn.amount.toLocaleString('en-IN')}</strong> • 50% Tax Deduction Claimable: <strong>₹{Math.round(receiptModalTxn.amount * 0.5).toLocaleString('en-IN')}</strong>
                     </div>
                     <div className="text-[10.5px] text-amber-800 mt-1">
-                      Donations made to Human Rights Sanrakshan Jan Manch are eligible for deduction under
+                      Donations made to Human Rights &  Social Justice Mission are eligible for deduction under
                       Section 80G(5)(vi) of the Income Tax Act 1961 (URN: AABTH4589KF20214).
                     </div>
                   </div>
@@ -852,7 +877,27 @@ export const UserTransactionsPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    if (receiptModalTxn.category_code === 'DONATION' || receiptModalTxn.related_info?.tax_exemption_eligible) {
+                      printOfficialDonationReceipt({
+                        id: receiptModalTxn.id,
+                        receiptNumber: receiptModalTxn.receipt_number || `HRSJM/80G/2026-27/${receiptModalTxn.transaction_id.slice(-6).toUpperCase()}`,
+                        receiptDate: receiptModalTxn.payment_date || receiptModalTxn.created_at,
+                        donorName: user?.full_name || 'HRSJM Contributor',
+                        donorMobile: user?.mobile_number,
+                        donorEmail: user?.email,
+                        donorPan: (user as any)?.pan_number,
+                        cause: receiptModalTxn.title || receiptModalTxn.purpose || 'General Relief Fund',
+                        amount: receiptModalTxn.amount,
+                        paymentMethod: receiptModalTxn.payment_method || 'Cashfree PG (Verified)',
+                        transactionId: receiptModalTxn.transaction_id,
+                        status: receiptModalTxn.status,
+                        source: 'Website Official Portal',
+                      });
+                    } else {
+                      handleDownloadReceipt(receiptModalTxn);
+                    }
+                  }}
                   className="px-3.5 py-2 text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer size={14} />

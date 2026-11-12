@@ -1,6 +1,5 @@
 import type React from 'react';
-import { Search, X, SlidersHorizontal, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search, X, SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 interface ReceiptSearchBarProps {
   searchQuery: string;
@@ -8,6 +7,7 @@ interface ReceiptSearchBarProps {
   onOpenFilterModal: () => void;
   onResetFilters: () => void;
   hasActiveFilters: boolean;
+  totalFilteredCount?: number;
 }
 
 export const ReceiptSearchBar: React.FC<ReceiptSearchBarProps> = ({
@@ -16,99 +16,53 @@ export const ReceiptSearchBar: React.FC<ReceiptSearchBarProps> = ({
   onOpenFilterModal,
   onResetFilters,
   hasActiveFilters,
+  totalFilteredCount,
 }) => {
-  const navigate = useNavigate();
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        marginBottom: '20px',
-      }}
-    >
+    <div className="bg-white p-3.5 sm:p-4 border-b border-[#DCE4EC] flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 w-full">
       {/* Search Input Box */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flex: '1 1 300px',
-          minWidth: '240px',
-          maxWidth: '520px',
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #D1D5DB',
-          borderRadius: '8px',
-          padding: '0 12px',
-          height: '40px',
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
-        }}
-      >
-        <Search size={16} color="#9CA3AF" />
+      <div className="relative flex-1 min-w-[200px] max-w-lg">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#718096] pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search voucher, donor name, contact, cause or ref..."
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            marginLeft: '8px',
-            fontSize: '13.5px',
-            color: '#111827',
-            backgroundColor: 'transparent',
-          }}
+          className="w-full pl-9 pr-8 py-2 rounded-xl border border-[#DBE5EE] text-xs text-[#0B2F52] placeholder-[#718096] bg-[#EDF2F7] hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FAD465] transition-colors"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '2px',
-              cursor: 'pointer',
-              color: '#9CA3AF',
-            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 cursor-pointer"
+            title="Clear search"
           >
-            <X size={15} />
+            <X size={14} />
           </button>
         )}
       </div>
 
-      {/* Filter and CTA Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      {/* Filter and Reset Actions */}
+      <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto min-w-0">
+        {typeof totalFilteredCount === 'number' && (
+          <span className="text-xs text-[#718096] font-medium hidden md:inline mr-1">
+            Showing <strong className="text-[#0B2F52]">{totalFilteredCount}</strong> vouchers
+          </span>
+        )}
+
         <button
           type="button"
           onClick={onOpenFilterModal}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '9px 14px',
-            fontSize: '13px',
-            fontWeight: 500,
-            borderRadius: '8px',
-            border: hasActiveFilters ? '1px solid #011F39' : '1px solid #D1D5DB',
-            backgroundColor: hasActiveFilters ? '#EFF6FF' : '#FFFFFF',
-            color: hasActiveFilters ? '#011F39' : '#374151',
-            cursor: 'pointer',
-          }}
+          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border transition cursor-pointer ${
+            hasActiveFilters
+              ? 'bg-[#06294D] text-[#FAD465] border-[#06294D]'
+              : 'bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border-[#DBE5EE]'
+          }`}
         >
-          <SlidersHorizontal size={14} color={hasActiveFilters ? '#011F39' : '#6B7280'} />
+          <SlidersHorizontal size={13} />
           <span>Filters</span>
           {hasActiveFilters && (
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: '#2563EB',
-              }}
-            />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FAD465]" />
           )}
         </button>
 
@@ -116,42 +70,12 @@ export const ReceiptSearchBar: React.FC<ReceiptSearchBarProps> = ({
           <button
             type="button"
             onClick={onResetFilters}
-            style={{
-              padding: '9px 12px',
-              fontSize: '12.5px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #E5E7EB',
-              backgroundColor: '#FFFFFF',
-              color: '#6B7280',
-              cursor: 'pointer',
-            }}
+            className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl border border-[#DBE5EE] bg-white hover:bg-[#EDF2F7] text-[#718096] hover:text-[#06294D] transition cursor-pointer"
           >
-            Reset
+            <RotateCcw size={12} />
+            <span>Reset</span>
           </button>
         )}
-
-        <button
-          type="button"
-          onClick={() => navigate('/admin/receipts/create')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '9px 18px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: '#011F39',
-            color: '#FAD465',
-            cursor: 'pointer',
-            boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
-          }}
-        >
-          <Plus size={16} color="#FAD465" />
-          <span>Record Income</span>
-        </button>
       </div>
     </div>
   );

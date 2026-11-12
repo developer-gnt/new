@@ -2,13 +2,14 @@ import type React from 'react';
 import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText,
   RefreshCw,
   Plus,
   Download,
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  Receipt,
+  BookOpen,
 } from 'lucide-react';
 import type {
   ReceiptEntryItem,
@@ -375,114 +376,57 @@ export const ReceiptsListPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-      {/* Page Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '16px',
-          marginBottom: '20px',
-        }}
-      >
+    <div className="w-full max-w-7xl mx-auto space-y-6 min-w-0 overflow-x-hidden">
+      {/* Top Header Card */}
+      <div className="bg-white rounded-xl border border-[#DCE4EC] px-6 py-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 w-full min-w-0">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                backgroundColor: '#011F39',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <FileText size={18} color="#FAD465" />
-            </div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: '22px',
-                fontWeight: 700,
-                color: '#011F39',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Income (Receipt Vouchers)
-            </h1>
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#718096] uppercase tracking-[0.14em] mb-1">
+            <Receipt size={14} className="text-[#06294D]" />
+            <span>Inward Revenue &amp; Disbursement Ledger</span>
           </div>
-          <p style={{ margin: '4px 0 0 40px', fontSize: '13px', color: '#6B7280' }}>
-            Inward revenue stream vouchers for donations, membership fees, causes and grants with double-entry journal postings
+          <h1 className="text-2xl sm:text-3xl font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52] leading-tight">
+            Income &amp; <span className="text-[#C9971A]">Receipt Vouchers</span>
+          </h1>
+          <p className="text-xs text-[#34516D] mt-1 max-w-2xl leading-relaxed">
+            Record, audit, and reconcile inward revenue from donations, memberships, and grants with double-entry journal postings.
           </p>
         </div>
 
-        {/* Global Page Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/accounting')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] text-xs font-bold rounded-xl transition cursor-pointer"
+          >
+            <BookOpen size={13} />
+            <span>General Ledger</span>
+          </button>
+
           <button
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 14px',
-              fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #D1D5DB',
-              backgroundColor: '#FFFFFF',
-              color: '#374151',
-              cursor: isRefreshing ? 'not-allowed' : 'pointer',
-            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#06294D] border border-[#DBE5EE] text-xs font-bold rounded-xl transition cursor-pointer"
           >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
             <span>Refresh</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportCsv}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 14px',
-              fontSize: '13px',
-              fontWeight: 500,
-              borderRadius: '8px',
-              border: '1px solid #D1D5DB',
-              backgroundColor: '#FFFFFF',
-              color: '#374151',
-              cursor: 'pointer',
-            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-[#EDF2F7] text-[#06294D] border border-[#DBE5EE] text-xs font-bold rounded-xl transition cursor-pointer"
           >
-            <Download size={14} />
+            <Download size={13} />
             <span>Export CSV</span>
           </button>
 
           <button
             type="button"
             onClick={() => navigate('/admin/receipts/create')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 18px',
-              fontSize: '13.5px',
-              fontWeight: 600,
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#011F39',
-              color: '#FAD465',
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
-            }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#E9B82E] active:bg-[#C9971A] text-[#011F39] shadow-xs transition cursor-pointer"
           >
-            <Plus size={16} color="#FAD465" />
+            <Plus size={16} strokeWidth={2.5} />
             <span>Record Income</span>
           </button>
         </div>
@@ -498,16 +442,8 @@ export const ReceiptsListPage: React.FC = () => {
         }}
       />
 
-      {/* Main Content Box */}
-      <div
-        style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E5E7EB',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-          padding: '20px',
-        }}
-      >
+      {/* Main Unified Workspace Card */}
+      <div className="bg-white rounded-xl border border-[#DCE4EC] shadow-xs overflow-hidden w-full min-w-0">
         {/* Primary Stream Tabs */}
         <ReceiptStatusTabs
           activeTab={activeCategory}
@@ -548,35 +484,23 @@ export const ReceiptsListPage: React.FC = () => {
           onOpenFilterModal={() => setFilterModalVisible(true)}
           onResetFilters={handleResetFilters}
           hasActiveFilters={hasActiveFilters}
+          totalFilteredCount={filteredVouchers.length}
         />
 
         {/* Vouchers Data Table */}
-        <div style={{ overflowX: 'auto', margin: '0 -20px' }}>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              textAlign: 'left',
-              fontSize: '13.5px',
-            }}
-          >
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[920px] text-left text-xs border-collapse table-fixed">
             <thead>
-              <tr
-                style={{
-                  backgroundColor: '#F9FAFB',
-                  borderBottom: '1px solid #E5E7EB',
-                  borderTop: '1px solid #E5E7EB',
-                }}
-              >
-                <th style={thStyle}>Voucher No & Stream</th>
-                <th style={thStyle}>Received From / Payer</th>
-                <th style={thStyle}>Income Account Allocation</th>
-                <th style={thStyle}>Payment Method</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Amount & Status</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Action</th>
+              <tr className="bg-[#FAF7F0] border-b border-[#DCE4EC] text-[#06294D] text-[11px] font-bold uppercase tracking-[0.06em]">
+                <th className="py-3 px-3.5 w-[25%]">Voucher No &amp; Stream</th>
+                <th className="py-3 px-3.5 w-[21%]">Received From / Payer</th>
+                <th className="py-3 px-3.5 w-[17%]">Income Allocation</th>
+                <th className="py-3 px-3.5 w-[14%]">Payment Method</th>
+                <th className="py-3 px-3.5 w-[14%] text-right">Amount &amp; Status</th>
+                <th className="py-3 px-3.5 w-[9%] text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[#EDF2F7]">
               {paginatedVouchers.length > 0 ? (
                 paginatedVouchers.map((voucher) => (
                   <ReceiptCard
@@ -587,39 +511,26 @@ export const ReceiptsListPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '48px 16px' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <AlertCircle size={32} color="#9CA3AF" />
-                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#374151' }}>
+                  <td colSpan={6} className="text-center py-16 px-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-[#EDF2F7] text-[#07294E] flex items-center justify-center mb-1">
+                        <AlertCircle size={24} />
+                      </div>
+                      <div className="font-['Playfair_Display',Georgia,serif] text-base font-bold text-[#0B2F52]">
                         No receipt vouchers found
                       </div>
-                      <div style={{ fontSize: '13px', color: '#6B7280' }}>
+                      <div className="text-xs text-[#718096] max-w-sm">
                         Try adjusting your search criteria, income stream tabs, or channel filters.
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleResetFilters}
-                        style={{
-                          marginTop: '8px',
-                          padding: '6px 14px',
-                          fontSize: '12.5px',
-                          fontWeight: 600,
-                          borderRadius: '6px',
-                          border: '1px solid #011F39',
-                          backgroundColor: '#FFFFFF',
-                          color: '#011F39',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Clear All Filters
-                      </button>
+                      {hasActiveFilters && (
+                        <button
+                          type="button"
+                          onClick={handleResetFilters}
+                          className="mt-3 px-4 py-2 text-xs font-bold rounded-xl border border-[#DBE5EE] bg-[#EDF2F7] hover:bg-[#DBE5EE] text-[#07294E] transition cursor-pointer"
+                        >
+                          Clear All Filters
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -630,45 +541,25 @@ export const ReceiptsListPage: React.FC = () => {
 
         {/* Pagination Footer */}
         {filteredVouchers.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingTop: '16px',
-              borderTop: '1px solid #E5E7EB',
-              marginTop: '12px',
-              fontSize: '13px',
-              color: '#4B5563',
-            }}
-          >
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#EDF2F7] bg-[#FAF7F0]/30 text-xs text-[#718096]">
             <div>
-              Showing <b>{(currentPage - 1) * pageSize + 1}</b> to{' '}
-              <b>{Math.min(currentPage * pageSize, filteredVouchers.length)}</b> of{' '}
-              <b>{filteredVouchers.length}</b> vouchers
+              Showing <strong className="text-[#0B2F52]">{(currentPage - 1) * pageSize + 1}</strong> to{' '}
+              <strong className="text-[#0B2F52]">{Math.min(currentPage * pageSize, filteredVouchers.length)}</strong> of{' '}
+              <strong className="text-[#0B2F52]">{filteredVouchers.length}</strong> vouchers
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: '#FFFFFF',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                  opacity: currentPage === 1 ? 0.5 : 1,
-                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#DBE5EE] bg-white hover:bg-[#EDF2F7] text-[#06294D] disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-xs transition cursor-pointer"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
                 <span>Prev</span>
               </button>
 
-              <span style={{ padding: '0 8px', fontWeight: 600 }}>
+              <span className="px-2 font-bold text-[#0B2F52]">
                 Page {currentPage} of {totalPages}
               </span>
 
@@ -676,19 +567,10 @@ export const ReceiptsListPage: React.FC = () => {
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: '#FFFFFF',
-                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                  opacity: currentPage === totalPages ? 0.5 : 1,
-                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#DBE5EE] bg-white hover:bg-[#EDF2F7] text-[#06294D] disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-xs transition cursor-pointer"
               >
                 <span>Next</span>
-                <ChevronRight size={16} />
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -716,13 +598,4 @@ export const ReceiptsListPage: React.FC = () => {
       />
     </div>
   );
-};
-
-const thStyle: React.CSSProperties = {
-  padding: '12px 16px',
-  fontSize: '12px',
-  fontWeight: 600,
-  color: '#4B5563',
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
 };

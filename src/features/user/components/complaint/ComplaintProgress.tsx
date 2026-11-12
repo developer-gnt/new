@@ -17,12 +17,12 @@ export const ComplaintProgress: React.FC<ComplaintProgressProps> = ({
   onStepClick,
 }) => {
   return (
-    <div className="w-full max-w-xl mx-auto py-3 px-2">
-      <div className="flex items-center justify-between relative">
-        {/* Continuous connector line background */}
-        <div className="absolute top-4 left-8 right-8 h-0.5 bg-slate-200 -z-0" />
+    <div className="w-full py-4 px-2 sm:px-4">
+      <div className="flex items-center justify-between relative w-full">
+        {/* Continuous connector line background connecting step centers */}
+        <div className="absolute top-4 sm:top-5 left-[16%] right-[16%] h-0.5 bg-slate-200 z-0" />
 
-        {STEPS.map(step => {
+        {STEPS.map((step) => {
           const isActive = step.id === currentStep;
           const isCompleted = step.id < currentStep;
 
@@ -32,7 +32,7 @@ export const ComplaintProgress: React.FC<ComplaintProgressProps> = ({
                 type="button"
                 disabled={!isCompleted && !isActive}
                 onClick={() => isCompleted && onStepClick?.(step.id)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all shadow-xs ${
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-black transition-all shadow-xs ${
                   isActive
                     ? 'bg-[#E9B82E] text-[#06294D] ring-4 ring-[#E9B82E]/25 scale-105'
                     : isCompleted
@@ -40,11 +40,11 @@ export const ComplaintProgress: React.FC<ComplaintProgressProps> = ({
                     : 'bg-white border-2 border-slate-300 text-slate-400'
                 }`}
               >
-                {isCompleted ? <Check size={14} strokeWidth={3} /> : step.id}
+                {isCompleted ? <Check size={16} strokeWidth={3} /> : step.id}
               </button>
 
               <span
-                className={`text-[11px] sm:text-xs mt-1.5 font-bold tracking-tight text-center max-w-[100px] leading-tight ${
+                className={`text-xs sm:text-sm mt-2 font-bold tracking-tight text-center leading-tight ${
                   isActive
                     ? 'text-[#06294D]'
                     : isCompleted

@@ -1,57 +1,169 @@
-import type React from 'react';
-import { useState } from 'react';
-import { TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { TrendingUp, RefreshCw } from 'lucide-react';
+import { apiClient } from '@/services/apiClient';
+import type { GrowthPoint } from '../data/dashboardDemoData';
+import { DEMO_GROWTH_DATA } from '../data/dashboardDemoData';
 
-export interface GrowthPoint {
-  label: string;
-  members: number;
-}
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-interface MembershipGrowthChartProps {
+export interface MembershipGrowthChartProps {
+  initialGrowth?: { month: string; total: number }[];
   growthData?: { month: string; total: number }[];
+  totalMembers?: number;
   currentCount?: number;
+  activeMembers?: number;
 }
+
+interface ExtendedGrowthPoint extends GrowthPoint {
+  fullLabel?: string;
+}
+
+const parseMonthlyGrowth = (growthList: { month: string; total: number }[]): ExtendedGrowthPoint[] => {
+  return growthList.map((g) => {
+    const parts = (g.month || '').split('-');
+    const mIndex = parseInt(parts[1] || '1', 10) - 1;
+    const shortLabel = MONTH_NAMES[mIndex] || g.month;
+    return {
+      label: shortLabel,
+      fullLabel: `${MONTH_NAMES[mIndex] || ''} ${parts[0] || ''}`.trim(),
+      members: Number(g.total) || 0,
+    };
+  });
+};
+
+const computeDailyGrowthFromMembers = (
+  members: any[],
+  daysCount: number,
+  sampleInterval = 1
+): ExtendedGrowthPoint[] => {
+  const withMemb = members.filter((m) => m && (m.membership || m.membershipNumber || m.status));
+  const now = new Date();
+  const points: ExtendedGrowthPoint[] = [];
+
+  for (let i = daysCount - 1; i >= 0; i -= sampleInterval) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    d.setHours(23, 59, 59, 999);
+    const count = withMemb.filter((m) => new Date(m.created_at) <= d).length;
+
+    const label =
+      daysCount <= 7
+        ? d.toLocaleDateString('en-US', { weekday: 'short' })
+        : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const fullLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    points.push({ label, fullLabel, members: count });
+  }
+
+  return points;
+};
 
 export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
+  initialGrowth,
   growthData,
-  currentCount = 0,
+  totalMembers,
+  currentCount,
+  activeMembers,
 }) => {
-  const [hoveredPoint, setHoveredPoint] = useState<GrowthPoint | null>(null);
-
-  const formatMonthLabel = (m: string) => {
-    try {
-      const parts = m.split('-');
-      if (parts.length === 2) {
-        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
-        return d.toLocaleString('en-US', { month: 'short' });
-      }
-    } catch {
-      // Ignore
+  const effectiveGrowth = initialGrowth || growthData;
+  const effectiveTotal = totalMembers ?? currentCount;
+  const [range, setRange] = useState<'7d' | '30d' | '6m' | '1y'>('6m');
+  const [hoveredPoint, setHoveredPoint] = useState<ExtendedGrowthPoint | null>(null);
+  const [cachedData, setCachedData] = useState<Record<string, ExtendedGrowthPoint[]>>(() => {
+    const initial: Record<string, ExtendedGrowthPoint[]> = {};
+    if (effectiveGrowth && effectiveGrowth.length > 0) {
+      initial['6m'] = parseMonthlyGrowth(effectiveGrowth);
     }
-    return m;
-  };
+    return initial;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const [membersCount, setMembersCount] = useState<{ total?: number; active?: number }>({
+    total: effectiveTotal,
+    active: activeMembers,
+  });
 
-  const points: GrowthPoint[] =
-    growthData && growthData.length > 0
-      ? growthData.map((d) => ({
-          label: formatMonthLabel(d.month),
-          members: d.total,
-        }))
-      : [
-          { label: 'Q1', members: 0 },
-          { label: 'Q2', members: 0 },
-          { label: 'Q3', members: 0 },
-          { label: 'Current', members: currentCount },
-        ];
+  // Sync when initial props arrive or change
+  useEffect(() => {
+    if (effectiveGrowth && effectiveGrowth.length > 0) {
+      const parsed = parseMonthlyGrowth(effectiveGrowth);
+      setCachedData((prev) => ({ ...prev, '6m': parsed }));
+      setIsLiveConnected(true);
+    }
+  }, [effectiveGrowth]);
+
+  useEffect(() => {
+    if (effectiveTotal !== undefined || activeMembers !== undefined) {
+      setMembersCount({ total: effectiveTotal, active: activeMembers });
+    }
+  }, [effectiveTotal, activeMembers]);
+
+  // Load data for the requested range from live API
+  const loadDataForRange = useCallback(
+    async (selectedRange: '7d' | '30d' | '6m' | '1y') => {
+      // If already cached, no need to refetch immediately
+      if (cachedData[selectedRange] && cachedData[selectedRange].length > 0) {
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        if (selectedRange === '6m' || selectedRange === '1y') {
+          const growthMonths = selectedRange === '1y' ? 12 : 6;
+          const res = await apiClient.get<any>('/admin/dashboard', { params: { growthMonths } });
+          const data = (res as any)?.data || res;
+          if (data?.memberGrowth && Array.isArray(data.memberGrowth) && data.memberGrowth.length > 0) {
+            const parsed = parseMonthlyGrowth(data.memberGrowth);
+            setCachedData((prev) => ({ ...prev, [selectedRange]: parsed }));
+            setIsLiveConnected(true);
+            if (data.memberships) {
+              setMembersCount({
+                total: data.memberships.total,
+                active: data.memberships.active,
+              });
+            }
+          }
+        } else {
+          // '7d' or '30d': fetch live member roster to aggregate daily cumulative counts
+          const res = await apiClient.get<any>('/admin/members', { params: { limit: 100 } });
+          const data = (res as any)?.data || res;
+          const items = data?.items || (Array.isArray(data) ? data : []);
+          if (items.length > 0) {
+            const daysCount = selectedRange === '7d' ? 7 : 30;
+            const interval = selectedRange === '7d' ? 1 : 5;
+            const parsed = computeDailyGrowthFromMembers(items, daysCount, interval);
+            setCachedData((prev) => ({ ...prev, [selectedRange]: parsed }));
+            setIsLiveConnected(true);
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not sync live member growth for range ${selectedRange}:`, err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [cachedData]
+  );
+
+  useEffect(() => {
+    loadDataForRange(range);
+  }, [range, loadDataForRange]);
+
+  // Determine current active points list (live data or fallback)
+  const points: ExtendedGrowthPoint[] = useMemo(() => {
+    if (cachedData[range] && cachedData[range].length >= 2) {
+      return cachedData[range];
+    }
+    return (DEMO_GROWTH_DATA[range] || DEMO_GROWTH_DATA['6m']) as ExtendedGrowthPoint[];
+  }, [cachedData, range]);
 
   const minVal = points.length > 0 ? Math.min(...points.map((p) => p.members)) : 0;
-  const maxVal = points.length > 0 ? Math.max(...points.map((p) => p.members)) : 0;
-  const paddingY = Math.max((maxVal - minVal) * 0.15, 5);
+  const maxVal = points.length > 0 ? Math.max(...points.map((p) => p.members)) : 10;
+  const paddingY = Math.max(2, (maxVal - minVal) * 0.15 || 5);
   const floorVal = Math.max(0, Math.floor(minVal - paddingY));
   const ceilVal = Math.ceil(maxVal + paddingY);
-  const valRange = ceilVal - floorVal || 1;
 
-  const width = 640;
+  const width = 960;
   const height = 240;
   const padLeft = 46;
   const padRight = 24;
@@ -65,7 +177,11 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
     if (points.length <= 1) return padLeft + chartW / 2;
     return padLeft + (index / (points.length - 1)) * chartW;
   };
-  const getY = (val: number) => padTop + chartH - ((val - floorVal) / valRange) * chartH;
+
+  const getY = (val: number) => {
+    const rangeY = ceilVal - floorVal || 1;
+    return padTop + chartH - ((val - floorVal) / rangeY) * chartH;
+  };
 
   const coordinates = points.map((p, idx) => ({
     x: getX(idx),
@@ -78,27 +194,63 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
     return idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`;
   }, '');
 
-  const lastCoord = coordinates[coordinates.length - 1];
-  const firstCoord = coordinates[0];
   const areaPath =
-    coordinates.length > 1
-      ? `${linePath} L ${lastCoord.x} ${padTop + chartH} L ${firstCoord.x} ${padTop + chartH} Z`
+    coordinates.length > 0
+      ? `${linePath} L ${coordinates[coordinates.length - 1].x} ${
+          padTop + chartH
+        } L ${coordinates[0].x} ${padTop + chartH} Z`
       : '';
 
-  const latestVal = coordinates.length > 0 ? coordinates[coordinates.length - 1].members : currentCount;
+  const latestVal = points.length > 0 ? points[points.length - 1].members : 0;
+  const displayActive = membersCount.active ?? latestVal;
+  const displayTotal = membersCount.total;
 
   return (
     <div style={styles.card}>
       <div style={styles.headerRow}>
         <div style={styles.titleWrap}>
-          <div style={styles.badge}>
-            <TrendingUp size={16} color="#06294D" />
-            <span style={styles.badgeLabel}>Growth Trajectory</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={styles.badge}>
+              <TrendingUp size={16} color="#06294D" />
+              <span style={styles.badgeLabel}>Growth Trajectory</span>
+            </div>
+            {isLiveConnected && (
+              <span style={styles.liveBadge}>
+                <span style={styles.liveDot} />
+                Live API
+              </span>
+            )}
+            {isLoading && (
+              <RefreshCw size={13} className="animate-spin" style={{ color: '#06294D' }} />
+            )}
           </div>
           <h3 style={styles.title}>Membership Expansion Trend</h3>
           <p style={styles.subtitle}>
-            Verified membership roster: <strong>{latestVal.toLocaleString()}</strong> active members
+            Verified membership roster: <strong>{displayActive.toLocaleString()}</strong> active members
+            {displayTotal !== undefined && displayTotal !== displayActive && (
+              <span style={{ color: '#718096', fontSize: '12px' }}>
+                {' '}
+                ({displayTotal.toLocaleString()} registered total)
+              </span>
+            )}
           </p>
+        </div>
+
+        {/* Range Selector Pill Group */}
+        <div style={styles.rangeGroup}>
+          {(['7d', '30d', '6m', '1y'] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRange(r)}
+              style={{
+                ...styles.rangeBtn,
+                ...(range === r ? styles.rangeBtnActive : {}),
+              }}
+            >
+              {r.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -149,24 +301,28 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
           {areaPath && <path d={areaPath} fill="url(#growthAreaGrad)" />}
 
           {/* Trendline */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#06294D"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#06294D"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
 
           {/* Accent Gold Trendline Glow */}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="#FAD465"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#FAD465"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
 
           {/* Data Points */}
           {coordinates.map((pt) => (
@@ -206,8 +362,8 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
         {/* Hover Tooltip Overlay */}
         {hoveredPoint && (
           <div style={styles.tooltip}>
-            <span style={styles.tooltipLabel}>{hoveredPoint.label}:</span>
-            <span style={styles.tooltipVal}>{hoveredPoint.members} members</span>
+            <span style={styles.tooltipLabel}>{hoveredPoint.fullLabel || hoveredPoint.label}:</span>
+            <span style={styles.tooltipVal}>{hoveredPoint.members.toLocaleString()} members</span>
           </div>
         )}
       </div>
@@ -217,21 +373,20 @@ export const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({
 
 const styles: Record<string, React.CSSProperties> = {
   card: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
     border: '1px solid #DCE4EC',
     borderRadius: '12px',
-    padding: '22px',
+    padding: '24px',
     boxShadow: '0 2px 8px -2px rgba(1, 31, 57, 0.05)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
   },
   headerRow: {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: '18px',
-    gap: '12px',
+    flexWrap: 'wrap',
+    gap: '16px',
+    marginBottom: '20px',
   },
   titleWrap: {
     display: 'flex',
@@ -242,55 +397,97 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#F0F5FA',
-    padding: '4px 10px',
-    borderRadius: '6px',
+    backgroundColor: '#EDF2F7',
+    padding: '3px 10px',
+    borderRadius: '999px',
     width: 'fit-content',
-    marginBottom: '4px',
   },
   badgeLabel: {
     fontSize: '11px',
     fontWeight: 700,
     color: '#06294D',
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    letterSpacing: '0.04em',
+  },
+  liveBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    backgroundColor: '#DCFCE7',
+    color: '#15803D',
+    padding: '2px 8px',
+    borderRadius: '999px',
+    fontSize: '10.5px',
+    fontWeight: 700,
+    letterSpacing: '0.02em',
+  },
+  liveDot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: '#16A34A',
   },
   title: {
-    fontSize: '16px',
+    fontSize: '20px',
     fontWeight: 700,
     color: '#0B2F52',
-    margin: 0,
+    margin: '4px 0 0 0',
   },
   subtitle: {
-    fontSize: '12.5px',
-    color: '#718096',
+    fontSize: '13px',
+    color: '#34516D',
     margin: 0,
+  },
+  rangeGroup: {
+    display: 'flex',
+    gap: '4px',
+    backgroundColor: '#FAF7F0',
+    border: '1px solid #DCE4EC',
+    padding: '3px',
+    borderRadius: '8px',
+  },
+  rangeBtn: {
+    padding: '5px 12px',
+    fontSize: '12px',
+    fontWeight: 600,
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#718096',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  rangeBtnActive: {
+    backgroundColor: '#06294D',
+    color: '#FAD465',
+    boxShadow: '0 1px 3px rgba(1, 31, 57, 0.2)',
   },
   svgContainer: {
     position: 'relative',
     width: '100%',
-    marginTop: 'auto',
   },
   tooltip: {
     position: 'absolute',
     top: '12px',
-    right: '12px',
-    backgroundColor: '#06294D',
+    right: '24px',
+    backgroundColor: '#011F39',
     color: '#FFFFFF',
     padding: '6px 12px',
     borderRadius: '6px',
-    fontSize: '11.5px',
+    fontSize: '12px',
+    fontWeight: 500,
+    boxShadow: '0 4px 12px rgba(1, 31, 57, 0.25)',
     display: 'flex',
-    alignItems: 'center',
     gap: '6px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    pointerEvents: 'none',
+    alignItems: 'center',
+    border: '1px solid #FAD465',
   },
   tooltipLabel: {
     color: '#FAD465',
     fontWeight: 600,
   },
   tooltipVal: {
+    color: '#FFFFFF',
     fontWeight: 700,
   },
 };

@@ -13,12 +13,12 @@ export const ExpenseStatusTabs: React.FC<ExpenseStatusTabsProps> = ({
 }) => {
   const tabs = [
     { key: 'ALL', label: 'All Vouchers', count: counts.all },
-    { key: 'POSTED', label: 'Posted', count: counts.posted },
-    { key: 'CANCELLED', label: 'Cancelled', count: counts.cancelled },
+    { key: 'POSTED', label: 'Audited & Posted', count: counts.posted },
+    { key: 'CANCELLED', label: 'Voided / Cancelled', count: counts.cancelled },
   ];
 
   return (
-    <div style={styles.container}>
+    <div className="flex items-center border-b border-[#DBE5EE] px-4 overflow-x-auto scrollbar-none bg-[#FAF7F0]/40">
       {tabs.map((tab) => {
         const isActive = activeStatus === tab.key;
         return (
@@ -26,21 +26,19 @@ export const ExpenseStatusTabs: React.FC<ExpenseStatusTabsProps> = ({
             key={tab.key}
             type="button"
             onClick={() => onSelectStatus(tab.key)}
-            style={{
-              ...styles.tabBtn,
-              backgroundColor: isActive ? '#06294D' : '#FFFFFF',
-              color: isActive ? '#FFFFFF' : '#475569',
-              borderColor: isActive ? '#06294D' : '#CBD5E1',
-              boxShadow: isActive ? '0 2px 6px rgba(6, 41, 77, 0.15)' : 'none',
-            }}
+            className={`inline-flex items-center gap-2 py-3.5 px-4 text-xs font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
+              isActive
+                ? 'border-[#E9B82E] text-[#06294D] font-bold bg-white shadow-2xs'
+                : 'border-transparent text-[#718096] hover:text-[#0B2F52] hover:bg-white/60'
+            }`}
           >
             <span>{tab.label}</span>
             <span
-              style={{
-                ...styles.badge,
-                backgroundColor: isActive ? '#FAD465' : '#F1F5F9',
-                color: isActive ? '#011F39' : '#475569',
-              }}
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full leading-tight transition-colors ${
+                isActive
+                  ? 'bg-[#06294D] text-[#FAD465]'
+                  : 'bg-[#EDF2F7] text-[#718096]'
+              }`}
             >
               {tab.count}
             </span>
@@ -49,32 +47,4 @@ export const ExpenseStatusTabs: React.FC<ExpenseStatusTabsProps> = ({
       })}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
-    marginBottom: '12px',
-  },
-  tabBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: '1px solid',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  badge: {
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: 700,
-  },
 };

@@ -386,18 +386,25 @@ export const SeekerHomePage: React.FC = () => {
           <h2 className="text-base sm:text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52]">
             Relief & Assistance Programs
           </h2>
-          <span className="text-xs font-semibold text-[#718096]">Core NGO Initiatives</span>
+          <Link
+            to="/seeker/about"
+            className="text-xs font-semibold text-[#0B2F52] hover:text-[#C9971A] flex items-center gap-1 transition cursor-pointer"
+          >
+            <span>Learn More</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
 
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {WHAT_WE_DO_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <div
+              <Link
                 key={item.id}
-                className="flex flex-col items-center justify-center py-3 px-1 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs min-h-[90px] text-center"
+                to="/seeker/about"
+                className="flex flex-col items-center justify-center py-3 px-1 bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#0B2F52]/40 hover:shadow-xs transition min-h-[90px] text-center group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-[#EDF2F7] text-[#06294D] flex items-center justify-center mb-1.5">
+                <div className="w-9 h-9 rounded-full bg-[#EDF2F7] text-[#06294D] group-hover:bg-[#06294D] group-hover:text-white transition flex items-center justify-center mb-1.5">
                   <Icon size={18} strokeWidth={1.8} />
                 </div>
                 <span className="text-[11px] font-semibold text-[#06294D] leading-[14px]">
@@ -408,7 +415,7 @@ export const SeekerHomePage: React.FC = () => {
                     </React.Fragment>
                   ))}
                 </span>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -428,10 +435,14 @@ export const SeekerHomePage: React.FC = () => {
                 Our Impact
               </h2>
             </div>
-            <div className="text-[11px] font-bold text-[#FAD465] flex items-center gap-1">
-              <span>Nationwide Relief</span>
-              <ArrowRight size={13} />
-            </div>
+            <Link
+              to="/seeker/about"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#FAD465] hover:text-amber-300 transition-colors cursor-pointer group"
+              aria-label="View Details on Our Impact"
+            >
+              <span>View Details</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
 
           {/* 3 Metric Tiles (Exact APK Layout) */}
@@ -537,14 +548,21 @@ export const SeekerHomePage: React.FC = () => {
           <h2 className="text-base sm:lg font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52]">
             Stories of Hope & News
           </h2>
-          <span className="text-xs font-semibold text-[#718096]">Recent Impact Updates</span>
+          <Link
+            to="/seeker/news"
+            className="text-xs font-semibold text-[#0B2F52] hover:text-[#C9971A] flex items-center gap-1 transition cursor-pointer"
+          >
+            <span>View All</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
 
         <div className="space-y-2.5">
           {seekerNews.map((news) => (
-            <div
+            <Link
               key={news.id}
-              className="bg-white rounded-2xl border border-[#E2E8F0] p-3 shadow-xs flex items-center justify-between gap-3 hover:border-[#FAD465] transition"
+              to="/seeker/news"
+              className="bg-white rounded-2xl border border-[#E2E8F0] p-3 shadow-xs flex items-center justify-between gap-3 hover:border-[#FAD465] transition group cursor-pointer"
             >
               <img
                 src={news.image}
@@ -559,16 +577,16 @@ export const SeekerHomePage: React.FC = () => {
                 <div className="text-[10px] font-bold tracking-wider text-[#C9971A] uppercase">
                   {news.category}
                 </div>
-                <h4 className="text-xs font-bold text-[#0B2F52] leading-snug line-clamp-2 mt-0.5">
+                <h4 className="text-xs font-bold text-[#0B2F52] leading-snug line-clamp-2 mt-0.5 group-hover:text-[#C9971A] transition">
                   {news.title}
                 </h4>
                 <div className="text-[10px] text-[#718096] mt-1">{news.date}</div>
               </div>
 
-              <div className="w-7 h-7 rounded-full bg-[#EDF2F7] text-[#06294D] flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[#EDF2F7] text-[#06294D] group-hover:bg-[#06294D] group-hover:text-white transition flex items-center justify-center shrink-0">
                 <ArrowRight size={13} />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -579,13 +597,13 @@ export const SeekerHomePage: React.FC = () => {
           <h2 className="text-base sm:text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#0B2F52]">
             About HRSJM
           </h2>
-          <button
-            type="button"
-            onClick={() => setVideoModalOpen(true)}
-            className="text-xs font-bold text-[#174A78] hover:underline cursor-pointer"
+          <Link
+            to="/seeker/about"
+            className="text-xs font-semibold text-[#0B2F52] hover:text-[#C9971A] flex items-center gap-1 transition cursor-pointer"
           >
-            View More →
-          </button>
+            <span>View More</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">

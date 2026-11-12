@@ -12,6 +12,7 @@ import {
   CreditCard,
   User,
   Paperclip,
+  ExternalLink,
 } from 'lucide-react';
 import { expensesStore } from '../store/expensesStore';
 import { ExpenseCancelModal } from '../components/ExpenseCancelModal';
@@ -275,6 +276,27 @@ export const ExpenseDetailsPage: React.FC = () => {
                 {voucher.accounting_entry?.entry_number || 'JV-AUTO'}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/admin/accounting?search=${voucher.voucher_number || voucher.id}`)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#011F39',
+                backgroundColor: '#EDF2F7',
+                border: '1px solid #DBE5EE',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>View in General Ledger</span>
+              <ExternalLink size={13} />
+            </button>
           </div>
 
           <div style={styles.journalTable}>

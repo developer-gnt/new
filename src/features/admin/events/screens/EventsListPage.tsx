@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Calendar, Plus } from 'lucide-react';
+import { ChevronRight, Calendar, Plus, Sparkles } from 'lucide-react';
 import { eventsStore } from '../store/eventsStore';
 import { EventsStatsCards } from '../components/EventsStatsCards';
 import { EventsFilterBar } from '../components/EventsFilterBar';
@@ -59,37 +59,51 @@ export const EventsListPage: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Breadcrumb & Header */}
-      <div style={styles.header}>
-        <div style={styles.breadcrumb}>
-          <span style={styles.breadcrumbLink} onClick={() => navigate('/admin/dashboard')}>
+      <div className="space-y-2">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/dashboard')}
+            className="hover:text-[#011F39] font-medium transition-colors cursor-pointer"
+          >
             Dashboard
-          </span>
-          <ChevronRight size={13} color="#94A3B8" />
-          <span style={styles.breadcrumbActive}>Events Management</span>
+          </button>
+          <ChevronRight size={13} className="text-slate-400" />
+          <span className="text-slate-900 font-semibold">Events Management</span>
         </div>
 
-        <div style={styles.headerRow}>
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 style={styles.title}>Events & Conclaves</h1>
-            <p style={styles.subtitle}>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FFF9E6] text-[#011F39] border border-[#FDE68A] mb-2 tracking-wide uppercase">
+              <Sparkles size={12} className="text-[#B45309]" />
+              <span>Outreach & Community Conclaves</span>
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#011F39]">
+              Events & Conclaves
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Organize human rights conclaves, legal awareness workshops, and track delegate attendance.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setCreateModalOpen(true)}
-            style={styles.primaryBtn}
-          >
-            <Plus size={16} color="#011F39" strokeWidth={2.5} />
-            <span>Create New Event</span>
-          </button>
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] shadow-xs transition-colors cursor-pointer"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>Create New Event</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* KPI Stats Cards */}
+      {/* KPI Stats Cards (Balanced 4-column grid) */}
       <EventsStatsCards
         stats={stats}
         selectedStatus={selectedStatus}
@@ -104,28 +118,32 @@ export const EventsListPage: React.FC = () => {
         onCategoryChange={setSelectedCategory}
         selectedFormat={selectedFormat}
         onFormatChange={setSelectedFormat}
-        onCreateEvent={() => setCreateModalOpen(true)}
+        totalFilteredCount={filteredEvents.length}
       />
 
       {/* Events Grid */}
       {filteredEvents.length === 0 ? (
-        <div style={styles.emptyContainer}>
-          <Calendar size={44} color="#CBD5E1" />
-          <h3 style={styles.emptyTitle}>No Events Found</h3>
-          <p style={styles.emptySub}>
+        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs">
+          <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+            <Calendar size={28} className="text-slate-400" />
+          </div>
+          <h3 className="font-serif font-bold text-lg text-slate-800 mb-1">
+            No Events Found
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mb-4">
             No events match your current filters. Try resetting search criteria or create a new event.
           </p>
           <button
             type="button"
             onClick={() => setCreateModalOpen(true)}
-            style={styles.emptyCreateBtn}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-[#FAD465] hover:bg-[#e9bf36] text-[#011F39] transition-colors cursor-pointer shadow-xs"
           >
-            <Plus size={15} color="#011F39" />
+            <Plus size={15} strokeWidth={2.5} />
             <span>Create Event</span>
           </button>
         </div>
       ) : (
-        <div style={styles.grid}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map((event) => (
             <EventCard
               key={event.id}
@@ -145,108 +163,4 @@ export const EventsListPage: React.FC = () => {
       />
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    padding: '24px 32px 60px',
-    maxWidth: '1440px',
-    margin: '0 auto',
-    boxSizing: 'border-box',
-  },
-  header: {
-    marginBottom: '24px',
-  },
-  breadcrumb: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '12.5px',
-    color: '#64748B',
-    marginBottom: '10px',
-  },
-  breadcrumbLink: {
-    cursor: 'pointer',
-    color: '#06294D',
-    fontWeight: 500,
-  },
-  breadcrumbActive: {
-    color: '#0F172A',
-    fontWeight: 600,
-  },
-  headerRow: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  title: {
-    fontSize: '26px',
-    fontWeight: 800,
-    color: '#011F39',
-    margin: 0,
-    letterSpacing: '-0.5px',
-  },
-  subtitle: {
-    fontSize: '13.5px',
-    color: '#64748B',
-    margin: '4px 0 0 0',
-  },
-  primaryBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '9px 18px',
-    borderRadius: '8px',
-    backgroundColor: '#FAD465',
-    border: 'none',
-    color: '#011F39',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(250, 212, 101, 0.4)',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-    gap: '24px',
-  },
-  emptyContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '14px',
-    border: '1px solid #E2E8F0',
-    padding: '54px 24px',
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    fontSize: '17px',
-    fontWeight: 700,
-    color: '#011F39',
-    margin: '14px 0 4px 0',
-  },
-  emptySub: {
-    fontSize: '13px',
-    color: '#64748B',
-    margin: '0 0 16px 0',
-    maxWidth: '400px',
-    lineHeight: 1.45,
-  },
-  emptyCreateBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 18px',
-    borderRadius: '8px',
-    backgroundColor: '#FAD465',
-    border: 'none',
-    color: '#011F39',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer',
-  },
 };

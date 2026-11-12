@@ -78,7 +78,7 @@ export const STANDARD_MEMBERSHIP_CATEGORIES: MembershipCategoryItem[] = [
     name: 'National Legal Council Cell',
     code: 'NATIONAL_LEGAL_COUNCIL_CELL',
     fee: 10000,
-    description: 'Qualification: Advocate / Retd. Judge · 10 Years Validity',
+    description: 'Qualification: National Legal Council Cell · 10 Years Validity',
     status: 'ACTIVE',
     validity_days: 3650,
   },

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Search, Filter, RotateCcw, Plus } from 'lucide-react';
+import { Search, Filter, RotateCcw, X, Calendar } from 'lucide-react';
 import type { RightsDateFilter } from '../types/rights.types';
 
 interface RightsSearchBarProps {
@@ -13,7 +13,8 @@ interface RightsSearchBarProps {
   onOpenFilterModal: () => void;
   onResetFilters: () => void;
   hasActiveFilters: boolean;
-  onAddRights: () => void;
+  onAddRights?: () => void;
+  totalFilteredCount?: number;
 }
 
 export const RightsSearchBar: React.FC<RightsSearchBarProps> = ({
@@ -27,195 +28,107 @@ export const RightsSearchBar: React.FC<RightsSearchBarProps> = ({
   onOpenFilterModal,
   onResetFilters,
   hasActiveFilters,
-  onAddRights,
+  totalFilteredCount,
 }) => {
   return (
-    <div style={styles.container}>
-      <div style={styles.leftGroup}>
-        {/* Search Input */}
-        <div style={styles.searchBox}>
-          <Search size={16} color="#64748B" style={styles.searchIcon} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search rights by title, description, category, tags..."
-            style={styles.input}
-          />
-        </div>
+    <div className="bg-white rounded-xl border border-slate-200/90 p-3 sm:p-4 shadow-xs mb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Left Filter Controls */}
+        <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search rights by title, description, category, tags..."
+              className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-[#011F39] focus:outline-none focus:ring-1 focus:ring-[#011F39] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
 
-        {/* Category Select */}
-        <select
-          value={selectedCategory || 'ALL'}
-          onChange={(e) => onCategoryChange(e.target.value === 'ALL' ? null : e.target.value)}
-          style={styles.select}
-          aria-label="Filter by Category"
-        >
-          <option value="ALL">All Categories</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          {/* Category Dropdown */}
+          <div className="relative flex items-center">
+            <select
+              value={selectedCategory || 'ALL'}
+              onChange={(e) => onCategoryChange(e.target.value === 'ALL' ? null : e.target.value)}
+              className="h-9 px-3 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#011F39] cursor-pointer"
+              aria-label="Filter by Category"
+            >
+              <option value="ALL">All Categories</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Date Window Select */}
-        <select
-          value={selectedDateRange}
-          onChange={(e) => onDateRangeChange(e.target.value as RightsDateFilter)}
-          style={styles.select}
-          aria-label="Filter by Date Window"
-        >
-          <option value="ANY">Any Date</option>
-          <option value="TODAY">Today</option>
-          <option value="WEEK">This Week</option>
-          <option value="MONTH">This Month</option>
-        </select>
+          {/* Date Window Select */}
+          <div className="relative flex items-center">
+            <select
+              value={selectedDateRange}
+              onChange={(e) => onDateRangeChange(e.target.value as RightsDateFilter)}
+              className="h-9 pl-7 pr-3 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#011F39] cursor-pointer appearance-none"
+              aria-label="Filter by Date Window"
+            >
+              <option value="ANY">Any Date</option>
+              <option value="TODAY">Today</option>
+              <option value="WEEK">This Week</option>
+              <option value="MONTH">This Month</option>
+            </select>
+            <Calendar size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+          </div>
 
-        {/* Multi-Criteria Filter Button */}
-        <button
-          type="button"
-          onClick={onOpenFilterModal}
-          style={{
-            ...styles.filterBtn,
-            backgroundColor: hasActiveFilters ? '#EFF6FF' : '#FFFFFF',
-            borderColor: hasActiveFilters ? '#06294D' : '#CBD5E1',
-            color: hasActiveFilters ? '#06294D' : '#475569',
-          }}
-          title="Open advanced filter options"
-        >
-          <Filter size={15} />
-          <span>Filters</span>
-          {hasActiveFilters && <span style={styles.activeDot} />}
-        </button>
-
-        {/* Reset Filter Button */}
-        {hasActiveFilters && (
+          {/* Advanced Filters Button */}
           <button
             type="button"
-            onClick={onResetFilters}
-            style={styles.resetBtn}
-            title="Reset all filters"
+            onClick={onOpenFilterModal}
+            className={`h-9 px-3.5 text-xs sm:text-sm font-semibold rounded-lg border flex items-center gap-2 transition-colors cursor-pointer ${
+              hasActiveFilters
+                ? 'border-[#011F39] bg-[#EDF2F7] text-[#011F39]'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+            }`}
+            title="Open advanced filter options"
           >
-            <RotateCcw size={14} />
-            <span>Reset</span>
+            <Filter size={15} className="text-[#011F39]" />
+            <span>Filters</span>
+            {hasActiveFilters && (
+              <span className="w-2 h-2 rounded-full bg-[#011F39]" />
+            )}
           </button>
+
+          {/* Reset Filters Button */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
+              title="Reset all filters"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        {/* Right Info: Total Count */}
+        {typeof totalFilteredCount === 'number' && (
+          <div className="text-xs text-slate-500 font-medium shrink-0 self-end md:self-center">
+            Showing <strong className="text-slate-800">{totalFilteredCount}</strong> articles
+          </div>
         )}
       </div>
-
-      {/* Primary CTA */}
-      <button
-        type="button"
-        onClick={onAddRights}
-        style={styles.addBtn}
-      >
-        <Plus size={16} strokeWidth={2.4} />
-        <span>Add Rights Content</span>
-      </button>
     </div>
   );
 };
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    flexWrap: 'wrap',
-    marginBottom: '16px',
-    padding: '14px 16px',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '10px',
-    border: '1px solid #E2E8F0',
-  },
-  leftGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flex: '1 1 540px',
-    flexWrap: 'wrap',
-  },
-  searchBox: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    flex: '1 1 240px',
-    minWidth: '200px',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '12px',
-    pointerEvents: 'none',
-  },
-  input: {
-    width: '100%',
-    padding: '9px 12px 9px 36px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    fontSize: '13px',
-    color: '#0F172A',
-    outline: 'none',
-    boxSizing: 'border-box',
-    backgroundColor: '#F8FAFC',
-    transition: 'border-color 0.15s ease',
-  },
-  select: {
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E1',
-    fontSize: '13px',
-    color: '#0F172A',
-    backgroundColor: '#FFFFFF',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  filterBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 14px',
-    borderRadius: '8px',
-    border: '1px solid',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    position: 'relative',
-  },
-  activeDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-    backgroundColor: '#EA580C',
-  },
-  resetBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '9px 12px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#F1F5F9',
-    color: '#64748B',
-    fontSize: '13px',
-    fontWeight: 500,
-    cursor: 'pointer',
-  },
-  addBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 18px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#06294D',
-    color: '#FFFFFF',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease',
-    whiteSpace: 'nowrap',
-    boxShadow: '0 2px 6px rgba(6, 41, 77, 0.2)',
-  },
-};
-

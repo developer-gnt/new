@@ -20,21 +20,37 @@ interface NotificationRowProps {
 function renderCategoryIcon(category?: string) {
   switch (category) {
     case 'SUPPORT':
-      return <MessageSquare size={18} color="#06294D" />;
+      return <MessageSquare size={16} className="text-sky-700" />;
     case 'APPLICATION':
-      return <FileText size={18} color="#059669" />;
+      return <FileText size={16} className="text-emerald-700" />;
     case 'DONATION':
-      return <HeartHandshake size={18} color="#D97706" />;
+      return <HeartHandshake size={16} className="text-amber-700" />;
     case 'EVENT':
-      return <Calendar size={18} color="#7C3AED" />;
+      return <Calendar size={16} className="text-purple-700" />;
     case 'SECURITY':
-      return <ShieldCheck size={18} color="#2563EB" />;
+      return <ShieldCheck size={16} className="text-blue-700" />;
     default:
-      return <Bell size={18} color="#06294D" />;
+      return <Bell size={16} className="text-slate-700" />;
   }
 }
 
-// Format relative time helper
+function getCategoryIconBg(category?: string) {
+  switch (category) {
+    case 'SUPPORT':
+      return 'bg-sky-50 border-sky-200';
+    case 'APPLICATION':
+      return 'bg-emerald-50 border-emerald-200';
+    case 'DONATION':
+      return 'bg-amber-50 border-amber-200';
+    case 'EVENT':
+      return 'bg-purple-50 border-purple-200';
+    case 'SECURITY':
+      return 'bg-blue-50 border-blue-200';
+    default:
+      return 'bg-slate-50 border-slate-200';
+  }
+}
+
 function formatTimeAgo(dateStr: string): string {
   try {
     const d = new Date(dateStr);
@@ -59,198 +75,89 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   onDelete,
 }) => {
   const { notification, is_read, created_at, recipient_id } = item;
+  const iconBg = getCategoryIconBg(notification.category);
 
   return (
     <div
       onClick={() => onOpen(item)}
-      style={{
-        ...styles.row,
-        backgroundColor: !is_read ? '#F0F6FA' : '#FFFFFF',
-        borderColor: !is_read ? '#BAE6FD' : '#E2E8F0',
-      }}
+      className={`group relative rounded-xl border p-4 mb-3 transition-all duration-200 cursor-pointer ${
+        !is_read
+          ? 'bg-sky-50/40 border-sky-200/90 hover:border-sky-300 shadow-2xs'
+          : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs'
+      }`}
     >
-      {/* Unread Left Border / Dot */}
-      {!is_read && <div style={styles.unreadDot} />}
-
-      {/* Category Icon Wrap */}
-      <div
-        style={{
-          ...styles.iconContainer,
-          backgroundColor: !is_read ? '#FFFFFF' : '#F8FAFC',
-        }}
-      >
-        {renderCategoryIcon(notification.category)}
-      </div>
-
-      {/* Content Column */}
-      <div style={styles.contentCol}>
-        <div style={styles.headerRow}>
-          <div style={styles.titleWrap}>
-            <span
-              style={{
-                ...styles.title,
-                fontWeight: !is_read ? 700 : 600,
-                color: !is_read ? '#011F39' : '#334155',
-              }}
-            >
-              {notification.title}
-            </span>
-
-            {/* Priority Badges */}
-            {notification.priority === 'URGENT' && (
-              <span style={styles.urgentBadge}>URGENT</span>
-            )}
-            {notification.priority === 'HIGH' && (
-              <span style={styles.highBadge}>HIGH</span>
-            )}
-          </div>
-
-          <span style={styles.timestamp}>{formatTimeAgo(created_at)}</span>
+      <div className="flex items-start gap-3.5">
+        {/* Category Icon */}
+        <div
+          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${iconBg} mt-0.5`}
+        >
+          {renderCategoryIcon(notification.category)}
         </div>
 
-        {/* Body snippet */}
-        <p style={styles.bodyText}>{notification.body}</p>
+        {/* Content Body */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {!is_read && (
+                <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" title="Unread alert" />
+              )}
+              <h3
+                className={`text-sm sm:text-base font-semibold group-hover:text-[#B45309] transition-colors leading-snug ${
+                  !is_read ? 'text-[#011F39] font-bold' : 'text-slate-800'
+                }`}
+              >
+                {notification.title}
+              </h3>
 
-        {/* Action Link Footer */}
-        <div style={styles.footerRow}>
-          {notification.actionLabel && (
-            <div style={styles.actionPrompt}>
-              <span>{notification.actionLabel}</span>
-              <ExternalLink size={12} color="#06294D" />
+              {/* Priority Badges */}
+              {notification.priority === 'URGENT' && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 border border-rose-200 tracking-wider">
+                  URGENT
+                </span>
+              )}
+              {notification.priority === 'HIGH' && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 border border-amber-200 tracking-wider">
+                  HIGH
+                </span>
+              )}
             </div>
-          )}
 
-          <div style={styles.itemControls}>
+            <span className="text-xs text-slate-400 font-medium shrink-0">
+              {formatTimeAgo(created_at)}
+            </span>
+          </div>
+
+          {/* Body Snippet */}
+          <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed mb-3">
+            {notification.body}
+          </p>
+
+          {/* Action Link & Item Controls */}
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
+            {notification.actionLabel ? (
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#011F39] hover:text-[#B45309] transition-colors">
+                <span>{notification.actionLabel}</span>
+                <ExternalLink size={12} />
+              </div>
+            ) : (
+              <span />
+            )}
+
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(recipient_id);
               }}
-              style={styles.deleteBtn}
+              className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors"
               title="Delete notification"
               aria-label="Delete"
             >
-              <Trash2 size={13} color="#94A3B8" />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  row: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '14px',
-    padding: '16px 20px',
-    borderRadius: '12px',
-    border: '1px solid',
-    marginBottom: '10px',
-    cursor: 'pointer',
-    position: 'relative',
-    transition: 'all 0.15s ease-in-out',
-  },
-  unreadDot: {
-    position: 'absolute',
-    left: '8px',
-    top: '22px',
-    width: '7px',
-    height: '7px',
-    borderRadius: '50%',
-    backgroundColor: '#0284C7',
-  },
-  iconContainer: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
-    border: '1px solid #E2E8F0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    marginTop: '2px',
-  },
-  contentCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflow: 'hidden',
-  },
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    marginBottom: '4px',
-  },
-  titleWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
-  },
-  title: {
-    fontSize: '14.5px',
-    letterSpacing: '-0.2px',
-  },
-  urgentBadge: {
-    backgroundColor: '#FEE2E2',
-    color: '#B91C1C',
-    fontSize: '10px',
-    fontWeight: 800,
-    padding: '2px 6px',
-    borderRadius: '6px',
-    letterSpacing: '0.4px',
-  },
-  highBadge: {
-    backgroundColor: '#FEF3C7',
-    color: '#B45309',
-    fontSize: '10px',
-    fontWeight: 700,
-    padding: '2px 6px',
-    borderRadius: '6px',
-  },
-  timestamp: {
-    fontSize: '12px',
-    color: '#94A3B8',
-    whiteSpace: 'nowrap',
-  },
-  bodyText: {
-    fontSize: '13px',
-    color: '#64748B',
-    lineHeight: 1.45,
-    margin: '0 0 8px 0',
-  },
-  footerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  actionPrompt: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#06294D',
-  },
-  itemControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginLeft: 'auto',
-  },
-  deleteBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    borderRadius: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 };

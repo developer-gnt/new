@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Calendar, Clock, MapPin, Users, Globe, ExternalLink, Trash2 } from 'lucide-react';
+import { Clock, MapPin, Users, Globe, ExternalLink, Trash2, Calendar } from 'lucide-react';
 import type { EventListItem } from '../types/events.types';
 
 interface EventCardProps {
@@ -35,106 +35,163 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress, onDelete }
     }
   };
 
-  const getStatusStyle = () => {
+  const getStatusConfig = () => {
     switch (event.status) {
       case 'UPCOMING':
-        return { bg: '#FFF9E6', color: '#B45309', border: '#FDE68A', label: 'UPCOMING' };
+        return {
+          bg: 'bg-amber-50',
+          text: 'text-amber-800',
+          border: 'border-amber-200',
+          dot: 'bg-amber-500',
+          label: 'UPCOMING',
+        };
       case 'COMPLETED':
-        return { bg: '#F0FDF4', color: '#15803D', border: '#BBF7D0', label: 'COMPLETED' };
+        return {
+          bg: 'bg-emerald-50',
+          text: 'text-emerald-800',
+          border: 'border-emerald-200',
+          dot: 'bg-emerald-500',
+          label: 'COMPLETED',
+        };
       case 'CANCELLED':
-        return { bg: '#FEF2F2', color: '#B91C1C', border: '#FECACA', label: 'CANCELLED' };
+        return {
+          bg: 'bg-rose-50',
+          text: 'text-rose-800',
+          border: 'border-rose-200',
+          dot: 'bg-rose-500',
+          label: 'CANCELLED',
+        };
       default:
-        return { bg: '#F1F5F9', color: '#475569', border: '#CBD5E1', label: 'DRAFT' };
+        return {
+          bg: 'bg-slate-50',
+          text: 'text-slate-800',
+          border: 'border-slate-200',
+          dot: 'bg-slate-400',
+          label: 'DRAFT',
+        };
     }
   };
 
-  const statusStyle = getStatusStyle();
+  const statusCfg = getStatusConfig();
+  const capacity = event.capacity || 200;
+  const registrationPct = Math.min(100, Math.round((event.registrations / capacity) * 100));
 
   return (
     <div
       onClick={() => onPress(event.id)}
-      style={styles.card}
+      className="group bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
       role="button"
       tabIndex={0}
     >
-      {/* Cover Image or Fallback Header */}
-      <div style={styles.imageWrap}>
+      {/* Cover Image Header */}
+      <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100 shrink-0">
         {event.coverImageUrl ? (
-          <img src={event.coverImageUrl} alt={event.title} style={styles.coverImg} />
+          <img
+            src={event.coverImageUrl}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         ) : (
-          <div style={styles.fallbackHeader}>
-            <Calendar size={32} color="#06294D" />
-            <span style={styles.fallbackCategory}>{event.category}</span>
+          <div className="w-full h-full bg-[#EDF2F7] flex flex-col items-center justify-center gap-1.5 text-[#011F39]">
+            <Calendar size={32} className="text-[#011F39]/60" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              {event.category}
+            </span>
           </div>
         )}
 
-        <div style={styles.badgeOverlay}>
+        {/* Top Badges Overlay */}
+        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 pointer-events-none">
+          {/* Status Badge */}
           <span
-            style={{
-              ...styles.statusBadge,
-              backgroundColor: statusStyle.bg,
-              color: statusStyle.color,
-              borderColor: statusStyle.border,
-            }}
+            className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs backdrop-blur-xs ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
           >
-            {statusStyle.label}
+            <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+            {statusCfg.label}
           </span>
 
-          {event.targetAudience && event.targetAudience !== 'ALL' && event.targetAudience !== 'Open to All' && (
-            <span
-              style={{
-                ...styles.categoryBadge,
-                backgroundColor: 'rgba(250, 212, 101, 0.95)',
-                color: '#011F39',
-                fontWeight: 700,
-              }}
-            >
-              {event.targetAudience === 'MEMBERS' ? 'Members' : event.targetAudience === 'SEEKERS' ? 'Seekers' : event.targetAudience}
-            </span>
-          )}
+          {/* Right Tags */}
+          <div className="flex items-center gap-1.5">
+            {event.targetAudience &&
+              event.targetAudience !== 'ALL' &&
+              event.targetAudience !== 'Open to All' && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FAD465] text-[#011F39] shadow-2xs">
+                  {event.targetAudience === 'MEMBERS'
+                    ? 'Members'
+                    : event.targetAudience === 'SEEKERS'
+                    ? 'Seekers'
+                    : event.targetAudience}
+                </span>
+              )}
 
-          <span style={styles.categoryBadge}>{event.category}</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#011F39]/90 text-white shadow-2xs">
+              {event.category}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Card Content */}
-      <div style={styles.body}>
-        <h3 style={styles.title}>{event.title}</h3>
-        <p style={styles.desc}>{event.shortInformation || event.description}</p>
+      {/* Card Content Body */}
+      <div className="p-4 sm:p-5 flex flex-col flex-1">
+        <h3 className="font-serif font-bold text-base sm:text-lg text-[#011F39] group-hover:text-[#B45309] transition-colors leading-snug line-clamp-1 mb-1.5">
+          {event.title}
+        </h3>
 
-        {/* Timing & Location Grid */}
-        <div style={styles.metaList}>
-          <div style={styles.metaItem}>
-            <Clock size={14} color="#64748B" />
-            <span>
+        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
+          {event.shortInformation || event.description}
+        </p>
+
+        {/* Event Meta Details */}
+        <div className="space-y-2 text-xs text-slate-600 mb-4 pt-3 border-t border-slate-100">
+          <div className="flex items-center gap-2">
+            <Clock size={13} className="text-slate-400 shrink-0" />
+            <span className="truncate">
               {formatDate(event.startAt)} · {formatTime(event.startAt)}
             </span>
           </div>
 
-          <div style={styles.metaItem}>
+          <div className="flex items-center gap-2">
             {event.eventType === 'ONLINE' ? (
-              <Globe size={14} color="#64748B" />
+              <Globe size={13} className="text-slate-400 shrink-0" />
             ) : (
-              <MapPin size={14} color="#64748B" />
+              <MapPin size={13} className="text-slate-400 shrink-0" />
             )}
-            <span style={styles.locationText}>{event.location}</span>
+            <span className="truncate">{event.location}</span>
           </div>
 
-          <div style={styles.metaItem}>
-            <Users size={14} color="#64748B" />
-            <span>
-              <strong>{event.registrations}</strong> / {event.capacity || 200} delegates registered
-            </span>
+          <div className="flex items-center justify-between text-[11px] pt-1">
+            <div className="flex items-center gap-1.5 text-slate-600">
+              <Users size={13} className="text-slate-400 shrink-0" />
+              <span>
+                <strong className="text-slate-900">{event.registrations}</strong> / {capacity}{' '}
+                registered
+              </span>
+            </div>
+            <span className="text-slate-400 font-semibold">{registrationPct}%</span>
+          </div>
+
+          {/* Registration Progress Bar */}
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div
+              className={`h-full rounded-full ${
+                registrationPct >= 90
+                  ? 'bg-rose-500'
+                  : registrationPct >= 60
+                  ? 'bg-amber-500'
+                  : 'bg-[#011F39]'
+              }`}
+              style={{ width: `${registrationPct}%` }}
+            />
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div style={styles.footer}>
-          <span style={styles.organizerText}>
-            By: <strong>{event.organizer || 'HRSJM Central'}</strong>
+        {/* Card Footer Actions */}
+        <div className="pt-3 border-t border-slate-100 mt-auto flex items-center justify-between gap-2">
+          <span className="text-[11px] text-slate-500 truncate">
+            By: <strong className="text-slate-700">{event.organizer || 'HRSJM Central'}</strong>
           </span>
 
-          <div style={styles.actions}>
+          <div className="flex items-center gap-2 shrink-0">
             {onDelete && (
               <button
                 type="button"
@@ -142,10 +199,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress, onDelete }
                   e.stopPropagation();
                   onDelete(event.id);
                 }}
-                style={styles.deleteBtn}
+                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors"
                 title="Delete event"
               >
-                <Trash2 size={13} color="#94A3B8" />
+                <Trash2 size={14} />
               </button>
             )}
 
@@ -155,164 +212,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress, onDelete }
                 e.stopPropagation();
                 onPress(event.id);
               }}
-              style={styles.viewBtn}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#011F39] hover:bg-[#06294D] text-white shadow-2xs transition-colors"
             >
               <span>View Details</span>
-              <ExternalLink size={12} color="#06294D" />
+              <ExternalLink size={12} />
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '14px',
-    border: '1px solid #E2E8F0',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    cursor: 'pointer',
-    transition: 'transform 0.15s, box-shadow 0.15s',
-  },
-  imageWrap: {
-    position: 'relative',
-    height: '160px',
-    backgroundColor: '#EEF2F6',
-    overflow: 'hidden',
-  },
-  coverImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  fallbackHeader: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#EEF2F6',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-  },
-  fallbackCategory: {
-    fontSize: '11px',
-    fontWeight: 700,
-    color: '#06294D',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  badgeOverlay: {
-    position: 'absolute',
-    top: '12px',
-    left: '12px',
-    right: '12px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusBadge: {
-    fontSize: '10.5px',
-    fontWeight: 800,
-    padding: '3px 8px',
-    borderRadius: '6px',
-    border: '1px solid',
-    letterSpacing: '0.4px',
-  },
-  categoryBadge: {
-    backgroundColor: 'rgba(1, 31, 57, 0.85)',
-    color: '#FAD465',
-    fontSize: '10.5px',
-    fontWeight: 700,
-    padding: '3px 8px',
-    borderRadius: '6px',
-    letterSpacing: '0.4px',
-  },
-  body: {
-    padding: '18px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-  },
-  title: {
-    fontSize: '16px',
-    fontWeight: 700,
-    color: '#011F39',
-    margin: '0 0 6px 0',
-    lineHeight: 1.35,
-  },
-  desc: {
-    fontSize: '12.5px',
-    color: '#64748B',
-    lineHeight: 1.5,
-    margin: '0 0 14px 0',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-  },
-  metaList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    fontSize: '12px',
-    color: '#475569',
-    marginBottom: '16px',
-    paddingTop: '10px',
-    borderTop: '1px solid #F1F5F9',
-  },
-  metaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  locationText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  footer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: '12px',
-    borderTop: '1px solid #F1F5F9',
-    marginTop: 'auto',
-  },
-  organizerText: {
-    fontSize: '11px',
-    color: '#64748B',
-  },
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  deleteBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '5px',
-    padding: '6px 12px',
-    borderRadius: '6px',
-    backgroundColor: '#EEF2F6',
-    border: '1px solid #CBD5E1',
-    color: '#06294D',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
 };

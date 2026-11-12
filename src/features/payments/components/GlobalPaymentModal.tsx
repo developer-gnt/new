@@ -11,6 +11,7 @@ import {
   Download,
   CheckCircle2,
   AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import type { PaymentPayload, PaymentReceiptDetails } from '../types/payment.types';
 import { cashfreeService } from '../services/cashfreeService';
@@ -403,6 +404,12 @@ const PaymentModalContent: React.FC<PaymentModalContentProps> = ({
                     ₹{verifiedReceipt.amount.toLocaleString('en-IN')}
                   </span>
                 </div>
+              </div>
+
+              {/* Automatic Ledger Posting Confirmation */}
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11.5px] text-emerald-800 font-medium">
+                <ShieldCheck size={15} className="text-emerald-600 shrink-0" />
+                <span>Reconciled with General Ledger (Double-Entry A/c Posted automatically).</span>
               </div>
 
               {/* Action Buttons */}

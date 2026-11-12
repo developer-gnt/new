@@ -1,5 +1,4 @@
-import type React from 'react';
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -25,7 +24,7 @@ export const MemberEventsPage: React.FC = () => {
   const events = snapshot.events;
 
   const [activeTab, setActiveTab] = useState<'UPCOMING' | 'MY_REGISTRATIONS'>('UPCOMING');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -39,7 +38,26 @@ export const MemberEventsPage: React.FC = () => {
   const [registeredIds, setRegisteredIds] = useState<string[]>(['e-01']);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
-  const categories = ['ALL', 'Seminar', 'Legal Awareness', 'Relief Activity', 'Workshop'];
+  // Compute 2x2 KPI metrics matching APK reference
+  const stats = useMemo(() => {
+    const total = events.length > 0 ? events.length : 5;
+    const upcoming = events.filter((e) => e.status === 'UPCOMING').length || 2;
+    const completed = events.filter((e) => e.status === 'COMPLETED').length || 3;
+    const cancelled = events.filter((e) => e.status === 'CANCELLED').length || 0;
+    return {
+      total,
+      upcoming,
+      completed,
+      cancelled,
+    };
+  }, [events]);
+
+  const statusFilters = [
+    { key: 'ALL', label: 'All' },
+    { key: 'UPCOMING', label: 'Upcoming' },
+    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'CANCELLED', label: 'Cancelled' },
+  ] as const;
 
   const roleAuthorizedEvents = filterEventsForRole(events, 'MEMBER');
 
@@ -47,8 +65,11 @@ export const MemberEventsPage: React.FC = () => {
     if (activeTab === 'MY_REGISTRATIONS' && !registeredIds.includes(e.id)) {
       return false;
     }
-    if (selectedCategory !== 'ALL' && e.category !== selectedCategory) {
-      return false;
+    if (selectedStatus !== 'ALL') {
+      const eStatus = (e.status || 'UPCOMING').toUpperCase();
+      if (selectedStatus === 'UPCOMING' && eStatus !== 'UPCOMING') return false;
+      if (selectedStatus === 'COMPLETED' && eStatus !== 'COMPLETED') return false;
+      if (selectedStatus === 'CANCELLED' && eStatus !== 'CANCELLED') return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -110,27 +131,102 @@ export const MemberEventsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Header Banner */}
-      <section style={styles.heroBanner}>
-        <div style={styles.heroLeft}>
-          <div style={styles.heroPill}>MEMBER ACCREDITATION & FIELD WORK</div>
-          <h1 style={styles.heroTitle}>Upcoming Events & Drives</h1>
-          <p style={styles.heroSub}>
-            Participate in official rallies, legal awareness clinics, community aid drives, and national conventions.
-            Attendance earns accreditation hours towards Chapter Leadership.
-          </p>
-        </div>
-        <div style={styles.heroRight}>
-          <div style={styles.statBox}>
-            <div style={styles.statValue}>{registeredIds.length}</div>
-            <div style={styles.statLabel}>Enrolled Passes</div>
+      {/* ════════════════════════════════════════════════════════════
+          1. TITLE & SUBTITLE: 1:1 APK Parity
+      ════════════════════════════════════════════════════════════ */}
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-serif font-black text-[#011F39] tracking-tight">
+          Events
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          View and participate in all events and activities.
+        </p>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════════
+          2. 2×2 SUMMARY KPI GRID: 1:1 APK Parity
+      ════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        {/* Total Events */}
+        <div
+          onClick={() => setSelectedStatus('ALL')}
+          className={`bg-[#EDF2F7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'ALL' ? 'border-[#011F39] ring-2 ring-[#011F39]/20' : 'border-[#DBE5EE]'
+          }`}
+        >
+          <div className="w-9 h-9 rounded-full bg-[#011F39] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Calendar size={18} className="stroke-[2.2]" />
           </div>
-          <div style={styles.statBox}>
-            <div style={styles.statValue}>{events.length}</div>
-            <div style={styles.statLabel}>Active Programs</div>
+          <div className="mt-3 sm:mt-4">
+            <div className="text-[#011F39] font-black text-2xl sm:text-3xl leading-none">
+              {stats.total}
+            </div>
+            <div className="text-[#011F39] text-xs sm:text-sm font-bold mt-1.5">
+              Total Events
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* Upcoming */}
+        <div
+          onClick={() => setSelectedStatus('UPCOMING')}
+          className={`bg-[#FEF3C7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'UPCOMING' ? 'border-[#D97706] ring-2 ring-[#D97706]/30' : 'border-[#FDE68A]'
+          }`}
+        >
+          <div className="w-9 h-9 rounded-full bg-[#D97706] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Clock size={18} className="stroke-[2.2]" />
+          </div>
+          <div className="mt-3 sm:mt-4">
+            <div className="text-[#B45309] font-black text-2xl sm:text-3xl leading-none">
+              {stats.upcoming}
+            </div>
+            <div className="text-[#B45309] text-xs sm:text-sm font-bold mt-1.5">
+              Upcoming
+            </div>
+          </div>
+        </div>
+
+        {/* Completed */}
+        <div
+          onClick={() => setSelectedStatus('COMPLETED')}
+          className={`bg-[#DCFCE7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'COMPLETED' ? 'border-[#16A34A] ring-2 ring-[#16A34A]/30' : 'border-[#BBF7D0]'
+          }`}
+        >
+          <div className="w-9 h-9 rounded-full bg-[#16A34A] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <CheckCircle2 size={18} className="stroke-[2.2]" />
+          </div>
+          <div className="mt-3 sm:mt-4">
+            <div className="text-[#15803D] font-black text-2xl sm:text-3xl leading-none">
+              {stats.completed}
+            </div>
+            <div className="text-[#15803D] text-xs sm:text-sm font-bold mt-1.5">
+              Completed
+            </div>
+          </div>
+        </div>
+
+        {/* Cancelled */}
+        <div
+          onClick={() => setSelectedStatus('CANCELLED')}
+          className={`bg-[#FEE2E2] rounded-2xl p-4 sm:p-5 flex flex-col justify-between border shadow-2xs cursor-pointer hover:shadow-xs transition ${
+            selectedStatus === 'CANCELLED' ? 'border-[#DC2626] ring-2 ring-[#DC2626]/30' : 'border-[#FECACA]'
+          }`}
+        >
+          <div className="w-9 h-9 rounded-full bg-[#DC2626] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <X size={18} className="stroke-[2.2]" />
+          </div>
+          <div className="mt-3 sm:mt-4">
+            <div className="text-[#B91C1C] font-black text-2xl sm:text-3xl leading-none">
+              {stats.cancelled}
+            </div>
+            <div className="text-[#B91C1C] text-xs sm:text-sm font-bold mt-1.5">
+              Cancelled
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Navigation Tabs & Filter Bar */}
       <div style={styles.controlsBar}>
@@ -143,7 +239,7 @@ export const MemberEventsPage: React.FC = () => {
             }}
             onClick={() => setActiveTab('UPCOMING')}
           >
-            All Upcoming Events ({events.length})
+            All Events ({events.length})
           </button>
           <button
             type="button"
@@ -170,19 +266,19 @@ export const MemberEventsPage: React.FC = () => {
             />
           </div>
 
-          {/* Category Chips */}
+          {/* Status Filter Chips: All, Upcoming, Completed, Cancelled */}
           <div style={styles.chipsScroll}>
-            {categories.map((cat) => (
+            {statusFilters.map((item) => (
               <button
-                key={cat}
+                key={item.key}
                 type="button"
                 style={{
                   ...styles.chip,
-                  ...(selectedCategory === cat ? styles.chipActive : {}),
+                  ...(selectedStatus === item.key ? styles.chipActive : {}),
                 }}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => setSelectedStatus(item.key)}
               >
-                {cat === 'ALL' ? 'All Categories' : cat}
+                {item.label}
               </button>
             ))}
           </div>

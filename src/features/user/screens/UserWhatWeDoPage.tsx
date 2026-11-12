@@ -375,7 +375,7 @@ export const UserWhatWeDoPage: React.FC = () => {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                   <button
                     type="button"
-                    onClick={() => setActiveModalItem(item)}
+                    onClick={() => navigate(`/what-we-do/${item.id}`)}
                     className="text-xs font-bold text-[#06294D] hover:text-[#083563] group-hover:text-blue-700 flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <span>View Complete Program Details</span>
@@ -579,10 +579,14 @@ export const UserWhatWeDoPage: React.FC = () => {
             <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={() => setActiveModalItem(null)}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                onClick={() => {
+                  const id = activeModalItem.id;
+                  setActiveModalItem(null);
+                  navigate(`/what-we-do/${id}`);
+                }}
+                className="px-4 py-2.5 rounded-xl border border-[#06294D]/30 text-[#06294D] hover:bg-slate-100 text-xs font-bold cursor-pointer"
               >
-                Close
+                View Full Page
               </button>
 
               <div className="flex items-center gap-2">

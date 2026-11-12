@@ -251,7 +251,7 @@ export const MembersListPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+    <div style={{ width: '100%', maxWidth: '1440px', minWidth: 0, margin: '0 auto' }}>
       {/* Page Header */}
       <div
         style={{
@@ -377,6 +377,9 @@ export const MembersListPage: React.FC = () => {
       {/* Main Content Card Container */}
       <div
         style={{
+          width: '100%',
+          minWidth: 0,
+          boxSizing: 'border-box',
           backgroundColor: '#FFFFFF',
           borderRadius: '14px',
           border: '1px solid #E5E7EB',
@@ -415,10 +418,18 @@ export const MembersListPage: React.FC = () => {
         />
 
         {/* Data Table */}
-        <div style={{ overflowX: 'auto', margin: '0 -20px' }}>
+        <div
+          style={{
+            width: 'calc(100% + 40px)',
+            margin: '0 -20px',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           <table
             style={{
               width: '100%',
+              minWidth: '960px',
               borderCollapse: 'collapse',
               textAlign: 'left',
               fontSize: '13.5px',
@@ -634,4 +645,5 @@ const thStyle: React.CSSProperties = {
   color: '#4B5563',
   textTransform: 'uppercase',
   letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
 };

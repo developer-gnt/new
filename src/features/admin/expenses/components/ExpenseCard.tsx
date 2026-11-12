@@ -1,29 +1,17 @@
 import type React from 'react';
-import { FileText, ChevronRight } from 'lucide-react';
+import { FileText, ChevronRight, Building, CreditCard, Smartphone, Banknote } from 'lucide-react';
 import type { ExpenseEntryItem } from '../types/expenses.types';
 import { formatINR } from '../types/expenses.types';
 
 export const ExpenseListHeader: React.FC = () => {
   return (
-    <div style={styles.headerRow}>
-      <div style={{ flex: '1.8 1 180px' }}>
-        <span style={styles.headerText}>Voucher & Date</span>
-      </div>
-      <div style={{ flex: '2.5 1 250px' }}>
-        <span style={styles.headerText}>Expense Account & Payee</span>
-      </div>
-      <div style={{ flex: '1.2 1 120px' }}>
-        <span style={styles.headerText}>Payment Source</span>
-      </div>
-      <div style={{ flex: '1 1 100px' }}>
-        <span style={styles.headerText}>Status</span>
-      </div>
-      <div style={{ flex: '1.4 1 140px', textAlign: 'right' }}>
-        <span style={styles.headerText}>Amount</span>
-      </div>
-      <div style={{ flex: '0.4 1 40px', textAlign: 'right' }}>
-        <span style={styles.headerText} />
-      </div>
+    <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3.5 bg-[#FAF7F0] border-b border-[#DCE4EC] text-[11px] font-bold text-[#06294D] uppercase tracking-[0.12em] items-center">
+      <div className="col-span-2">Voucher &amp; Date</div>
+      <div className="col-span-2">Expense Account &amp; Category</div>
+      <div className="col-span-3">Payee &amp; Reference</div>
+      <div className="col-span-2">Source</div>
+      <div className="col-span-1 text-center">Status</div>
+      <div className="col-span-2 text-right">Amount</div>
     </div>
   );
 };
@@ -33,8 +21,11 @@ export const ExpenseCard: React.FC<{
   onPress: (voucher: ExpenseEntryItem) => void;
 }> = ({ voucher, onPress }) => {
   const isCancelled = voucher.status === 'CANCELLED';
-  const accountName = voucher.expense_account?.account_name || 'Expense';
-  const paidFrom = voucher.paid_from_account?.account_name || voucher.payment_method || 'Bank Transfer';
+  const isPosted = voucher.status === 'POSTED';
+  const accountName = voucher.expense_account?.account_name || 'Expense Account';
+  const accountCode = voucher.expense_account?.account_code || '5000';
+  const paidFrom =
+    voucher.paid_from_account?.account_name || voucher.payment_method || 'Bank Transfer';
 
   const formatDate = (isoStr: string): string => {
     try {
@@ -50,233 +41,128 @@ export const ExpenseCard: React.FC<{
     }
   };
 
+  const getSourceIcon = () => {
+    const s = String(paidFrom).toUpperCase();
+    if (s.includes('UPI') || s.includes('ONLINE') || s.includes('PHONEPE') || s.includes('GPAY')) {
+      return <Smartphone size={12} className="text-[#07294E] shrink-0" />;
+    }
+    if (s.includes('CARD') || s.includes('DEBIT') || s.includes('CREDIT')) {
+      return <CreditCard size={12} className="text-[#07294E] shrink-0" />;
+    }
+    if (s.includes('CASH')) {
+      return <Banknote size={12} className="text-[#07294E] shrink-0" />;
+    }
+    return <Building size={12} className="text-[#07294E] shrink-0" />;
+  };
+
   return (
     <div
-      style={styles.cardRow}
       onClick={() => onPress(voucher)}
+      className={`group grid grid-cols-1 lg:grid-cols-12 gap-3 px-5 py-3.5 border-b border-[#EDF2F7] last:border-b-0 hover:bg-[#FAF7F0]/60 transition-all cursor-pointer items-center text-xs ${
+        isCancelled ? 'bg-slate-50/70' : 'bg-white'
+      }`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter') onPress(voucher);
       }}
     >
-      {/* Col 1: Voucher Number, Icon & Date */}
-      <div style={{ ...styles.col, flex: '1.8 1 180px' }}>
-        <div style={styles.iconCircle}>
-          <FileText size={16} color="#DC2626" />
+      {/* Col 1: Voucher & Date (col-span-2) */}
+      <div className="lg:col-span-2 flex items-center gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-xl bg-[#EDF2F7] border border-[#DBE5EE] text-[#07294E] flex items-center justify-center shrink-0 group-hover:bg-[#FAF7F0] group-hover:border-[#DCE4EC] transition-colors">
+          <FileText size={16} />
         </div>
-        <div style={styles.voucherCol}>
-          <span style={styles.voucherNumber}>{voucher.voucher_number}</span>
-          <span style={styles.dateText}>{formatDate(voucher.expense_date)}</span>
-        </div>
-      </div>
-
-      {/* Col 2: Expense Account & Payee */}
-      <div style={{ ...styles.col, flex: '2.5 1 250px' }}>
-        <div style={styles.detailsCol}>
-          <span style={styles.accountName}>{accountName}</span>
-          <span style={styles.payeeText}>
-            Paid to <strong style={{ color: '#0F172A' }}>{voucher.paid_to}</strong>
-          </span>
-          {voucher.reference_number && (
-            <span style={styles.refText}>Ref: {voucher.reference_number}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Col 3: Payment Method / Account Source */}
-      <div style={{ ...styles.col, flex: '1.2 1 120px' }}>
-        <div style={styles.methodPill}>
-          <span style={styles.methodDot} />
-          <span style={styles.methodText}>{paidFrom}</span>
-        </div>
-      </div>
-
-      {/* Col 4: Status */}
-      <div style={{ ...styles.col, flex: '1 1 100px' }}>
-        <div
-          style={{
-            ...styles.statusBadge,
-            backgroundColor: isCancelled ? '#FEE2E2' : '#E8F8F0',
-            color: isCancelled ? '#DC2626' : '#16A34A',
-            borderColor: isCancelled ? '#FECACA' : '#A7F3D0',
-          }}
-        >
+        <div className="flex flex-col min-w-0">
           <span
-            style={{
-              ...styles.statusDot,
-              backgroundColor: isCancelled ? '#DC2626' : '#16A34A',
-            }}
-          />
-          <span>{voucher.status}</span>
+            className={`font-mono text-xs font-bold transition-colors truncate ${
+              isCancelled
+                ? 'text-slate-400 line-through'
+                : 'text-[#07294E] group-hover:text-[#C9971A]'
+            }`}
+          >
+            {voucher.voucher_number}
+          </span>
+          <span className="text-[11px] text-[#718096] font-medium">
+            {formatDate(voucher.expense_date)}
+          </span>
         </div>
       </div>
 
-      {/* Col 5: Amount */}
-      <div
-        style={{
-          ...styles.col,
-          flex: '1.4 1 140px',
-          justifyContent: 'flex-end',
-          textAlign: 'right',
-        }}
-      >
-        <span
-          style={{
-            ...styles.amountText,
-            color: isCancelled ? '#94A3B8' : '#0B2F52',
-            textDecoration: isCancelled ? 'line-through' : 'none',
-          }}
-        >
-          {formatINR(voucher.amount)}
+      {/* Col 2: Expense Account & Category (col-span-2) */}
+      <div className="lg:col-span-2 flex flex-col min-w-0">
+        <span className="font-semibold text-xs text-[#07294E] truncate" title={accountName}>
+          {accountName}
+        </span>
+        <span className="text-[11px] text-[#718096] truncate">
+          Code: {accountCode}
         </span>
       </div>
 
-      {/* Col 6: Arrow */}
-      <div
-        style={{
-          ...styles.col,
-          flex: '0.4 1 40px',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <ChevronRight size={16} color="#94A3B8" />
+      {/* Col 3: Payee & Reference (col-span-3) */}
+      <div className="lg:col-span-3 flex flex-col min-w-0">
+        <span className="text-xs text-[#34516D] truncate" title={voucher.paid_to}>
+          Paid to <strong className="text-[#07294E] font-semibold">{voucher.paid_to}</strong>
+        </span>
+        {voucher.reference_number ? (
+          <span className="text-[11px] text-[#718096] font-mono truncate" title={voucher.reference_number}>
+            Ref: {voucher.reference_number}
+          </span>
+        ) : voucher.description ? (
+          <span className="text-[11px] text-[#718096] truncate" title={voucher.description}>
+            {voucher.description}
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-300">—</span>
+        )}
+      </div>
+
+      {/* Col 4: Payment Source (col-span-2) - Plenty of room, no premature cut-off */}
+      <div className="lg:col-span-2 min-w-0">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#EDF2F7] border border-[#DBE5EE] text-[#07294E] max-w-full">
+          {getSourceIcon()}
+          <span className="truncate" title={paidFrom}>{paidFrom}</span>
+        </span>
+      </div>
+
+      {/* Col 5: Status (col-span-1 text-center) */}
+      <div className="lg:col-span-1 flex items-center justify-start lg:justify-center">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${
+            isCancelled
+              ? 'bg-rose-50 text-rose-700 border-rose-200 line-through'
+              : isPosted
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-[#FAF7F0] text-[#07294E] border-[#DCE4EC]'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              isCancelled
+                ? 'bg-rose-500'
+                : isPosted
+                ? 'bg-emerald-600'
+                : 'bg-amber-500'
+            }`}
+          />
+          <span>{voucher.status}</span>
+        </span>
+      </div>
+
+      {/* Col 6: Amount & Chevron (col-span-2 text-right) - Generous space, clean formatting */}
+      <div className="lg:col-span-2 flex items-center justify-between lg:justify-end gap-2.5 whitespace-nowrap min-w-0">
+        <span
+          className={`font-mono font-bold text-sm sm:text-base ${
+            isCancelled
+              ? 'text-slate-400 line-through'
+              : 'text-[#07294E]'
+          }`}
+        >
+          {formatINR(voucher.amount)}
+        </span>
+        <div className="w-7 h-7 rounded-lg bg-[#FAF7F0] group-hover:bg-[#07294E] text-[#718096] group-hover:text-white border border-[#DCE4EC] group-hover:border-[#07294E] flex items-center justify-center transition-colors shrink-0">
+          <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+        </div>
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 18px',
-    backgroundColor: '#F8FAFC',
-    borderRadius: '8px 8px 0 0',
-    border: '1px solid #E2E8F0',
-    borderBottom: 'none',
-  },
-  headerText: {
-    fontSize: '12px',
-    fontWeight: 700,
-    color: '#475569',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-    fontFamily: 'Inter, sans-serif',
-  },
-  cardRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '14px 18px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderTop: 'none',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease',
-  },
-  col: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    minWidth: 0,
-  },
-  iconCircle: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '8px',
-    backgroundColor: '#FEF2F2',
-    border: '1px solid #FECACA',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  voucherCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    minWidth: 0,
-  },
-  voucherNumber: {
-    fontSize: '14px',
-    fontWeight: 700,
-    color: '#0B2F52',
-    fontFamily: 'Inter, sans-serif',
-  },
-  dateText: {
-    fontSize: '12px',
-    color: '#64748B',
-  },
-  detailsCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  accountName: {
-    fontSize: '13.5px',
-    fontWeight: 600,
-    color: '#0F172A',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  payeeText: {
-    fontSize: '12px',
-    color: '#64748B',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  refText: {
-    fontSize: '11px',
-    color: '#94A3B8',
-  },
-  methodPill: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    backgroundColor: '#F1F5F9',
-    maxWidth: '180px',
-  },
-  methodDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-    backgroundColor: '#0284C7',
-    flexShrink: 0,
-  },
-  methodText: {
-    fontSize: '11.5px',
-    color: '#334155',
-    fontWeight: 500,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  statusBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: 600,
-    border: '1px solid',
-  },
-  statusDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-  },
-  amountText: {
-    fontSize: '15px',
-    fontWeight: 700,
-    fontFamily: 'Inter, sans-serif',
-  },
 };
