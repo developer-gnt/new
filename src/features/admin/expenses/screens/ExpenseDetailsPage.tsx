@@ -1,18 +1,16 @@
 import type React from 'react';
-import { useState, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   FileText,
   Printer,
   Download,
-  Ban,
   AlertCircle,
   Paperclip,
   ExternalLink,
 } from 'lucide-react';
 import { expensesStore } from '../store/expensesStore';
-import { ExpenseCancelModal } from '../components/ExpenseCancelModal';
 import { formatINR } from '../types/expenses.types';
 import {
   printOfficialExpenseVoucher,
@@ -27,9 +25,6 @@ export const ExpenseDetailsPage: React.FC = () => {
 
   const snapshot = useSyncExternalStore(expensesStore.subscribe, expensesStore.getSnapshot);
   const voucher = snapshot.vouchers.find((v) => v.id === id || v.voucher_number === id);
-
-  const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
 
   if (!voucher) {
     return (
@@ -82,16 +77,6 @@ export const ExpenseDetailsPage: React.FC = () => {
     voucher.reference_number?.toUpperCase().startsWith('WEB-APP') ||
     voucher.description?.includes('[Source: Web App]')
   );
-
-  const handleConfirmCancel = async (reason: string) => {
-    setIsCancelling(true);
-    try {
-      await expensesStore.cancel(voucher.id, reason);
-      setCancelModalOpen(false);
-    } finally {
-      setIsCancelling(false);
-    }
-  };
 
   const handlePrint = () => {
     printOfficialExpenseVoucher(voucher);
@@ -151,6 +136,7 @@ export const ExpenseDetailsPage: React.FC = () => {
             type="button"
             onClick={handleDownloadPdf}
             style={styles.downloadBtn}
+            title="Download high-resolution official PDF document"
           >
             <Download size={15} />
             <span>Download PDF</span>
@@ -160,25 +146,15 @@ export const ExpenseDetailsPage: React.FC = () => {
             type="button"
             onClick={handlePrint}
             style={styles.printBtn}
+            title="Open official single-page print preview"
           >
             <Printer size={15} />
             <span>Print Voucher</span>
           </button>
-
-          {!isCancelled && (
-            <button
-              type="button"
-              onClick={() => setCancelModalOpen(true)}
-              style={styles.cancelVoucherBtn}
-            >
-              <Ban size={15} />
-              <span>Void / Cancel Voucher</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Cancellation Notice Banner */}
+      {/* Cancellation Notice Banner (only shown if record is already cancelled in database) */}
       {isCancelled && (
         <div style={styles.cancellationBanner} className="no-print">
           <AlertCircle size={20} color="#DC2626" />
@@ -278,24 +254,24 @@ export const ExpenseDetailsPage: React.FC = () => {
         <table style={styles.particularsTable}>
           <thead>
             <tr>
-              <th style={{ width: '28%' }}>Paid To (Recipient / Payee)</th>
-              <th style={{ width: '32%' }}>Expense Head (Classification)</th>
-              <th style={{ width: '40%' }}>Detailed Purpose &amp; Narration</th>
+              <th style={styles.particularsThPayee}>Paid To (Recipient / Payee)</th>
+              <th style={styles.particularsThHead}>Expense Head (Classification)</th>
+              <th style={styles.particularsThPurpose}>Detailed Purpose &amp; Narration</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>
+              <td style={styles.particularsTd}>
                 <div style={{ fontSize: '13px', fontWeight: 800, color: '#011F39' }}>{voucher.paid_to}</div>
                 <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>Authorized Payee / Beneficiary</div>
               </td>
-              <td>
+              <td style={styles.particularsTd}>
                 <div style={{ fontWeight: 700, color: '#011F39' }}>{voucher.expense_account?.account_name || 'Expense Head'}</div>
                 <div style={{ fontSize: '10.5px', color: '#64748B', fontFamily: 'monospace', marginTop: '2px' }}>
                   A/c #{voucher.expense_account?.account_code || '5002'}
                 </div>
               </td>
-              <td>
+              <td style={styles.particularsTd}>
                 <div style={{ color: '#334155', lineHeight: '1.45' }}>
                   {voucher.description || 'Disbursement for approved organizational operations and activities.'}
                 </div>
@@ -348,10 +324,10 @@ export const ExpenseDetailsPage: React.FC = () => {
           <table style={styles.journalSubTable}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left' }}>Account Code &amp; Name</th>
-                <th style={{ textAlign: 'left' }}>Accounting Entry Type</th>
-                <th style={{ textAlign: 'right' }}>Debit (Dr.)</th>
-                <th style={{ textAlign: 'right' }}>Credit (Cr.)</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', color: '#475569', fontSize: '10.5px' }}>Account Code &amp; Name</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', color: '#475569', fontSize: '10.5px' }}>Accounting Entry Type</th>
+                <th style={{ textAlign: 'right', padding: '6px 8px', color: '#475569', fontSize: '10.5px' }}>Debit (Dr.)</th>
+                <th style={{ textAlign: 'right', padding: '6px 8px', color: '#475569', fontSize: '10.5px' }}>Credit (Cr.)</th>
               </tr>
             </thead>
             <tbody>
@@ -360,8 +336,8 @@ export const ExpenseDetailsPage: React.FC = () => {
                   const debit = Number(l.debit_amount ?? l.debit ?? 0);
                   const credit = Number(l.credit_amount ?? l.credit ?? 0);
                   return (
-                    <tr key={l.id}>
-                      <td style={{ fontWeight: 600, color: '#0F172A' }}>
+                    <tr key={l.id} style={{ borderTop: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '6px 8px', fontWeight: 600, color: '#0F172A' }}>
                         {l.account?.account_name}
                         {l.account?.account_code && (
                           <span style={{ color: '#64748B', fontSize: '10.5px', marginLeft: '6px' }}>
@@ -369,21 +345,21 @@ export const ExpenseDetailsPage: React.FC = () => {
                           </span>
                         )}
                       </td>
-                      <td style={{ color: '#64748B' }}>
+                      <td style={{ padding: '6px 8px', color: '#64748B' }}>
                         {debit > 0 ? 'Dr. Expense Allocation' : 'Cr. Disbursing Asset'}
                       </td>
-                      <td style={{ textAlign: 'right', fontWeight: 600, color: debit > 0 ? '#15803D' : '#94A3B8' }}>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: debit > 0 ? '#15803D' : '#94A3B8' }}>
                         {debit > 0 ? formatINR(debit) : '—'}
                       </td>
-                      <td style={{ textAlign: 'right', fontWeight: 600, color: credit > 0 ? '#C2410C' : '#94A3B8' }}>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: credit > 0 ? '#C2410C' : '#94A3B8' }}>
                         {credit > 0 ? formatINR(credit) : '—'}
                       </td>
                     </tr>
                   );
                 })
               ) : (
-                <tr>
-                  <td style={{ fontWeight: 600, color: '#0F172A' }}>
+                <tr style={{ borderTop: '1px solid #F1F5F9' }}>
+                  <td style={{ padding: '6px 8px', fontWeight: 600, color: '#0F172A' }}>
                     {voucher.expense_account?.account_name || 'Expense Head'}
                     {voucher.expense_account?.account_code && (
                       <span style={{ color: '#64748B', fontSize: '10.5px', marginLeft: '6px' }}>
@@ -391,11 +367,11 @@ export const ExpenseDetailsPage: React.FC = () => {
                       </span>
                     )}
                   </td>
-                  <td style={{ color: '#64748B' }}>Dr. Expense Allocation</td>
-                  <td style={{ textAlign: 'right', fontWeight: 600, color: '#15803D' }}>
+                  <td style={{ padding: '6px 8px', color: '#64748B' }}>Dr. Expense Allocation</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: '#15803D' }}>
                     {formatINR(voucher.amount)}
                   </td>
-                  <td style={{ textAlign: 'right', color: '#94A3B8' }}>—</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'right', color: '#94A3B8' }}>—</td>
                 </tr>
               )}
             </tbody>
@@ -443,45 +419,39 @@ export const ExpenseDetailsPage: React.FC = () => {
           Certified for statutory society audit under the Societies Registration Act XXI of 1860. Retain for official accounting records.
         </div>
       </div>
-
-      {/* Cancel Modal */}
-      <ExpenseCancelModal
-        isOpen={cancelModalOpen}
-        onClose={() => setCancelModalOpen(false)}
-        onConfirm={handleConfirmCancel}
-        voucher={voucher}
-        isCancelling={isCancelling}
-      />
     </div>
   );
 };
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    padding: '24px 32px',
-    maxWidth: '920px',
+    width: '100%',
+    maxWidth: '1100px',
     margin: '0 auto',
+    padding: '0 0 32px 0',
   },
   topBar: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: '16px',
-    marginBottom: '20px',
+    marginBottom: '16px',
     flexWrap: 'wrap',
   },
   backBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '8px 14px',
-    borderRadius: '8px',
+    padding: '8px 16px',
+    borderRadius: '10px',
     border: '1px solid #CBD5E1',
     backgroundColor: '#FFFFFF',
     color: '#06294D',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+    transition: 'all 0.15s ease',
   },
   topActions: {
     display: 'flex',
@@ -492,40 +462,31 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    border: '1px solid #0284C7',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    border: '1px solid #BAE6FD',
     backgroundColor: '#F0F9FF',
-    color: '#0369A1',
+    color: '#0284C7',
     fontSize: '13px',
-    fontWeight: 600,
+    fontWeight: 700,
     cursor: 'pointer',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+    transition: 'all 0.15s ease',
   },
   printBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 16px',
-    borderRadius: '8px',
+    padding: '8px 18px',
+    borderRadius: '10px',
     border: '1px solid #011F39',
     backgroundColor: '#011F39',
     color: '#FAD465',
     fontSize: '13px',
     fontWeight: 700,
     cursor: 'pointer',
-  },
-  cancelVoucherBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: '1px solid #FECACA',
-    backgroundColor: '#FEF2F2',
-    color: '#DC2626',
-    fontSize: '13px',
-    fontWeight: 600,
-    cursor: 'pointer',
+    boxShadow: '0 2px 4px rgba(1, 31, 57, 0.15)',
+    transition: 'all 0.15s ease',
   },
   cancellationBanner: {
     display: 'flex',
@@ -535,28 +496,29 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '8px',
     backgroundColor: '#FEF2F2',
     border: '1px solid #F87171',
-    marginBottom: '20px',
+    marginBottom: '16px',
   },
 
   /* Receipt Slip Document Card */
   receiptSlip: {
     position: 'relative',
     backgroundColor: '#FFFFFF',
-    borderRadius: '10px',
+    borderRadius: '12px',
     border: '2px solid #011F39',
-    padding: '24px 28px',
+    padding: '28px 36px',
     boxShadow: '0 4px 20px rgba(1, 31, 57, 0.08)',
     overflow: 'hidden',
+    width: '100%',
   },
   watermark: {
     position: 'absolute',
     top: '48%',
     left: '50%',
     transform: 'translate(-50%, -50%) rotate(-24deg)',
-    fontSize: '56px',
+    fontSize: '68px',
     fontWeight: 900,
     color: 'rgba(1, 31, 57, 0.03)',
-    letterSpacing: '5px',
+    letterSpacing: '6px',
     textTransform: 'uppercase',
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
@@ -567,14 +529,14 @@ const styles: Record<string, React.CSSProperties> = {
   letterhead: {
     display: 'flex',
     alignItems: 'center',
-    gap: '18px',
+    gap: '20px',
     borderBottom: '2px solid #011F39',
-    paddingBottom: '12px',
-    marginBottom: '14px',
+    paddingBottom: '14px',
+    marginBottom: '16px',
   },
   logoWrap: {
-    width: '74px',
-    height: '74px',
+    width: '78px',
+    height: '78px',
     flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
@@ -591,40 +553,40 @@ const styles: Record<string, React.CSSProperties> = {
   },
   orgTitle: {
     fontFamily: 'Playfair Display, Georgia, serif',
-    fontSize: '19px',
+    fontSize: '21px',
     fontWeight: 900,
     color: '#011F39',
-    letterSpacing: '0.4px',
+    letterSpacing: '0.5px',
     margin: 0,
     lineHeight: 1.2,
   },
   orgHindi: {
-    fontSize: '12.5px',
+    fontSize: '13px',
     fontWeight: 700,
     color: '#926A04',
-    marginTop: '2px',
+    marginTop: '3px',
   },
   orgTagline: {
-    fontSize: '9.5px',
+    fontSize: '10px',
     color: '#475569',
     fontStyle: 'italic',
     marginTop: '2px',
   },
   orgRegLine: {
-    fontSize: '9px',
+    fontSize: '9.5px',
     color: '#334155',
     fontWeight: 600,
-    marginTop: '4px',
-    lineHeight: 1.35,
+    marginTop: '5px',
+    lineHeight: 1.4,
   },
 
   /* Voucher Ribbon */
   voucherRibbon: {
     background: 'linear-gradient(90deg, #011F39 0%, #06294D 100%)',
     color: '#FAD465',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    marginBottom: '14px',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    marginBottom: '16px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -632,7 +594,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   ribbonTitle: {
     fontFamily: 'Playfair Display, Georgia, serif',
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: 800,
     letterSpacing: '0.6px',
     textTransform: 'uppercase',
@@ -649,8 +611,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   webAppTag: {
-    fontSize: '9px',
-    padding: '2px 7px',
+    fontSize: '9.5px',
+    padding: '2px 8px',
     borderRadius: '4px',
     backgroundColor: 'rgba(250, 212, 101, 0.25)',
     border: '1px solid rgba(250, 212, 101, 0.5)',
@@ -658,7 +620,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   ribbonSubtitle: {
-    fontSize: '9.5px',
+    fontSize: '10px',
     color: '#FDF4DC',
     marginTop: '2px',
   },
@@ -666,14 +628,14 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'right',
   },
   ribbonNumLabel: {
-    fontSize: '8.5px',
+    fontSize: '9px',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     color: '#FDF4DC',
   },
   ribbonNumVal: {
     fontFamily: 'monospace',
-    fontSize: '14.5px',
+    fontSize: '15px',
     fontWeight: 800,
     color: '#FFFFFF',
   },
@@ -682,24 +644,24 @@ const styles: Record<string, React.CSSProperties> = {
   metaTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    marginBottom: '14px',
+    marginBottom: '16px',
     backgroundColor: '#F8FAFC',
     border: '1px solid #CBD5E1',
-    borderRadius: '6px',
-    fontSize: '11px',
+    borderRadius: '8px',
+    fontSize: '11.5px',
   },
   metaLabel: {
-    padding: '6px 10px',
+    padding: '8px 12px',
     color: '#64748B',
     fontWeight: 600,
-    fontSize: '9.5px',
+    fontSize: '10px',
     textTransform: 'uppercase',
     letterSpacing: '0.4px',
     width: '25%',
     border: '1px solid #E2E8F0',
   },
   metaVal: {
-    padding: '6px 10px',
+    padding: '8px 12px',
     fontWeight: 700,
     color: '#0F172A',
     width: '25%',
@@ -708,118 +670,158 @@ const styles: Record<string, React.CSSProperties> = {
 
   /* Section Title */
   sectionTitle: {
-    fontSize: '10.5px',
+    fontSize: '11px',
     fontWeight: 800,
     textTransform: 'uppercase',
     letterSpacing: '0.6px',
     color: '#011F39',
     borderBottom: '1.5px solid #011F39',
-    paddingBottom: '3px',
-    margin: '12px 0 8px 0',
+    paddingBottom: '4px',
+    margin: '14px 0 10px 0',
   },
 
   /* Particulars Table */
   particularsTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    marginBottom: '12px',
-    fontSize: '11px',
+    marginBottom: '14px',
+    fontSize: '11.5px',
+    border: '1px solid #CBD5E1',
+    borderRadius: '6px',
+  },
+  particularsThPayee: {
+    width: '28%',
+    backgroundColor: '#F1F5F9',
+    color: '#334155',
+    fontWeight: 700,
+    padding: '7px 12px',
+    border: '1px solid #CBD5E1',
+    textAlign: 'left',
+    fontSize: '10px',
+    textTransform: 'uppercase',
+  },
+  particularsThHead: {
+    width: '32%',
+    backgroundColor: '#F1F5F9',
+    color: '#334155',
+    fontWeight: 700,
+    padding: '7px 12px',
+    border: '1px solid #CBD5E1',
+    textAlign: 'left',
+    fontSize: '10px',
+    textTransform: 'uppercase',
+  },
+  particularsThPurpose: {
+    width: '40%',
+    backgroundColor: '#F1F5F9',
+    color: '#334155',
+    fontWeight: 700,
+    padding: '7px 12px',
+    border: '1px solid #CBD5E1',
+    textAlign: 'left',
+    fontSize: '10px',
+    textTransform: 'uppercase',
+  },
+  particularsTd: {
+    padding: '8px 12px',
+    border: '1px solid #E2E8F0',
+    verticalAlign: 'top',
   },
 
   /* Amount Box */
   amountCard: {
     backgroundColor: '#F8FAFC',
     border: '1.5px solid #011F39',
-    borderRadius: '6px',
-    padding: '10px 14px',
-    margin: '12px 0',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    margin: '14px 0',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '16px',
+    gap: '20px',
   },
   amountWordsBox: {
     flex: 1,
   },
   amountWordsTitle: {
-    fontSize: '9px',
+    fontSize: '9.5px',
     fontWeight: 700,
     textTransform: 'uppercase',
     color: '#475569',
     letterSpacing: '0.4px',
   },
   amountWordsVal: {
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 800,
     color: '#011F39',
-    marginTop: '2px',
+    marginTop: '3px',
   },
   amountDigitsBox: {
     textAlign: 'right',
-    paddingLeft: '16px',
+    paddingLeft: '20px',
     borderLeft: '1.5px solid #CBD5E1',
-    minWidth: '160px',
+    minWidth: '180px',
   },
   amountDigitsTitle: {
-    fontSize: '9px',
+    fontSize: '9.5px',
     fontWeight: 700,
     textTransform: 'uppercase',
     color: '#475569',
   },
   amountDigitsVal: {
-    fontSize: '22px',
+    fontSize: '24px',
     fontWeight: 900,
     fontFamily: 'Playfair Display, Georgia, serif',
     lineHeight: 1.1,
-    marginTop: '2px',
+    marginTop: '3px',
   },
 
   /* Double-Entry Journal Table */
   journalBox: {
     backgroundColor: '#FAFAFA',
     border: '1px solid #E2E8F0',
-    borderRadius: '6px',
-    padding: '10px 12px',
-    marginBottom: '12px',
+    borderRadius: '8px',
+    padding: '12px 14px',
+    marginBottom: '14px',
   },
   journalBoxHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    fontSize: '10.5px',
+    fontSize: '11px',
     borderBottom: '1px solid #E2E8F0',
-    paddingBottom: '6px',
-    marginBottom: '6px',
+    paddingBottom: '8px',
+    marginBottom: '8px',
   },
   journalSubTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    fontSize: '11px',
+    fontSize: '11.5px',
   },
   ledgerBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
-    padding: '3px 8px',
-    borderRadius: '4px',
+    padding: '4px 10px',
+    borderRadius: '6px',
     border: '1px solid #CBD5E1',
     backgroundColor: '#FFFFFF',
     color: '#0284C7',
-    fontSize: '10.5px',
+    fontSize: '11px',
     fontWeight: 600,
     cursor: 'pointer',
   },
 
   /* Attachment Box */
   attachmentBox: {
-    padding: '8px 12px',
+    padding: '10px 14px',
     backgroundColor: '#F0F9FF',
-    borderRadius: '6px',
+    borderRadius: '8px',
     border: '1px solid #BAE6FD',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    marginBottom: '12px',
+    marginBottom: '14px',
   },
 
   /* Signatures */
@@ -827,8 +829,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: '20px',
-    paddingTop: '12px',
+    marginTop: '24px',
+    paddingTop: '16px',
     borderTop: '1px dashed #CBD5E1',
   },
   signCol: {
@@ -836,34 +838,34 @@ const styles: Record<string, React.CSSProperties> = {
     width: '28%',
   },
   signLine: {
-    height: '36px',
+    height: '38px',
     borderBottom: '1px solid #011F39',
-    marginBottom: '4px',
+    marginBottom: '6px',
   },
   signTitle: {
-    fontSize: '10px',
+    fontSize: '10.5px',
     fontWeight: 800,
     color: '#011F39',
     textTransform: 'uppercase',
   },
   signRole: {
-    fontSize: '8.5px',
+    fontSize: '9px',
     color: '#64748B',
   },
   sealGraphic: {
-    width: '52px',
-    height: '52px',
+    width: '56px',
+    height: '56px',
     borderRadius: '50%',
     border: '1.5px dashed #06294D',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
-    fontSize: '6.5px',
+    fontSize: '7px',
     fontWeight: 800,
     color: '#06294D',
     textTransform: 'uppercase',
-    padding: '2px',
+    padding: '3px',
     lineHeight: 1.1,
     backgroundColor: '#F8FAFC',
     marginBottom: '4px',
@@ -872,11 +874,11 @@ const styles: Record<string, React.CSSProperties> = {
   /* Footer Note */
   footerNote: {
     textAlign: 'center',
-    fontSize: '8.5px',
+    fontSize: '9px',
     color: '#64748B',
-    marginTop: '16px',
+    marginTop: '18px',
     borderTop: '1px solid #E2E8F0',
-    paddingTop: '8px',
+    paddingTop: '10px',
     lineHeight: 1.4,
   },
 
