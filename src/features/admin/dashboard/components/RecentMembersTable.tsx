@@ -1,60 +1,21 @@
-import React, { useEffect, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import { UsersRound, ArrowRight } from 'lucide-react';
 import { membersStore } from '@/features/admin/members/store/membersStore';
-import type { Member } from '@/features/admin/members/types/members.types';
-import { DEMO_RECENT_MEMBERS } from '../data/dashboardDemoData';
-
-function formatDisplayDate(dateStr?: string): string {
-  if (!dateStr) return '—';
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 export const RecentMembersTable: React.FC = () => {
-  useSyncExternalStore(membersStore.subscribe, membersStore.getSnapshot);
+  const storeSnapshot = useSyncExternalStore(
+    membersStore.subscribe,
+    membersStore.getSnapshot
+  );
+  const members = storeSnapshot.members.slice(0, 5);
 
   useEffect(() => {
-    membersStore.fetchMembers();
-  }, []);
-
-  const storeMembers = membersStore.getAllMembers();
-  // Filter exclusively for approved / enrolled members (status ACTIVE or EXPIRING_SOON)
-  const approvedMembers = storeMembers.filter(
-    (m) => (m.status || '').toUpperCase() === 'ACTIVE' || (m.status || '').toUpperCase() === 'EXPIRING_SOON'
-  );
-  const hasLiveMembers = approvedMembers.length > 0;
-
-  // Use live approved members if available, sorted newest first; fallback to demo data
-  const displayMembers: (Member | (typeof DEMO_RECENT_MEMBERS)[number])[] = hasLiveMembers
-    ? [...approvedMembers]
-        .sort((a, b) => new Date(b.joinedDate || 0).getTime() - new Date(a.joinedDate || 0).getTime())
-        .slice(0, 5)
-    : DEMO_RECENT_MEMBERS;
-
-  const getMemberStatusBadge = (status?: string) => {
-    const s = (status || '').toUpperCase();
-    switch (s) {
-      case 'ACTIVE':
-        return { bg: '#EAF7EE', color: '#16A34A', label: 'Active' };
-      case 'EXPIRING_SOON':
-        return { bg: '#FFF9E6', color: '#D97706', label: 'Expiring Soon' };
-      case 'INACTIVE':
-        return { bg: '#FEF2F2', color: '#DC2626', label: 'Inactive' };
-      case 'PENDING':
-      default:
-        return { bg: '#EDF2F7', color: '#174A78', label: 'Pending' };
+    if (storeSnapshot.members.length === 0) {
+      membersStore.fetchMembers().catch(() => {});
     }
-  };
+  }, [storeSnapshot.members.length]);
 
   return (
     <div style={styles.card}>
@@ -65,7 +26,7 @@ export const RecentMembersTable: React.FC = () => {
           </div>
           <div>
             <h4 style={styles.title}>Recently Enrolled Members</h4>
-            <p style={styles.subtitle}>Verified &amp; approved active members</p>
+            <p style={styles.subtitle}>Verified & approved active members</p>
           </div>
         </div>
 
@@ -87,50 +48,40 @@ export const RecentMembersTable: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {displayMembers.map((item: any) => {
-              const name = item.name || 'Member';
-              const memberCode = item.membershipId || item.memberId || 'HRSJM-MEM';
-              const category = item.categoryName || item.category || 'General Member';
-              const joined = item.joinedDate ? formatDisplayDate(item.joinedDate) : 'Recently';
-              const status = item.status || 'ACTIVE';
-              const badge = getMemberStatusBadge(status);
-
-              const initials = name
-                .split(' ')
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((n: string) => n[0].toUpperCase())
-                .join('');
-
-              return (
-                <tr key={item.id} style={styles.tr}>
+            {members.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ ...styles.td, textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
+                  No members found in directory.
+                </td>
+              </tr>
+            ) : (
+              members.map((member) => (
+                <tr key={member.id} style={styles.tr}>
                   <td style={styles.td}>
                     <div style={styles.memberCell}>
                       <div style={styles.avatar}>
-                        {initials || 'M'}
+                        {(member.name || 'Member')
+                          .split(' ')
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join('')}
                       </div>
-                      <span style={styles.memberName}>{name}</span>
+                      <span style={styles.memberName}>{member.name}</span>
                     </div>
                   </td>
                   <td style={styles.td}>
-                    <span style={styles.codeBadge}>{memberCode}</span>
+                    <span style={styles.codeBadge}>{member.membershipId}</span>
                   </td>
-                  <td style={styles.td}>{category}</td>
-                  <td style={styles.td}>{joined}</td>
+                  <td style={styles.td}>{member.categoryName || 'General Member'}</td>
+                  <td style={styles.td}>
+                    {member.joinedDate ? new Date(member.joinedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                  </td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
-                    <span
-                      style={{
-                        ...styles.statusPill,
-                        backgroundColor: badge.bg,
-                        color: badge.color,
-                      }}
-                    >
-                      {badge.label}
-                    </span>
+                    <span style={styles.activePill}>{member.status || 'Active'}</span>
                   </td>
                 </tr>
-              );
-            })}
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -150,40 +101,41 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '18px',
-    flexWrap: 'wrap',
+    marginBottom: '16px',
     gap: '12px',
+    flexWrap: 'wrap',
   },
   titleWrap: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
   },
   iconWrap: {
-    width: '36px',
-    height: '36px',
+    width: '38px',
+    height: '38px',
     borderRadius: '8px',
-    backgroundColor: '#EDF2F7',
+    backgroundColor: 'rgba(6, 41, 77, 0.08)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   title: {
-    fontSize: '16px',
-    fontWeight: 700,
-    color: '#0B2F52',
     margin: 0,
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#06294D',
   },
   subtitle: {
+    margin: '2px 0 0',
     fontSize: '12px',
-    color: '#718096',
-    margin: '2px 0 0 0',
+    color: '#64748B',
   },
   viewAllLink: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    fontSize: '12.5px',
+    fontSize: '13px',
     fontWeight: 600,
     color: '#174A78',
     textDecoration: 'none',
@@ -195,27 +147,25 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     borderCollapse: 'collapse',
     textAlign: 'left',
-    fontSize: '13px',
   },
   theadRow: {
-    borderBottom: '1.5px solid #E2E8F0',
+    borderBottom: '1px solid #E2E8F0',
   },
   th: {
     padding: '10px 12px',
-    fontSize: '11.5px',
+    fontSize: '11px',
     fontWeight: 700,
-    color: '#718096',
+    color: '#64748B',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.5px',
   },
   tr: {
     borderBottom: '1px solid #F1F5F9',
-    transition: 'background-color 0.12s',
   },
   td: {
     padding: '12px',
-    color: '#34516D',
-    whiteSpace: 'nowrap',
+    fontSize: '13px',
+    color: '#1E293B',
   },
   memberCell: {
     display: 'flex',
@@ -223,11 +173,11 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '10px',
   },
   avatar: {
-    width: '30px',
-    height: '30px',
+    width: '32px',
+    height: '32px',
     borderRadius: '50%',
     backgroundColor: '#06294D',
-    color: '#FAD465',
+    color: '#FFFFFF',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -237,22 +187,25 @@ const styles: Record<string, React.CSSProperties> = {
   },
   memberName: {
     fontWeight: 600,
-    color: '#0B2F52',
+    color: '#06294D',
   },
   codeBadge: {
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    backgroundColor: '#FAF7F0',
-    border: '1px solid #DCE4EC',
-    padding: '2px 6px',
+    padding: '3px 8px',
+    backgroundColor: '#F1F5F9',
     borderRadius: '4px',
-    color: '#06294D',
+    fontSize: '12px',
     fontWeight: 600,
+    color: '#334155',
+    fontFamily: 'monospace',
   },
-  statusPill: {
-    padding: '3px 9px',
-    borderRadius: '999px',
-    fontSize: '11.5px',
+  activePill: {
+    display: 'inline-block',
+    padding: '3px 10px',
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    color: '#16A34A',
+    borderRadius: '9999px',
+    fontSize: '11px',
     fontWeight: 600,
+    textTransform: 'capitalize',
   },
 };

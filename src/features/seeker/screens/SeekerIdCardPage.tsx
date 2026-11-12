@@ -218,7 +218,7 @@ export const SeekerIdCardPage: React.FC = () => {
 
       {/* 1:1 APK ID Card Section */}
       <div className="space-y-3">
-        {/* Section Header: Matching Image 2 header styling */}
+        {/* Section Header */}
         <div className="flex items-center gap-2 px-1">
           <CreditCard size={18} className="text-[#06294D]" />
           <h1 className="text-base sm:text-lg font-bold font-['Playfair_Display',Georgia,serif] text-[#06294D]">
@@ -227,7 +227,7 @@ export const SeekerIdCardPage: React.FC = () => {
         </div>
 
         {/* 1:1 APK Mobile ID Card Component */}
-        <div className="flex justify-center">
+        <div className="flex justify-center" id="printable-seeker-id-card">
           <SeekerApkIdCard
             fullName={fullName}
             roleSubtitle={roleSubtitle}

@@ -8,11 +8,6 @@ import type {
   LedgerSummary,
   AccountCategory,
 } from '../types/accounting.types';
-import {
-  INITIAL_ACCOUNTS,
-  INITIAL_JOURNAL_ENTRIES,
-  INITIAL_LEDGER_TRANSACTIONS,
-} from '../data/accountingFixtures';
 import { apiClient } from '@/api/client';
 
 const ACCOUNTS_STORAGE_KEY = 'hrsjm_local_accounts_v1';
@@ -29,8 +24,7 @@ function getStoredAccounts(): AccountItem[] {
   } catch (e) {
     console.warn('Failed to parse cached accounts:', e);
   }
-  localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(INITIAL_ACCOUNTS));
-  return INITIAL_ACCOUNTS;
+  return [];
 }
 
 function saveStoredAccounts(accounts: AccountItem[]): void {
@@ -51,8 +45,7 @@ function getStoredJournals(): JournalEntryItem[] {
   } catch (e) {
     console.warn('Failed to parse cached journals:', e);
   }
-  localStorage.setItem(JOURNALS_STORAGE_KEY, JSON.stringify(INITIAL_JOURNAL_ENTRIES));
-  return INITIAL_JOURNAL_ENTRIES;
+  return [];
 }
 
 function saveStoredJournals(journals: JournalEntryItem[]): void {
@@ -73,8 +66,7 @@ function getStoredLedger(): LedgerTransaction[] {
   } catch (e) {
     console.warn('Failed to parse cached ledger:', e);
   }
-  localStorage.setItem(LEDGER_STORAGE_KEY, JSON.stringify(INITIAL_LEDGER_TRANSACTIONS));
-  return INITIAL_LEDGER_TRANSACTIONS;
+  return [];
 }
 
 function saveStoredLedger(ledger: LedgerTransaction[]): void {

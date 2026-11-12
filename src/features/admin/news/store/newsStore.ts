@@ -8,7 +8,6 @@ import type {
   NewsStatus,
   CreateNewsFormState,
 } from '../types/news.types';
-import { INITIAL_NEWS_FIXTURES } from '../data/newsFixtures';
 import { newsService } from '../services/newsService';
 
 const STORAGE_KEY = 'hrsjm_local_news_v1';
@@ -43,14 +42,14 @@ class NewsStore {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            return parsed.filter((n: any) => n.id && !n.id.startsWith('news-00'));
           }
         }
       }
     } catch {
       // Fallback
     }
-    return [...INITIAL_NEWS_FIXTURES];
+    return [];
   }
 
   private persist(): void {

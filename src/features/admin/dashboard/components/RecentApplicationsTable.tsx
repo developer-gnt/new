@@ -1,66 +1,34 @@
-import React, { useEffect, useSyncExternalStore } from 'react';
-import { Link } from 'react-router-dom';
+import type React from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
 import { applicationsStore } from '@/features/admin/applications/store/applicationsStore';
-import type { MembershipApplicationItem } from '@/features/admin/applications/types/applications.types';
-import { DEMO_RECENT_APPLICATIONS } from '../data/dashboardDemoData';
-
-function formatDisplayDate(dateStr?: string): string {
-  if (!dateStr) return '—';
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 export const RecentApplicationsTable: React.FC = () => {
-  useSyncExternalStore(applicationsStore.subscribe, applicationsStore.getSnapshot);
+  const navigate = useNavigate();
+  useSyncExternalStore(
+    applicationsStore.subscribe,
+    applicationsStore.getSnapshot
+  );
+  const applications = applicationsStore.getAllApplications().slice(0, 5);
 
   useEffect(() => {
-    applicationsStore.fetchApplications();
+    if (applicationsStore.getAllApplications().length === 0) {
+      applicationsStore.fetchApplications().catch(() => {});
+    }
   }, []);
 
-  const getStatusBadge = (status?: string) => {
-    const s = (status || '').toUpperCase();
-    switch (s) {
-      case 'APPROVED':
+  const getStatusBadge = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'approved':
         return { bg: '#EAF7EE', color: '#16A34A', label: 'Approved' };
-      case 'UNDER_REVIEW':
+      case 'under_review':
         return { bg: '#FFF9E6', color: '#D97706', label: 'Under Review' };
-      case 'REJECTED':
-        return { bg: '#FEF2F2', color: '#DC2626', label: 'Rejected' };
-      case 'SUBMITTED':
+      case 'submitted':
       default:
         return { bg: '#EDF2F7', color: '#174A78', label: 'Submitted' };
     }
   };
-
-  const storeApps = applicationsStore.getAllApplications();
-  const hasLiveApps = storeApps.length > 0;
-
-  // Use live applications if available, sorted newest first, prioritizing pending applications; fallback to demo data
-  const displayApplications: (MembershipApplicationItem | (typeof DEMO_RECENT_APPLICATIONS)[number])[] = hasLiveApps
-    ? [...storeApps]
-        .sort((a, b) => {
-          // Prioritize submitted / under_review over approved/rejected
-          const isPendingA = a.status === 'submitted' || a.status === 'under_review';
-          const isPendingB = b.status === 'submitted' || b.status === 'under_review';
-          if (isPendingA && !isPendingB) return -1;
-          if (!isPendingA && isPendingB) return 1;
-
-          const timeA = new Date(a.submittedDate || 0).getTime() || 0;
-          const timeB = new Date(b.submittedDate || 0).getTime() || 0;
-          return timeB - timeA;
-        })
-        .slice(0, 5)
-    : DEMO_RECENT_APPLICATIONS;
 
   return (
     <div style={styles.card}>
@@ -94,47 +62,49 @@ export const RecentApplicationsTable: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {displayApplications.map((app: any) => {
-              const statusRaw = app.status || 'submitted';
-              const badge = getStatusBadge(statusRaw);
-              const name = app.applicantName || app.name || 'Applicant';
-              const appId = app.applicationId || app.id || 'HRSJM-APP';
-              const category = app.membershipType || app.type || app.category || 'General Member';
-              const date = app.submittedDate ? formatDisplayDate(app.submittedDate) : 'Recently';
-              const reviewTarget = app.id || app.applicationId;
-
-              return (
-                <tr key={app.id || appId} style={styles.tr}>
-                  <td style={styles.td}>
-                    <span style={styles.applicantName}>{name}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={styles.codeBadge}>{appId}</span>
-                  </td>
-                  <td style={styles.td}>{category}</td>
-                  <td style={styles.td}>{date}</td>
-                  <td style={styles.td}>
-                    <span
-                      style={{
-                        ...styles.statusPill,
-                        backgroundColor: badge.bg,
-                        color: badge.color,
-                      }}
-                    >
-                      {badge.label}
-                    </span>
-                  </td>
-                  <td style={{ ...styles.td, textAlign: 'right' }}>
-                    <Link
-                      to={reviewTarget ? `/admin/membership-applications/${reviewTarget}` : '/admin/membership-applications'}
-                      style={styles.actionBtn}
-                    >
-                      Review
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
+            {applications.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ ...styles.td, textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
+                  No applications currently pending.
+                </td>
+              </tr>
+            ) : (
+              applications.map((app) => {
+                const badge = getStatusBadge(app.status);
+                return (
+                  <tr key={app.id} style={styles.tr}>
+                    <td style={styles.td}>
+                      <span style={styles.applicantName}>{app.applicantName}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.codeBadge}>{app.applicationId}</span>
+                    </td>
+                    <td style={styles.td}>{app.membershipType}</td>
+                    <td style={styles.td}>{app.submittedAt}</td>
+                    <td style={styles.td}>
+                      <span
+                        style={{
+                          ...styles.statusBadge,
+                          backgroundColor: badge.bg,
+                          color: badge.color,
+                        }}
+                      >
+                        {badge.label}
+                      </span>
+                    </td>
+                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/admin/membership-applications/${app.id}`)}
+                        style={styles.reviewBtn}
+                      >
+                        Review
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -154,40 +124,41 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '18px',
-    flexWrap: 'wrap',
+    marginBottom: '16px',
     gap: '12px',
+    flexWrap: 'wrap',
   },
   titleWrap: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
   },
   iconWrap: {
-    width: '36px',
-    height: '36px',
+    width: '38px',
+    height: '38px',
     borderRadius: '8px',
-    backgroundColor: '#EDF2F7',
+    backgroundColor: 'rgba(6, 41, 77, 0.08)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   title: {
-    fontSize: '16px',
-    fontWeight: 700,
-    color: '#0B2F52',
     margin: 0,
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#06294D',
   },
   subtitle: {
+    margin: '2px 0 0',
     fontSize: '12px',
-    color: '#718096',
-    margin: '2px 0 0 0',
+    color: '#64748B',
   },
   viewAllLink: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    fontSize: '12.5px',
+    fontSize: '13px',
     fontWeight: 600,
     color: '#174A78',
     textDecoration: 'none',
@@ -199,56 +170,55 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     borderCollapse: 'collapse',
     textAlign: 'left',
-    fontSize: '13px',
   },
   theadRow: {
-    borderBottom: '1.5px solid #E2E8F0',
+    borderBottom: '1px solid #E2E8F0',
   },
   th: {
     padding: '10px 12px',
-    fontSize: '11.5px',
+    fontSize: '11px',
     fontWeight: 700,
-    color: '#718096',
+    color: '#64748B',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.5px',
   },
   tr: {
     borderBottom: '1px solid #F1F5F9',
   },
   td: {
     padding: '12px',
-    color: '#34516D',
-    whiteSpace: 'nowrap',
+    fontSize: '13px',
+    color: '#1E293B',
   },
   applicantName: {
     fontWeight: 600,
-    color: '#0B2F52',
+    color: '#06294D',
   },
   codeBadge: {
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    backgroundColor: '#FAF7F0',
-    border: '1px solid #DCE4EC',
-    padding: '2px 6px',
+    padding: '3px 8px',
+    backgroundColor: '#F1F5F9',
     borderRadius: '4px',
-    color: '#06294D',
-    fontWeight: 600,
-  },
-  statusPill: {
-    padding: '3px 9px',
-    borderRadius: '999px',
-    fontSize: '11.5px',
-    fontWeight: 600,
-  },
-  actionBtn: {
-    display: 'inline-block',
-    padding: '4px 12px',
-    backgroundColor: '#06294D',
-    color: '#FAD465',
-    borderRadius: '5px',
     fontSize: '12px',
     fontWeight: 600,
-    textDecoration: 'none',
-    transition: 'background-color 0.15s',
+    color: '#334155',
+    fontFamily: 'monospace',
+  },
+  statusBadge: {
+    display: 'inline-block',
+    padding: '3px 10px',
+    borderRadius: '9999px',
+    fontSize: '11px',
+    fontWeight: 600,
+    textTransform: 'capitalize',
+  },
+  reviewBtn: {
+    padding: '5px 12px',
+    backgroundColor: '#06294D',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
   },
 };

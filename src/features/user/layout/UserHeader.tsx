@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../store/userAuthStore';
 import { executeSignOut } from '@/features/auth/store/authStore';
 import { Bell, User, LogOut, ChevronDown, Heart, Menu } from 'lucide-react';
+import { HrsjmLogo } from '@/components/common/HrsjmLogo';
+import { getValidAvatarUrl } from '@/utils/avatar';
 
 interface UserHeaderProps {
   onToggleSidebar?: () => void;
@@ -23,7 +25,14 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
   const { user, unreadNotificationsCount } = useUserAuth();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const validAvatarUrl = getValidAvatarUrl(user?.avatar);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.avatar]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -62,14 +71,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
 
   const handleSignOut = async () => {
     setDropdownOpen(false);
-    try {
-      await executeSignOut(navigate);
-    } catch (err) {
-      console.error('Sign out error:', err);
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = '/login?logout=success';
-    }
+    await executeSignOut(navigate);
   };
 
   return (
@@ -95,6 +97,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
             className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer min-w-0"
             aria-label="HRSJM Home"
           >
+            <HrsjmLogo size="sm" variant="dark" showWordmark={false} />
             <div className="flex flex-col min-w-0">
               <span className="text-[16px] sm:text-[18px] font-black tracking-tight text-[#06294D] leading-none shrink-0">
                 HRSJM
@@ -146,11 +149,12 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
               aria-label="User Account Menu"
               aria-expanded={dropdownOpen}
             >
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold ring-2 ring-slate-100">
-                {user?.avatar ? (
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold ring-2 ring-slate-100 overflow-hidden">
+                {validAvatarUrl && !imgError ? (
                   <img
-                    src={user.avatar}
-                    alt={user.full_name}
+                    src={validAvatarUrl}
+                    alt=""
+                    onError={() => setImgError(true)}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (

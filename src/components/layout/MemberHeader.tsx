@@ -20,6 +20,7 @@ import { MEMBER_NAV_GROUPS } from './memberNavItems';
 import { useCurrentMember } from '../../features/member/store/memberStore';
 import { useMemberUnreadCount } from '../../features/member/store/memberNotificationsStore';
 import { HrsjmLogo } from '../common/HrsjmLogo';
+import { getValidAvatarUrl } from '@/utils/avatar';
 
 interface MemberHeaderProps {
   onToggleMobileSidebar: () => void;
@@ -38,7 +39,14 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
   const { member } = useCurrentMember();
   const unreadCount = useMemberUnreadCount();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const validAvatarUrl = getValidAvatarUrl(member.avatarUrl);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [member.avatarUrl]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -191,10 +199,11 @@ export const MemberHeader: React.FC<MemberHeaderProps> = ({
             {/* Avatar */}
             <div style={styles.avatarRing}>
               <div style={styles.avatarCore}>
-                {member.avatarUrl ? (
+                {validAvatarUrl && !imgError ? (
                   <img
-                    src={member.avatarUrl}
-                    alt={member.fullName}
+                    src={validAvatarUrl}
+                    alt=""
+                    onError={() => setImgError(true)}
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                   />
                 ) : (
