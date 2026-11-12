@@ -26,6 +26,7 @@ import { SeekerHeroBanner } from '../components/SeekerHeroBanner';
 import { SeekerTimelineStepper } from '../components/SeekerTimelineStepper';
 import { useSeekerStore } from '../store/seekerStore';
 import { eventsStore } from '@/features/admin/events/store/eventsStore';
+import { isAdminCreatedEvent } from '@/features/admin/events/services/eventsService';
 import { newsStore } from '@/features/admin/news/store/newsStore';
 import { filterEventsForRole, filterNewsForRole } from '@/features/content';
 import { assistanceService } from '@/features/admin/assistance/services/assistanceService';
@@ -73,7 +74,7 @@ export const SeekerHomePage: React.FC = () => {
   const newsSnapshot = useSyncExternalStore(newsStore.subscribe, newsStore.getSnapshot);
 
   const seekerEvents = useMemo(() => {
-    const authorized = filterEventsForRole(eventsSnapshot.events, 'SEEKER');
+    const authorized = filterEventsForRole(eventsSnapshot.events.filter(isAdminCreatedEvent), 'SEEKER');
     if (!authorized || authorized.length === 0) return [];
     return authorized.slice(0, 3).map((e) => {
       const dt = new Date(e.startAt || e.created_at || '');

@@ -4,7 +4,7 @@ import type {
   EventUiStatus,
   CreateEventFormState,
 } from '../types/events.types';
-import { eventsService } from '../services/eventsService';
+import { eventsService, isAdminCreatedEvent } from '../services/eventsService';
 
 const STORAGE_KEY = 'hrsjm_local_events_v1';
 
@@ -34,16 +34,10 @@ class EventsStore {
   private loadPersisted(): EventListItem[] {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.filter((e: any) => e.id && !e.id.startsWith('evt-00'));
-          }
-        }
+        window.localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
-      // Fallback
+      // Ignore storage errors
     }
     return [];
   }
@@ -113,7 +107,7 @@ class EventsStore {
     try {
       const items = await eventsService.list();
       if (Array.isArray(items)) {
-        this.events = items;
+        this.events = items.filter(isAdminCreatedEvent);
         this.sortInternal();
         this.notify();
       }

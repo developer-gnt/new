@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { eventsStore } from '../../admin/events/store/eventsStore';
+import { isAdminCreatedEvent } from '../../admin/events/services/eventsService';
 import type { EventListItem } from '../../admin/events/types/events.types';
 import { filterEventsForRole } from '@/features/content';
 
@@ -82,7 +83,7 @@ export const UserEventsPage: React.FC = () => {
   const navigate = useNavigate();
   const snapshot = useSyncExternalStore(eventsStore.subscribe, eventsStore.getSnapshot);
   const events = useMemo(() => {
-    return filterEventsForRole(snapshot.events, 'USER');
+    return filterEventsForRole(snapshot.events.filter(isAdminCreatedEvent), 'USER');
   }, [snapshot.events]);
 
   const [loading, setLoading] = useState(false);
