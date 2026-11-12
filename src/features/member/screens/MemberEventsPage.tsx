@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { eventsStore } from '@/features/admin/events/store/eventsStore';
+import { isAdminCreatedEvent } from '@/features/admin/events/services/eventsService';
 import type { EventListItem } from '@/features/admin/events/types/events.types';
 import { filterEventsForRole } from '@/features/content';
 import { useCurrentMember } from '../store/memberStore';
@@ -35,22 +36,27 @@ export const MemberEventsPage: React.FC = () => {
   const [donationAmount, setDonationAmount] = useState<number>(500);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isDonating, setIsDonating] = useState(false);
-  const [registeredIds, setRegisteredIds] = useState<string[]>(['e-01']);
+  const [registeredIds, setRegisteredIds] = useState<string[]>([]);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
-  // Compute 2x2 KPI metrics matching APK reference
+  const roleAuthorizedEvents = useMemo(
+    () => filterEventsForRole(events.filter(isAdminCreatedEvent), 'MEMBER'),
+    [events]
+  );
+
+  // Compute 2x2 KPI metrics from live admin-created events
   const stats = useMemo(() => {
-    const total = events.length > 0 ? events.length : 5;
-    const upcoming = events.filter((e) => e.status === 'UPCOMING').length || 2;
-    const completed = events.filter((e) => e.status === 'COMPLETED').length || 3;
-    const cancelled = events.filter((e) => e.status === 'CANCELLED').length || 0;
+    const total = roleAuthorizedEvents.length;
+    const upcoming = roleAuthorizedEvents.filter((e) => e.status === 'UPCOMING').length;
+    const completed = roleAuthorizedEvents.filter((e) => e.status === 'COMPLETED').length;
+    const cancelled = roleAuthorizedEvents.filter((e) => e.status === 'CANCELLED').length;
     return {
       total,
       upcoming,
       completed,
       cancelled,
     };
-  }, [events]);
+  }, [roleAuthorizedEvents]);
 
   const statusFilters = [
     { key: 'ALL', label: 'All' },
@@ -58,8 +64,6 @@ export const MemberEventsPage: React.FC = () => {
     { key: 'COMPLETED', label: 'Completed' },
     { key: 'CANCELLED', label: 'Cancelled' },
   ] as const;
-
-  const roleAuthorizedEvents = filterEventsForRole(events, 'MEMBER');
 
   const filteredEvents = roleAuthorizedEvents.filter((e: EventListItem) => {
     if (activeTab === 'MY_REGISTRATIONS' && !registeredIds.includes(e.id)) {

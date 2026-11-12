@@ -28,9 +28,19 @@ export function mapBackendEventToUi(item: any): EventListItem {
     language: item.language,
     tags: item.tags || [],
     status: item.status || 'UPCOMING',
+    createdBy: item.created_by ?? item.createdBy ?? null,
     created_at: item.created_at,
     updated_at: item.updated_at,
   };
+}
+
+/**
+ * Returns true only for events created via the Admin module (excludes DB-seeded fixtures).
+ */
+export function isAdminCreatedEvent(event: EventListItem): boolean {
+  const idStr = String(event.id || '');
+  if (idStr.startsWith('10000000-') || idStr.startsWith('evt-')) return false;
+  return Boolean(event.createdBy);
 }
 
 export const eventsService = {

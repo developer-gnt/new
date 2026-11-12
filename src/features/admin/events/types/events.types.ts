@@ -31,6 +31,7 @@ export interface EventListItem {
   language?: string;
   tags?: string[];
   status: EventUiStatus;
+  createdBy?: string | null;
   created_at?: string;
   updated_at?: string;
 }
