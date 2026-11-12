@@ -1,6 +1,5 @@
 import type {
   AccountItem,
-  AccountType,
   CreateAccountPayload,
   UpdateAccountPayload,
   JournalEntryItem,
@@ -449,140 +448,322 @@ export const accountingService = {
     summary: LedgerSummary;
   }> {
     try {
-      const now = new Date();
-      const currentYear = now.getFullYear();
+      // 1. Fetch real accounting entries, expenses, and receipts in parallel
+      const [entriesRes, expensesRes, receiptsRes] = await Promise.allSettled([
+        apiClient.get<any>('/accounting/entries', { params: { limit: 500 } }),
+        apiClient.get<any>('/expenses', { params: { limit: 500 } }),
+        apiClient.get<any>('/receipts', { params: { limit: 500 } }),
+      ]);
 
-      const fromDateIso = params?.from_date
-        ? new Date(params.from_date).toISOString()
-        : new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0)).toISOString();
-      const toDateIso = params?.to_date
-        ? new Date(params.to_date).toISOString()
-        : now.toISOString();
+      const rawEntries =
+        entriesRes.status === 'fulfilled' && entriesRes.value
+          ? Array.isArray(entriesRes.value.items)
+            ? entriesRes.value.items
+            : Array.isArray(entriesRes.value)
+            ? entriesRes.value
+            : []
+          : [];
 
-      const queryParams: Record<string, string | number> = {
-        from_date: fromDateIso,
-        to_date: toDateIso,
-        limit: 100,
-      };
-      if (params?.search) queryParams.search = params.search;
-      if (params?.account_id) queryParams.account_id = params.account_id;
+      const rawExpenses =
+        expensesRes.status === 'fulfilled' && expensesRes.value
+          ? Array.isArray(expensesRes.value.items)
+            ? expensesRes.value.items
+            : Array.isArray(expensesRes.value)
+            ? expensesRes.value
+            : []
+          : [];
 
-      const remote = await apiClient.get<any>(
-        '/accounting/ledger',
-        { params: queryParams }
-      );
-      if (remote) {
-        const rawItems = Array.isArray(remote.items)
-          ? remote.items
-          : Array.isArray(remote.transactions)
-            ? remote.transactions
-            : [];
+      const rawReceipts =
+        receiptsRes.status === 'fulfilled' && receiptsRes.value
+          ? Array.isArray(receiptsRes.value.items)
+            ? receiptsRes.value.items
+            : Array.isArray(receiptsRes.value)
+            ? receiptsRes.value
+            : []
+          : [];
 
-        if (Array.isArray(rawItems) && rawItems.length > 0) {
-          const transactions: LedgerTransaction[] = rawItems.map((item: any, idx: number) => {
-            const debit = Number(item.debit_amount ?? item.debit ?? 0);
-            const credit = Number(item.credit_amount ?? item.credit ?? 0);
-            const accountObj = item.account || {};
-            const accountName = accountObj.account_name || item.account_name || 'General Account';
-            const accountCode = accountObj.account_code || item.account_code || null;
-            const accountType = (accountObj.account_type || item.account_type || 'ASSET') as AccountType;
-            const narration = item.line_description || item.description || item.narration || '';
-            const running = Number(item.running_balance ?? 0);
+      // Create quick lookup maps for enrichment
+      const expensesById = new Map<string, any>();
+      const expensesByVoucher = new Map<string, any>();
+      rawExpenses.forEach((exp: any) => {
+        if (exp.id) expensesById.set(exp.id, exp);
+        if (exp.voucher_number) expensesByVoucher.set(exp.voucher_number, exp);
+      });
 
-            // Determine category and stream tag
-            let categoryTag = item.category_tag;
-            const ref = String(item.reference_type || '').toUpperCase();
-            const narrLower = narration.toLowerCase();
+      const receiptsById = new Map<string, any>();
+      const receiptsByVoucher = new Map<string, any>();
+      rawReceipts.forEach((rec: any) => {
+        if (rec.id) receiptsById.set(rec.id, rec);
+        if (rec.voucher_number) receiptsByVoucher.set(rec.voucher_number, rec);
+      });
 
-            if (!categoryTag) {
-              if (ref.includes('EXPENSE') || accountType === 'EXPENSE') {
-                categoryTag = 'EXPENSE';
-              } else if (ref.includes('DONATION') || narrLower.includes('donation')) {
-                categoryTag = 'DONATION';
-              } else if (ref.includes('MEMBERSHIP') || narrLower.includes('membership')) {
-                categoryTag = 'MEMBERSHIP_FEE';
-              } else if (accountType === 'INCOME') {
-                categoryTag = 'RECEIPT';
-              } else if (debit > 0) {
-                categoryTag = 'RECEIPT';
-              } else {
-                categoryTag = 'EXPENSE';
-              }
-            }
+      const processedEntryIds = new Set<string>();
+      const consolidatedList: LedgerTransaction[] = [];
 
-            return {
-              id: item.id || `ltx-${item.entry_number || 'entry'}-${accountObj.id || idx}-${idx}`,
-              entry_id: item.entry_id || item.reference_id || item.id,
-              entry_number: item.entry_number || `JE-${String(idx + 1).padStart(5, '0')}`,
-              entry_date: item.entry_date ? new Date(item.entry_date).toISOString() : new Date().toISOString(),
-              entry_type: item.entry_type || 'STANDARD',
-              account_id: accountObj.id || item.account_id || '',
-              account_name: accountName,
-              account_code: accountCode,
-              account_type: accountType,
-              reference_type: item.reference_type || null,
-              reference_id: item.reference_id || null,
-              narration: narration || 'General transaction',
-              debit: debit,
-              credit: credit,
-              running_balance: running,
-              category_tag: categoryTag,
-              paid_to: item.paid_to || null,
-              received_from: item.received_from || null,
-            };
+      // 2. Process real journal entries into unified single-row transactions
+      for (const entry of rawEntries) {
+        if (!entry || !entry.id) continue;
+        processedEntryIds.add(entry.id);
+
+        const lines: any[] = entry.lines || [];
+        const isReversed = Boolean(entry.is_reversed || entry.entry_type === 'REVERSAL');
+        const refType = String(entry.reference_type || '').toUpperCase();
+        const refId = entry.reference_id;
+
+        // Find Expense head, Income head, and Asset/Bank lines
+        const expenseLine = lines.find((l) => {
+          const type = String(l.account?.account_type || '').toUpperCase();
+          const debit = Number(l.debit_amount ?? l.debit ?? 0);
+          return type === 'EXPENSE' || (debit > 0 && type !== 'ASSET');
+        });
+
+        const incomeLine = lines.find((l) => {
+          const type = String(l.account?.account_type || '').toUpperCase();
+          const credit = Number(l.credit_amount ?? l.credit ?? 0);
+          return type === 'INCOME' || (credit > 0 && type !== 'ASSET');
+        });
+
+        const assetLine = lines.find((l) => {
+          const type = String(l.account?.account_type || '').toUpperCase();
+          const name = String(l.account?.account_name || '').toLowerCase();
+          return type === 'ASSET' || name.includes('bank') || name.includes('cash');
+        });
+
+        // Determine stream tag
+        let streamTag: string = 'RECEIPT';
+        let isExpense = false;
+
+        if (refType.includes('EXPENSE') || expenseLine) {
+          streamTag = 'EXPENSE';
+          isExpense = true;
+        } else if (refType.includes('DONATION') || entry.narration?.toLowerCase().includes('donation')) {
+          streamTag = 'DONATION';
+        } else if (refType.includes('MEMBERSHIP') || refType.includes('RENEWAL')) {
+          streamTag = 'MEMBERSHIP_FEE';
+        } else if (incomeLine || refType.includes('RECEIPT')) {
+          streamTag = 'RECEIPT';
+        }
+
+        // Amount calculation
+        let amount = 0;
+        if (isExpense) {
+          amount = Number(
+            entry.total_debit ||
+            (expenseLine ? expenseLine.debit_amount ?? expenseLine.debit : 0) ||
+            (assetLine ? assetLine.credit_amount ?? assetLine.credit : 0) ||
+            0
+          );
+        } else {
+          amount = Number(
+            entry.total_credit ||
+            (incomeLine ? incomeLine.credit_amount ?? incomeLine.credit : 0) ||
+            (assetLine ? assetLine.debit_amount ?? assetLine.debit : 0) ||
+            0
+          );
+        }
+
+        // Account Head & Details
+        const nominalLine = isExpense ? expenseLine : incomeLine;
+        const accountName =
+          nominalLine?.account?.account_name ||
+          (isExpense ? 'General Operations & Administration' : 'General Society Income');
+        const accountCode = nominalLine?.account?.account_code || (isExpense ? '5002' : '4001');
+        const accountId = nominalLine?.account?.id || nominalLine?.account_id || (isExpense ? '5002' : '4001');
+
+        // Asset Disbursing / Receiving Account
+        const disbursingAsset =
+          assetLine?.account?.account_name ||
+          (assetLine?.account?.account_code ? `A/c #${assetLine.account.account_code}` : 'Bank Account');
+
+        // Enrich with matching expense voucher if available
+        const matchedExpense = refId ? expensesById.get(refId) : null;
+        const matchedReceipt = refId ? receiptsById.get(refId) : null;
+
+        const voucherNumber =
+          matchedExpense?.voucher_number ||
+          matchedReceipt?.voucher_number ||
+          entry.entry_number;
+
+        const isWebApp = Boolean(
+          matchedExpense?.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+          matchedExpense?.description?.includes('[Source: Web App]') ||
+          entry.narration?.includes('[Source: Web App]') ||
+          entry.narration?.includes('WEB-APP')
+        );
+
+        const paidTo = matchedExpense?.paid_to || entry.paid_to || null;
+        const receivedFrom = matchedReceipt?.received_from || entry.received_from || null;
+        const paymentMethod = matchedExpense?.payment_method || matchedReceipt?.payment_method || null;
+
+        consolidatedList.push({
+          id: `ltx-consolidated-${entry.id}`,
+          entry_id: entry.id,
+          entry_number: entry.entry_number,
+          voucher_number: voucherNumber,
+          entry_date: entry.entry_date || entry.created_at || new Date().toISOString(),
+          entry_type: entry.entry_type || 'STANDARD',
+          account_id: accountId,
+          account_name: accountName,
+          account_code: accountCode,
+          account_type: isExpense ? 'EXPENSE' : 'INCOME',
+          reference_type: entry.reference_type || null,
+          reference_id: entry.reference_id || null,
+          narration: entry.narration || matchedExpense?.description || matchedReceipt?.notes || 'Official Society Transaction',
+          debit: isExpense ? amount : 0,
+          credit: !isExpense ? amount : 0,
+          running_balance: 0, // Computed below
+          category_tag: streamTag,
+          payment_method: paymentMethod,
+          disbursing_account_name: disbursingAsset,
+          paid_to: paidTo,
+          received_from: receivedFrom,
+          status: isReversed ? 'REVERSED' : 'POSTED',
+          is_web_app: isWebApp,
+        });
+      }
+
+      // 3. Ensure any posted expense vouchers from /expenses not in entries are included
+      for (const exp of rawExpenses) {
+        if (!exp || exp.status === 'CANCELLED') continue;
+        const alreadyIncluded = consolidatedList.some(
+          (t) => t.reference_id === exp.id || t.voucher_number === exp.voucher_number
+        );
+        if (!alreadyIncluded) {
+          const isWebApp = Boolean(
+            exp.reference_number?.toUpperCase().startsWith('WEB-APP') ||
+            exp.description?.includes('[Source: Web App]')
+          );
+          consolidatedList.push({
+            id: `ltx-exp-${exp.id}`,
+            entry_id: exp.id,
+            entry_number: exp.voucher_number,
+            voucher_number: exp.voucher_number,
+            entry_date: exp.expense_date || exp.created_at || new Date().toISOString(),
+            entry_type: 'STANDARD',
+            account_id: exp.expense_account_id || exp.expense_account?.id || '5002',
+            account_name: exp.expense_account?.account_name || 'General Operations',
+            account_code: exp.expense_account?.account_code || '5002',
+            account_type: 'EXPENSE',
+            reference_type: 'MANUAL_EXPENSE',
+            reference_id: exp.id,
+            narration: exp.description || `Disbursement to ${exp.paid_to}`,
+            debit: Number(exp.amount) || 0,
+            credit: 0,
+            running_balance: 0,
+            category_tag: 'EXPENSE',
+            payment_method: exp.payment_method || 'UPI',
+            disbursing_account_name: exp.paid_from_account?.account_name || 'Bank Account',
+            paid_to: exp.paid_to,
+            received_from: null,
+            status: 'POSTED',
+            is_web_app: isWebApp,
           });
-
-          // Calculate real totals:
-          let totalInflow = 0;
-          let totalOutflow = 0;
-
-          // If there are ASSET accounts (Cash/Bank), their movements define total liquid inflow and outflow:
-          const assetLines = transactions.filter((t) => t.account_type === 'ASSET');
-          if (assetLines.length > 0) {
-            assetLines.forEach((t) => {
-              totalInflow += t.debit;
-              totalOutflow += t.credit;
-            });
-          } else {
-            // Otherwise, calculate across income and expense accounts:
-            transactions.forEach((t) => {
-              if (
-                t.account_type === 'INCOME' ||
-                t.category_tag === 'RECEIPT' ||
-                t.category_tag === 'DONATION' ||
-                t.category_tag === 'MEMBERSHIP_FEE'
-              ) {
-                totalInflow += t.credit || t.debit;
-              } else if (t.account_type === 'EXPENSE' || t.category_tag === 'EXPENSE') {
-                totalOutflow += t.debit || t.credit;
-              }
-            });
-          }
-
-          if (totalInflow === 0 && totalOutflow === 0) {
-            transactions.forEach((t) => {
-              totalInflow += t.debit;
-              totalOutflow += t.credit;
-            });
-          }
-
-          const openingBalance = Number(remote.opening_balance ?? remote.meta?.opening_balance ?? 0);
-          const closingBalance = openingBalance + totalInflow - totalOutflow;
-
-          return {
-            transactions,
-            summary: {
-              opening_balance: openingBalance,
-              total_debit: totalInflow, // Total Inflows (Income/Receipts)
-              total_credit: totalOutflow, // Total Outflows (Expenses/Disbursements)
-              closing_balance: closingBalance,
-              net_change: totalInflow - totalOutflow,
-            },
-          };
         }
       }
-    } catch {
-      // Offline fallback
+
+      // 4. Ensure any posted receipts from /receipts not in entries are included
+      for (const rec of rawReceipts) {
+        if (!rec || rec.status === 'CANCELLED') continue;
+        const alreadyIncluded = consolidatedList.some(
+          (t) => t.reference_id === rec.id || t.voucher_number === rec.voucher_number
+        );
+        if (!alreadyIncluded) {
+          consolidatedList.push({
+            id: `ltx-rec-${rec.id}`,
+            entry_id: rec.id,
+            entry_number: rec.voucher_number,
+            voucher_number: rec.voucher_number,
+            entry_date: rec.receipt_date || rec.created_at || new Date().toISOString(),
+            entry_type: 'STANDARD',
+            account_id: rec.income_account_id || '4001',
+            account_name: rec.category || 'Donation & Grants',
+            account_code: '4001',
+            account_type: 'INCOME',
+            reference_type: 'MANUAL_RECEIPT',
+            reference_id: rec.id,
+            narration: rec.notes || `Received from ${rec.received_from}`,
+            debit: 0,
+            credit: Number(rec.amount) || 0,
+            running_balance: 0,
+            category_tag: 'RECEIPT',
+            payment_method: rec.payment_method || 'Online',
+            disbursing_account_name: rec.deposit_account?.account_name || 'Bank Account',
+            paid_to: null,
+            received_from: rec.received_from,
+            status: 'POSTED',
+            is_web_app: false,
+          });
+        }
+      }
+
+      // 5. If entries were empty, fallback to local storage
+      if (consolidatedList.length === 0) {
+        const stored = getStoredLedger();
+        consolidatedList.push(...stored);
+      }
+
+      // 6. Chronological running balance calculation (oldest -> newest)
+      consolidatedList.sort((a, b) => {
+        const tA = new Date(a.entry_date).getTime();
+        const tB = new Date(b.entry_date).getTime();
+        if (tA !== tB) return tA - tB;
+        return a.entry_number.localeCompare(b.entry_number);
+      });
+
+      const openingBalance = 0;
+      let running = openingBalance;
+      let totalInflows = 0;
+      let totalOutflows = 0;
+
+      for (const tx of consolidatedList) {
+        const inflow = tx.credit || 0;
+        const outflow = tx.debit || 0;
+        totalInflows += inflow;
+        totalOutflows += outflow;
+        running += inflow - outflow;
+        tx.running_balance = running;
+      }
+
+      const closingBalance = running;
+
+      // 7. Sort reverse-chronologically so LATEST TRANSACTIONS ARE ON TOP
+      consolidatedList.sort((a, b) => {
+        const tA = new Date(a.entry_date).getTime();
+        const tB = new Date(b.entry_date).getTime();
+        if (tB !== tA) return tB - tA; // Newest date first
+        return (b.voucher_number || b.entry_number).localeCompare(a.voucher_number || a.entry_number);
+      });
+
+      // Filter by params if provided
+      let resultList = consolidatedList;
+      if (params?.account_id && params.account_id !== 'ALL') {
+        resultList = resultList.filter((t) => t.account_id === params.account_id);
+      }
+      if (params?.search) {
+        const q = params.search.toLowerCase().trim();
+        resultList = resultList.filter(
+          (t) =>
+            t.entry_number.toLowerCase().includes(q) ||
+            (t.voucher_number || '').toLowerCase().includes(q) ||
+            (t.narration || '').toLowerCase().includes(q) ||
+            t.account_name.toLowerCase().includes(q) ||
+            (t.received_from || '').toLowerCase().includes(q) ||
+            (t.paid_to || '').toLowerCase().includes(q)
+        );
+      }
+
+      return {
+        transactions: resultList,
+        summary: {
+          opening_balance: openingBalance,
+          total_debit: totalInflows, // Total Inflows (Income / Receipts)
+          total_credit: totalOutflows, // Total Outflows (Expenses / Disbursements)
+          closing_balance: closingBalance,
+          net_change: totalInflows - totalOutflows,
+        },
+      };
+    } catch (err) {
+      console.warn('getGlobalLedger error, using offline store:', err);
     }
 
     const ledger = getStoredLedger();

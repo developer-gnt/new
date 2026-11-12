@@ -116,6 +116,9 @@ export interface LedgerTransaction {
   paid_to?: string | null;
   received_from?: string | null;
   status?: string | null;
+  disbursing_account_name?: string | null;
+  voucher_number?: string | null;
+  is_web_app?: boolean;
 }
 
 export interface LedgerSummary {

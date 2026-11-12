@@ -114,30 +114,15 @@ export const AccountingDashboardPage: React.FC = () => {
 
   // Transaction classification helpers
   const getInflowAmount = (t: LedgerTransaction): number => {
-    if (t.account_type === 'ASSET') return t.debit > 0 ? t.debit : 0;
-    if (t.account_type === 'INCOME') return t.credit > 0 ? t.credit : t.debit;
     if (t.category_tag === 'EXPENSE' || t.account_type === 'EXPENSE') return 0;
-    if (t.category_tag === 'RECEIPT' || t.category_tag === 'DONATION' || t.category_tag === 'MEMBERSHIP_FEE') {
-      return t.debit > 0 ? t.debit : t.credit;
-    }
-    return t.debit > 0 ? t.debit : 0;
+    return Number(t.credit) || (t.account_type === 'INCOME' ? Number(t.debit) : 0) || 0;
   };
 
   const getOutflowAmount = (t: LedgerTransaction): number => {
-    if (t.account_type === 'ASSET') return t.credit > 0 ? t.credit : 0;
-    if (t.account_type === 'EXPENSE') return t.debit > 0 ? t.debit : t.credit;
-    if (
-      t.category_tag === 'RECEIPT' ||
-      t.category_tag === 'DONATION' ||
-      t.category_tag === 'MEMBERSHIP_FEE' ||
-      t.account_type === 'INCOME'
-    ) {
-      return 0;
+    if (t.category_tag === 'EXPENSE' || t.account_type === 'EXPENSE') {
+      return Number(t.debit) || Number(t.credit) || 0;
     }
-    if (t.category_tag === 'EXPENSE') {
-      return t.credit > 0 ? t.credit : t.debit;
-    }
-    return t.credit > 0 ? t.credit : 0;
+    return 0;
   };
 
   // Filter Ledger Transactions
@@ -488,8 +473,8 @@ export const AccountingDashboardPage: React.FC = () => {
                       <tr className="bg-slate-50 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <th className="px-4 py-3">Date & Voucher No</th>
                         <th className="px-4 py-3">Stream Tag</th>
-                        <th className="px-4 py-3">Particulars / Narration</th>
-                        <th className="px-4 py-3">Account Allocation</th>
+                        <th className="px-4 py-3">Particulars & Beneficiary</th>
+                        <th className="px-4 py-3">Account Head & Payment Mode</th>
                         <th className="px-4 py-3 text-right">Income (Inflow / Cr)</th>
                         <th className="px-4 py-3 text-right">Expense (Outflow / Dr)</th>
                         <th className="px-4 py-3 text-right">Running Balance</th>
@@ -510,7 +495,7 @@ export const AccountingDashboardPage: React.FC = () => {
                           <td className="px-4 py-3 font-semibold text-slate-800">
                             Opening Balance Brought Forward (b/f)
                             <span className="block text-[11px] text-slate-500 font-normal">
-                              Net liquid liquid cash & bank reserve carried from previous cycle
+                              Net liquid cash & bank reserve carried from previous cycle
                             </span>
                           </td>
                           <td className="px-4 py-3 text-slate-600 text-xs">
@@ -524,12 +509,13 @@ export const AccountingDashboardPage: React.FC = () => {
                         </tr>
                       )}
 
-                      {/* 2. Chronological Transactions */}
+                      {/* 2. Chronological Transactions (Newest First) */}
                       {paginatedTransactions.length > 0 ? (
                         paginatedTransactions.map((tx) => {
                           const badge = getCategoryBadgeStyle(tx.category_tag);
                           const inflow = getInflowAmount(tx);
                           const outflow = getOutflowAmount(tx);
+                          const displayVoucherNo = tx.voucher_number || tx.entry_number;
 
                           return (
                             <tr
@@ -538,8 +524,13 @@ export const AccountingDashboardPage: React.FC = () => {
                             >
                               {/* Date & Voucher No */}
                               <td className="px-4 py-3 align-top">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-mono text-xs font-bold text-[#011F39]">{tx.entry_number}</span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-mono text-xs font-bold text-[#011F39]">{displayVoucherNo}</span>
+                                  {tx.is_web_app && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                                      Web App
+                                    </span>
+                                  )}
                                   {tx.category_tag === 'EXPENSE' || tx.reference_type === 'MANUAL_EXPENSE' ? (
                                     <button
                                       type="button"
@@ -597,26 +588,31 @@ export const AccountingDashboardPage: React.FC = () => {
                                 </span>
                               </td>
 
-                              {/* Particulars */}
+                              {/* Particulars & Beneficiary */}
                               <td className="px-4 py-3 align-top max-w-xs">
                                 <div className="font-semibold text-slate-900 truncate">
-                                  {tx.narration || 'General transaction'}
+                                  {tx.paid_to || tx.received_from || tx.narration || 'General transaction'}
                                 </div>
-                                {(tx.received_from || tx.paid_to) && (
+                                {(tx.paid_to || tx.received_from) && tx.narration && (
                                   <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                                    Party: {tx.received_from || tx.paid_to}
+                                    {tx.narration}
                                   </div>
                                 )}
                               </td>
 
-                              {/* Account */}
+                              {/* Account Head & Payment Mode */}
                               <td className="px-4 py-3 align-top">
-                                <div className="font-semibold text-slate-800 truncate">{tx.account_name}</div>
-                                {tx.account_code && (
-                                  <span className="text-[11px] text-slate-400 font-mono">
-                                    A/c #{tx.account_code}
-                                  </span>
-                                )}
+                                <div className="font-semibold text-slate-800 truncate">
+                                  {tx.account_name}
+                                  {tx.account_code && (
+                                    <span className="text-[10.5px] text-slate-400 font-mono ml-1">
+                                      (#{tx.account_code})
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[11px] text-slate-500 mt-0.5">
+                                  via {tx.payment_method || tx.disbursing_account_name || 'Bank Account'}
+                                </div>
                               </td>
 
                               {/* Inflow Credit */}
