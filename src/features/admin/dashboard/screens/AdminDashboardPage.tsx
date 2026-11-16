@@ -8,7 +8,6 @@ import { RecentMembersTable } from '../components/RecentMembersTable';
 import { RecentApplicationsTable } from '../components/RecentApplicationsTable';
 import { UpcomingEventsCard } from '../components/UpcomingEventsCard';
 import { FinancialSummaryCard } from '../components/FinancialSummaryCard';
-import { RecentActivitiesCard } from '../components/RecentActivitiesCard';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
 import { AppErrorState } from '@/components/common/AppErrorState';
 import { membersStore } from '@/features/admin/members/store/membersStore';
@@ -202,11 +201,6 @@ export const AdminDashboardPage: React.FC = () => {
                     ]
               }
             />
-          </div>
-
-          {/* Real-time Activity Feed */}
-          <div style={styles.fullWidthSection}>
-            <RecentActivitiesCard activities={dashboardData?.recentActivity} />
           </div>
         </div>
       )}
